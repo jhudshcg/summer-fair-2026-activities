@@ -11,7 +11,7 @@
     compare: 560,
     swap: 1700,
     settle: 420,
-    complete: 950,
+    complete: 1650,
   };
 
   function uniqueNumbers(count, min, max) {

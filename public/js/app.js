@@ -123,7 +123,7 @@ function getPageContext() {
   };
 }
 
-function createStatusChip(icon, title, detail) {
+function createStatusChip(icon, title, detail, iconClassName = "status-icon") {
   const chip = document.createElement("section");
   chip.className = "status-chip";
 
@@ -132,7 +132,7 @@ function createStatusChip(icon, title, detail) {
       <strong>${title}</strong>
       <span class="status-chip__detail">${detail}</span>
     </div>
-    <div class="status-icon" aria-hidden="true">${icon}</div>
+    <div class="${iconClassName}" aria-hidden="true">${icon}</div>
   `;
 
   return chip;
@@ -150,20 +150,23 @@ function renderStatusBar() {
   const { activity, progress } = getPageContext();
   const completedCount = getCompletedCount(progress);
   const unlocked = isHiddenUnlocked(progress);
+  const isCompleted = activity ? Boolean(progress.completed[activity.id]) : false;
   const activityLabel = activity ? `Activity ${activity.order} of ${ACTIVITIES.length}` : "Choose a challenge";
   const currentState = activity
-    ? progress.completed[activity.id]
+    ? isCompleted
       ? "Completed"
       : activity.hidden && !unlocked
         ? "Locked"
         : "Not completed yet"
     : `${completedCount} of 4 main activities complete`;
+  const statusIcon = isCompleted && activity ? activity.keyPart : unlocked ? "🔓" : "🔒";
+  const statusIconClassName = isCompleted && activity ? "status-icon status-icon--key-part" : "status-icon";
 
   mount.innerHTML = "";
   mount.append(
     createStatusChip(activity ? activity.icon : "🌺", "Current activity", activityLabel),
     createStatusChip("✅", "Progress", `${completedCount} of 4 main activities complete`),
-    createStatusChip(unlocked ? "🔓" : "🔒", "Status", currentState)
+    createStatusChip(statusIcon, "Status", currentState, statusIconClassName)
   );
 }
 

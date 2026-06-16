@@ -38,6 +38,25 @@
 - Tropical colours, playful typography and placeholder clipart-style illustration treatment.
 - Responsive layout with large tap targets and clear contrast.
 
+## Shared implementation notes
+
+- Keep the site locked to a light theme for now so vendored Pico styles do not drift surfaces or contrast unexpectedly.
+- Use Pico as a lightweight base layer for resets, form controls and shared tokens, but do not rely on Pico layout helper classes where they conflict with the project-specific page layout.
+- Prefer shared CSS variables for colours, radii, spacing and shadows so styling changes stay centralised.
+- Prioritise contrast over subtlety:
+    - dark text on pale panels
+    - near-white text on dark or saturated feature cards
+    - do not rely on low-contrast muted text for important instructions or status information
+- Use the display font for headings and feature-card copy only where it improves emphasis and remains readable.
+- Use container-aware font sizing for prominent card copy rather than adding many viewport-only breakpoint overrides.
+- Keep breakpoints minimal:
+    - use one shared medium breakpoint for broader layout enhancement
+    - use a later larger breakpoint for optional multi-column header splits
+    - prefer `clamp(...)`, shared spacing variables and container queries before adding extra breakpoints
+- Keep section cards on pale tropical surfaces with the established soft shadow and radius system rather than introducing new card treatments per page.
+- For status chips and similar small summary cards, use explicit text-and-icon layout structure so icons stay contained at narrow widths.
+- For Bubble Sort specifically, keep the instructional card and demo animation readable at in-between tablet and landscape-phone widths before adding any further visual complexity.
+
 ## Shared activity constraints
 
 - Unless explicitly overridden, every activity inherits the shared requirements already defined in Project shape, Shared behaviour and Visual direction.
@@ -241,6 +260,10 @@
 
 - Put the activity-specific data and logic in a dedicated script file for this page rather than expanding app.js with page-specific interaction code.
 - Prefer the shared library wrapper and adapter layer for drag behaviour rather than wiring raw drag events directly inside each activity script.
+- Preserve the current Bubble Sort responsive approach:
+    - keep the main activity sections full width with Check Your Thinking below Build The Program
+    - let the header remain single-column until a later large breakpoint
+    - avoid reintroducing layout helper classes that add conflicting breakpoint behaviour to this page
 - Suggested data structure:
     - one array of piece objects with fields such as `id`, `label`, `type`, `acceptedParentTypes` and `correctParent`
     - one layout model describing top-level slots, header sockets and body sockets, with slots created relative to currently placed pieces
@@ -258,6 +281,7 @@
     - use one short instructional demo animation near the top of the page with five fixed numbers, for example `[7, 3, 6, 2, 5]`
     - render the example numbers as shell-like DOM chips or tiles
     - step through a predefined sequence of comparisons and swaps using timed class changes, with swaps held longer than comparison highlights
+    - when swap animation is shown, prefer visible shell movement between positions rather than highlight-only swap feedback
     - keep the instructional demo separate from the success animation so the page teaches the idea before the user solves the puzzle
     - avoid canvas or heavy libraries
 

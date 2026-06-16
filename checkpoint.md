@@ -8,13 +8,14 @@
 
 ## Current slice
 
-Next implementation slice: Activity 1 as the first full interactive challenge, built on a reusable shared block-assembly feature.
+Current completed slice: Activity 1 as the first full interactive challenge, built on a reusable shared block-assembly feature.
 
 Current progress within this slice:
 
 - Shared block-assembly engine implemented in reusable source files.
 - Bubble Sort page now uses the shared assembly engine instead of the placeholder shell.
 - Bubble Sort includes demo animation, puzzle workspace, validation, hints, reset and success flow.
+- Bubble Sort styling and responsive behaviour have been stabilised enough for handoff.
 
 ## Agreed decisions
 
@@ -44,6 +45,29 @@ Current progress within this slice:
 
 - Treat Bubble Sort as a vertical slice of a shared block-assembly system, not as a one-off page feature.
 - Design the block palette, workspace, slots, sockets, snap behaviour and nested container rendering so they can be reused by Algorithm Maze.
+
+## Implementation handoff notes
+
+- Keep Pico as the shared base layer, but treat it as support rather than the layout source of truth.
+- Keep the site locked to light theme for now so panel colours and contrast remain predictable.
+- Preserve the current contrast rule of thumb:
+    - dark text on pale section cards
+    - near-white text on saturated feature cards
+    - avoid muted low-contrast copy for important instructions
+- Preserve the current card styling direction:
+    - pale translucent section panels
+    - shared radius and soft shadow system
+    - tropical feature cards with stronger contrast and display-font emphasis
+- Preserve the current responsive strategy:
+    - minimal breakpoint count
+    - rely on shared spacing clamps and container-aware font sizing before introducing more breakpoints
+    - keep Bubble Sort header single-column until the larger breakpoint where the split remains comfortable
+    - keep Build The Program full width with Check Your Thinking below it
+- Preserve the status-chip structure as an explicit text-plus-icon layout so icons stay contained at narrower widths.
+- Preserve the current Bubble Sort demo direction:
+    - five-number instructional demo
+    - shell-like chips
+    - slower, visible swap motion rather than flash-only feedback
 
 ## Interaction library evaluation
 
@@ -75,7 +99,15 @@ Validation completed so far for this slice:
 - No editor-reported errors remain in the touched files.
 - Bubble Sort renders and responds in-browser with the SortableJS-backed assembly layer.
 - Bubble Sort now uses neutral Loop and Condition labels, adaptive hints, and a stronger celebratory success state.
+- Bubble Sort layout and prominent instruction copy were checked across representative mid-width tablet and landscape-phone viewport sizes.
 
 ## Next logical slice
 
 Use the completed shared block-assembly feature to implement Algorithm Maze as the second full interactive challenge.
+
+Recommended starting focus for the next dev session:
+
+- Keep the current shared visual and responsive rules intact rather than reopening Bubble Sort styling unless a concrete defect is found.
+- Build Algorithm Maze on top of the existing shared assembly engine and shared page shell.
+- Define the first maze program piece set, validation model and explorer animation as the next vertical slice.
+- Reuse the same standards for contrast, card treatment, breakpoint discipline and mobile-first testing that were locked in during the Bubble Sort refinement pass.
