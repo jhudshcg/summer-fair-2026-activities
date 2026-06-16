@@ -1,0 +1,109 @@
+<!doctype html>
+<!-- Bubble Sort activity page using the shared block assembly system. -->
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Bubble Sort Beach | Summer Fair 2026</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <script src="js/app.js" defer></script>
+    <script src="js/vendor/Sortable.min.js" defer></script>
+    <script src="js/assembly.js" defer></script>
+    <script src="js/bubble-sort.js" defer></script>
+  </head>
+  <body data-page="bubble-sort">
+    <main class="site-shell" data-bubble-sort-page>
+      <a class="back-link" href="index.html">← Back to all activities</a>
+      <section class="status-bar" data-status-bar aria-label="Current progress"></section>
+      <section class="page-header">
+        <article class="info-block panel activity-summary">
+          <div class="info-block">
+            <h1 class="page-title">Bubble Sort Beach</h1>
+            <p class="lede">
+              Build the bubble sort program by placing loop blocks and conditions in the right structure.
+            </p>
+            <p class="mini-note">
+              Bubble sort compares neighbouring numbers and swaps them until the list is in order.
+            </p>
+          </div>
+          <div class="tag-row">
+            <div class="tag">Key part: <span data-bubble-key-part></span></div>
+            <div class="tag" data-bubble-state>Ready to build</div>
+          </div>
+        </article>
+        <article class="placeholder-art">
+          <p>Arrange the code cards so neighbouring shells get checked again and again until the line is sorted.</p>
+        </article>
+      </section>
+      <article class="panel info-block">
+        <h2>See It First</h2>
+        <div class="demo-strip">
+          <div class="info-block">
+            <p class="mini-note">
+              Demo list: the numbers below will sort themselves so visitors can see the goal before building the code.
+            </p>
+            <div class="number-row" data-demo-row aria-label="Bubble sort demo numbers"></div>
+          </div>
+          <button class="ghost-button" type="button" data-demo-replay>Replay demo</button>
+        </div>
+      </article>
+      <article class="panel info-block">
+        <h2>Your Number List</h2>
+        <p class="mini-note">Build the program for this six-number list.</p>
+        <div class="number-row" data-puzzle-row aria-label="Current number list"></div>
+      </article>
+      <section class="page-grid">
+        <article class="panel info-block">
+          <h2>Build The Program</h2>
+          <p class="mini-note">
+            Drag pieces from the palette into the workspace. Wrong-but-possible structures are allowed.
+          </p>
+          <div class="assembly-layout">
+            <div class="assembly-column">
+              <h3>Palette</h3>
+              <div class="assembly-palette" data-assembly-palette></div>
+            </div>
+            <div class="assembly-column">
+              <h3>Workspace</h3>
+              <div class="assembly-workspace" data-assembly-workspace></div>
+            </div>
+          </div>
+        </article>
+        <article class="panel info-block">
+          <h2>Check Your Thinking</h2>
+          <div class="control-row">
+            <button class="action-button" type="button" data-check-order>Check order</button>
+            <button class="ghost-button" type="button" data-reset-order>Reset</button>
+            <button class="ghost-button" type="button" data-show-hint>Hint</button>
+          </div>
+          <div class="feedback-stack">
+            <div class="feedback-box" data-bubble-feedback aria-live="polite">
+              Arrange the pieces, then check whether your structure matches the bubble sort program.
+            </div>
+            <div class="hint-box" data-bubble-hint>
+              Hints will nudge you without revealing the full answer.
+            </div>
+          </div>
+          <section class="success-panel" data-bubble-success hidden>
+            <div class="success-burst" aria-hidden="true">
+              <span class="success-burst__item success-burst__item--flower">🌺</span>
+              <span class="success-burst__item success-burst__item--parrot">🦜</span>
+              <span class="success-burst__item success-burst__item--leaf">🌴</span>
+              <span class="success-burst__item success-burst__item--shell">🐚</span>
+            </div>
+            <div class="success-panel__content">
+              <div class="success-badge">Correct solution</div>
+              <h3>Sorted Shells</h3>
+              <p>
+                You built a working bubble sort shape and earned the key part
+                <strong data-bubble-key-part-repeat></strong>.
+              </p>
+              <div class="number-row" data-success-row aria-label="Sorted number animation"></div>
+              <button class="ghost-button" type="button" data-success-replay>Replay celebration</button>
+            </div>
+          </section>
+        </article>
+      </section>
+    </main>
+  </body>
+</html>
