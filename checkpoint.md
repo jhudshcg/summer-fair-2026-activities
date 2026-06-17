@@ -45,11 +45,14 @@ Current progress within this slice:
 ## Current slice notes
 
 - Bubble Sort now keeps the check button below the workspace and scrolls the feedback region into view after each answer check.
+- Bubble Sort uses a persistent results region with reserved mobile scroll space so success feedback can be reached by layout, not timing workarounds.
+- Bubble Sort now has a mobile overview toggle that compresses the assembly area and defaults on for narrow screens.
 
 ## Notes for upcoming slice
 
 - Treat Bubble Sort as a vertical slice of a shared block-assembly system, not as a one-off page feature.
 - Design the block palette, workspace, slots, sockets, snap behaviour and nested container rendering so they can be reused by Algorithm Maze.
+- Next slice: add a shared tap-to-place fallback for assembly activities so mobile users can select a block, see valid targets, and tap a destination instead of dragging across off-screen space.
 
 ## Implementation handoff notes
 

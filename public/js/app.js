@@ -266,12 +266,10 @@ function scrollToFeedback(target) {
     return;
   }
 
-  window.requestAnimationFrame(() => {
-    target.scrollIntoView({
-      behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",
-      block: "start",
-      inline: "nearest",
-    });
+  target.scrollIntoView({
+    behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",
+    block: "start",
+    inline: "nearest",
   });
 }
 

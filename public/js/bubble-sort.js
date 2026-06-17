@@ -368,20 +368,23 @@
     const puzzleRow = page.querySelector("[data-puzzle-row]");
     const demoRow = page.querySelector("[data-demo-row]");
     const successRow = page.querySelector("[data-success-row]");
+    const resultsRegion = page.querySelector("[data-bubble-results]");
     const feedback = page.querySelector("[data-bubble-feedback]");
     const hint = page.querySelector("[data-bubble-hint]");
-    const feedbackStack = page.querySelector(".feedback-stack");
     const stateTag = page.querySelector("[data-bubble-state]");
     const successPanel = page.querySelector("[data-bubble-success]");
     const keyPartMounts = page.querySelectorAll("[data-bubble-key-part], [data-bubble-key-part-repeat]");
+    const overviewToggle = page.querySelector("[data-overview-toggle]");
     const checkButton = page.querySelector("[data-check-order]");
     const resetButton = page.querySelector("[data-reset-order]");
     const hintButton = page.querySelector("[data-show-hint]");
     const demoReplay = page.querySelector("[data-demo-replay]");
     const successReplay = page.querySelector("[data-success-replay]");
+    const compactOverviewQuery = window.matchMedia("(max-width: 41.99rem)");
 
     let failedAttempts = 0;
     let hasSolvedThisAttempt = false;
+    let overviewEnabled = compactOverviewQuery.matches;
 
     keyPartMounts.forEach((node) => {
       node.textContent = activity.keyPart;
@@ -431,6 +434,17 @@
       successPanel.classList.add("is-celebrating");
     }
 
+    function renderOverviewToggle() {
+      if (!overviewToggle) {
+        return;
+      }
+
+      const enabled = compactOverviewQuery.matches && overviewEnabled;
+      page.classList.toggle("is-assembly-overview", enabled);
+      overviewToggle.setAttribute("aria-pressed", String(enabled));
+      overviewToggle.textContent = enabled ? "Overview: on" : "Overview: off";
+    }
+
     function applyBaseState() {
       failedAttempts = 0;
       hasSolvedThisAttempt = false;
@@ -445,6 +459,27 @@
     }
 
     applyBaseState();
+    renderOverviewToggle();
+
+    const handleOverviewMediaChange = (event) => {
+      overviewEnabled = event.matches;
+      renderOverviewToggle();
+    };
+
+    if (typeof compactOverviewQuery.addEventListener === "function") {
+      compactOverviewQuery.addEventListener("change", handleOverviewMediaChange);
+    } else if (typeof compactOverviewQuery.addListener === "function") {
+      compactOverviewQuery.addListener(handleOverviewMediaChange);
+    }
+
+    overviewToggle?.addEventListener("click", () => {
+      if (!compactOverviewQuery.matches) {
+        return;
+      }
+
+      overviewEnabled = !overviewEnabled;
+      renderOverviewToggle();
+    });
 
     checkButton.addEventListener("click", () => {
       const snapshot = engine.getSnapshot();
@@ -458,7 +493,7 @@
         window.summerFairApp.setCompleted(ACTIVITY_ID, true);
         window.summerFairApp.refreshPageChrome();
         animateFrames(successRow, successFrames);
-        window.summerFairApp.scrollToFeedback(feedbackStack || feedback);
+        window.summerFairApp.scrollToFeedback(resultsRegion || feedback);
         return;
       }
 
@@ -466,7 +501,7 @@
       setFeedback("Not quite yet. The structure is still off somewhere.", "error");
       setHint(getAdaptiveHint(snapshot, failedAttempts));
       stateTag.textContent = "Try again";
-      window.summerFairApp.scrollToFeedback(feedbackStack || feedback);
+      window.summerFairApp.scrollToFeedback(resultsRegion || feedback);
     });
 
     resetButton.addEventListener("click", () => {

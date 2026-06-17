@@ -58,6 +58,19 @@
           <p class="mini-note">
             Drag pieces from the palette into the workspace. Wrong-but-possible structures are allowed.
           </p>
+          <div class="assembly-tools">
+            <button
+              class="ghost-button assembly-overview-toggle"
+              type="button"
+              data-overview-toggle
+              aria-pressed="false"
+            >
+              Overview: off
+            </button>
+            <p class="mini-note assembly-tools__note">
+              Overview mode shrinks the assembly area on phones so the palette and workspace are easier to see together.
+            </p>
+          </div>
           <div class="assembly-layout">
             <div class="assembly-column">
               <h3>Palette</h3>
@@ -76,31 +89,33 @@
             <button class="ghost-button" type="button" data-reset-order>Reset</button>
             <button class="ghost-button" type="button" data-show-hint>Hint</button>
           </div>
-          <div class="feedback-stack">
-            <div class="feedback-box" data-bubble-feedback aria-live="polite">
-              Arrange the pieces, then check whether your structure matches the bubble sort program.
+          <section class="results-region" data-bubble-results>
+            <div class="feedback-stack">
+              <div class="feedback-box" data-bubble-feedback aria-live="polite">
+                Arrange the pieces, then check whether your structure matches the bubble sort program.
+              </div>
+              <div class="hint-box" data-bubble-hint>
+                Hints will nudge you without revealing the full answer.
+              </div>
             </div>
-            <div class="hint-box" data-bubble-hint>
-              Hints will nudge you without revealing the full answer.
-            </div>
-          </div>
-          <section class="success-panel" data-bubble-success hidden>
-            <div class="success-burst" aria-hidden="true">
-              <span class="success-burst__item success-burst__item--flower">🌺</span>
-              <span class="success-burst__item success-burst__item--parrot">🦜</span>
-              <span class="success-burst__item success-burst__item--leaf">🌴</span>
-              <span class="success-burst__item success-burst__item--shell">🐚</span>
-            </div>
-            <div class="success-panel__content">
-              <div class="success-badge">Correct solution</div>
-              <h3>Sorted Shells</h3>
-              <p>
-                You built a working bubble sort shape and earned the key part
-                <strong data-bubble-key-part-repeat></strong>.
-              </p>
-              <div class="number-row" data-success-row aria-label="Sorted number animation"></div>
-              <button class="ghost-button" type="button" data-success-replay>Replay celebration</button>
-            </div>
+            <section class="success-panel" data-bubble-success hidden>
+              <div class="success-burst" aria-hidden="true">
+                <span class="success-burst__item success-burst__item--flower">🌺</span>
+                <span class="success-burst__item success-burst__item--parrot">🦜</span>
+                <span class="success-burst__item success-burst__item--leaf">🌴</span>
+                <span class="success-burst__item success-burst__item--shell">🐚</span>
+              </div>
+              <div class="success-panel__content">
+                <div class="success-badge">Correct solution</div>
+                <h3>Sorted Shells</h3>
+                <p>
+                  You built a working bubble sort shape and earned the key part
+                  <strong data-bubble-key-part-repeat></strong>.
+                </p>
+                <div class="number-row" data-success-row aria-label="Sorted number animation"></div>
+                <button class="ghost-button" type="button" data-success-replay>Replay celebration</button>
+              </div>
+            </section>
           </section>
         </article>
       </section>

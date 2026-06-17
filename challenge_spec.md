@@ -70,6 +70,8 @@
     - the main feedback area should use an `aria-live` region
     - motion should remain short and easy to follow
     - when users check an answer on mobile, the page should bring the feedback region into view
+    - where success content can expand below the first feedback message, reserve enough vertical space for mobile scrolling without relying on delayed timing hacks
+    - assembly-based activities may offer a mobile overview mode that compresses the assembly area so palette and workspace are easier to see together
 
 ## Shared interaction tooling
 
