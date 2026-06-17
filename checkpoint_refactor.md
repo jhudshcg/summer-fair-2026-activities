@@ -4,6 +4,7 @@
 
 - Reduce total CSS line count aggressively while retaining current behaviour and overall visual identity.
 - Move away from one oversized shared stylesheet toward a smaller, clearer split between common page chrome, layout structure and puzzle-specific presentation.
+- Keep related shared client-side behaviour under the same refactor umbrella when layout, ornaments, browser chrome handling and page bootstrapping logic need to move with the CSS structure.
 - Make better use of vendored Pico CSS for container sizing, grid structure, article/card semantics, spacing rhythm, buttons and default typography so bespoke layout code is only kept where it materially improves the experience.
 - Keep the existing stylesheet available during the refactor as a reference source for current spacing, layout and responsive behaviour.
 
@@ -14,16 +15,21 @@
   - `public/css/style.css` for shared theme, tokens, status chips, page chrome and ornaments
   - `public/css/layout.css` for shared shell and responsive layout structure
   - `public/css/puzzles.css` for Bubble Sort and Algorithm Maze puzzle presentation
+- The checkpoint file itself is now `checkpoint_refactor.md` so the same running record can cover shared CSS and shared JS refactor work together.
 - Shared pages and active puzzle pages now load the split CSS files rather than the legacy stylesheet.
 - Shared decorative ornaments were moved to a common injected layer so the same markup and positioning logic can be reused across pages.
 - Decorative glyphs used for ornaments and celebration effects now render through CSS-generated content rather than copyable text nodes in the DOM.
-- Mobile browser chrome handling has been moved onto shared viewport-geometry logic in `public/js/app.js` using `visualViewport` plus safe-area insets.
-- Safari-specific ornament layout overrides have been removed; the current layout path is geometry-based rather than browser-family-based.
+- Shared mobile/browser-chrome logic has now been extracted from `public/js/app.js` into `public/js/mobile-layout.js` so ornament injection, viewport measurement, fallback detection and resize binding live in one dedicated file.
+- All live page entry points now load `public/js/mobile-layout.js` before `public/js/app.js`, and `app.js` has been reduced back toward shared metadata, progress and page-render orchestration.
+- Device testing showed that a geometry-only approach was not sufficient to fix the bottom toolbar mismatch on iPhone Safari.
+- The current ornament positioning path therefore uses geometry and safe-area measurements as the baseline, but adds a targeted iOS Safari fallback class and offset variables for the bottom-right ornaments.
+- Temporary browser-chrome diagnostics are now written to `console.log` from the shared mobile layout module so Safari measurements can still be inspected without adding visible debug UI.
 
 ## Current follow-up focus for this refactor
 
 - Keep the shared styling split stable while the remaining puzzle pages are implemented.
-- Tune ornament base offsets only if device testing shows a mismatch; do not reintroduce browser-specific layout branches unless the geometry approach is proven insufficient.
+- Tune the iOS Safari fallback offsets in `public/css/style.css` only as much as device testing requires, while keeping the generic geometry path intact for other browsers.
+- Keep mobile layout fixes inside `public/js/mobile-layout.js` unless they clearly belong to puzzle-specific code.
 - Revisit further CSS line-count trimming after more puzzle slices are live, so reductions do not fight still-moving UI requirements.
 
 ## Agreed file structure
@@ -134,4 +140,5 @@
 ## Recent validation completed
 
 - The shared CSS files and recent ornament-layout changes validated clean in the editor.
-- The final ornament-positioning route now depends on shared CSS variables fed by viewport geometry rather than Safari-only CSS overrides.
+- The shared mobile-layout extraction validated clean in the editor across `public/js/mobile-layout.js`, `public/js/app.js`, and the updated HTML entry points.
+- Fresh page loads confirmed that `public/js/mobile-layout.js` is loaded, the ornament layer still renders, and `window.summerFairMobileLayout` is available to `app.js` during startup.

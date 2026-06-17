@@ -55,6 +55,12 @@
     - prefer `clamp(...)`, shared spacing variables and container queries before adding extra breakpoints
 - Keep section cards on pale tropical surfaces with the established soft shadow and radius system rather than introducing new card treatments per page.
 - For status chips and similar small summary cards, use explicit text-and-icon layout structure so icons stay contained at narrow widths.
+- For content-heavy card grids like the home activity list, prefer explicit shared column caps over framework `auto-fit` behaviour:
+    - keep one column below `32rem`
+    - switch to two columns from `32rem`
+    - use three columns only at a later larger breakpoint
+    - if a lone final card sits on its own row in a two-column layout, let it span the full row
+    - equal-height cards are acceptable, but card contents should flow top-to-bottom with normal gaps rather than being stretched apart to fill height
 - For Bubble Sort specifically, keep the instructional card and demo animation readable at in-between tablet and landscape-phone widths before adding any further visual complexity.
 
 ## Shared activity constraints
