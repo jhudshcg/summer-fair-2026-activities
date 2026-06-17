@@ -5,36 +5,43 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Code Prediction Cove | Summer Fair 2026</title>
-    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/layout.css">
+    <link rel="stylesheet" href="css/puzzles.css">
     <script src="js/app.js" defer></script>
   </head>
   <body data-page="code-prediction">
-    <main class="site-shell">
-      <a class="back-link" href="index.html">← Back to all activities</a>
-      <section class="status-bar" data-status-bar aria-label="Current progress"></section>
-      <section class="page-header">
-        <div class="info-block panel">
+    <main class="container site-shell">
+      <section class="hero page-hero">
+        <div class="page-nav">
+          <span class="eyebrow">SHCG Southampton College</span>
+          <a class="back-link" href="index.html">← Back to all activities</a>
+        </div>
+        <article class="info-block">
           <h1 class="page-title" data-page-title></h1>
           <p class="lede" data-page-description></p>
-          <div class="tag" data-page-state></div>
-          <div class="tag" data-key-part></div>
-        </div>
-        <div class="placeholder-art">
-          <p>Coral code snippets and changing values will live here in the next slice.</p>
-        </div>
+          <div class="tag-row">
+            <div class="tag" data-page-state></div>
+            <div class="tag" data-key-part></div>
+          </div>
+        </article>
+        <section class="status-bar" data-status-bar aria-label="Current progress"></section>
       </section>
-      <section class="panel info-block">
+      <article class="placeholder-art">
+        <p>Coral code snippets and changing values will live here in the next slice.</p>
+      </article>
+      <article class="info-block">
         <h2>Planned interaction</h2>
-        <ul class="bullet-list">
+        <ul>
           <li>Generate small pseudocode examples with changing values.</li>
           <li>Accept typed answers and compare them against the generated output.</li>
           <li>Offer hints if the first answer is not correct.</li>
         </ul>
-      </section>
-      <section class="panel hint">
+      </article>
+      <article class="hint">
         <strong>Slice note:</strong>
         <span data-page-hint></span>
-      </section>
+      </article>
     </main>
   </body>
 </html>

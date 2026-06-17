@@ -151,6 +151,9 @@ function renderStatusBar() {
   const completedCount = getCompletedCount(progress);
   const unlocked = isHiddenUnlocked(progress);
   const isCompleted = activity ? Boolean(progress.completed[activity.id]) : false;
+  const progressSatisfied = activity ? isCompleted : completedCount === ACTIVITIES.filter((entry) => !entry.hidden).length;
+  const progressIcon = progressSatisfied ? "☑" : "☐";
+  const progressIconClassName = progressSatisfied ? "status-icon status-icon--complete" : "status-icon status-icon--pending";
   const activityLabel = activity ? `Activity ${activity.order} of ${ACTIVITIES.length}` : "Choose a challenge";
   const currentState = activity
     ? isCompleted
@@ -159,13 +162,25 @@ function renderStatusBar() {
         ? "Locked"
         : "Not completed yet"
     : `${completedCount} of 4 main activities complete`;
-  const statusIcon = isCompleted && activity ? activity.keyPart : unlocked ? "🔓" : "🔒";
-  const statusIconClassName = isCompleted && activity ? "status-icon status-icon--key-part" : "status-icon";
+  const statusIcon = activity
+    ? isCompleted
+      ? activity.keyPart
+      : activity.hidden && !unlocked
+        ? "🔒"
+        : "☐"
+    : unlocked
+      ? "🔓"
+      : "🔒";
+  const statusIconClassName = activity
+    ? isCompleted
+      ? "status-icon status-icon--key-part"
+      : "status-icon status-icon--pending"
+    : "status-icon";
 
   mount.innerHTML = "";
   mount.append(
     createStatusChip(activity ? activity.icon : "🌺", "Current activity", activityLabel),
-    createStatusChip("✅", "Progress", `${completedCount} of 4 main activities complete`),
+    createStatusChip(progressIcon, "Progress", `${completedCount} of 4 main activities complete`, progressIconClassName),
     createStatusChip(statusIcon, "Status", currentState, statusIconClassName)
   );
 }
@@ -287,7 +302,34 @@ function renderYear() {
   });
 }
 
+function renderPageOrnaments() {
+  if (document.querySelector(".page-ornaments")) {
+    return;
+  }
+
+  const ornaments = document.createElement("div");
+  ornaments.className = "page-ornaments";
+  ornaments.setAttribute("aria-hidden", "true");
+  ornaments.setAttribute("inert", "");
+
+  [
+    "page-ornament page-ornament--leaves",
+    "page-ornament page-ornament--palm",
+    "page-ornament page-ornament--parrot",
+    "page-ornament page-ornament--shell",
+  ].forEach((className) => {
+    const ornament = document.createElement("span");
+    ornament.className = className;
+    ornament.setAttribute("draggable", "false");
+    ornament.setAttribute("role", "presentation");
+    ornaments.append(ornament);
+  });
+
+  document.body.prepend(ornaments);
+}
+
 function init() {
+  renderPageOrnaments();
   renderYear();
   refreshPageChrome();
   renderActivityList();

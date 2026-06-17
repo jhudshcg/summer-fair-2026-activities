@@ -1,0 +1,13 @@
+/* Summer Fair 2026 shared layout structure and responsive composition. */
+
+.site-shell { position: relative; z-index: 1; display: grid; gap: var(--space-3); padding-block: clamp(1rem, 2.25vw, var(--space-4)); }
+.site-shell > *, .status-bar > *, .page-grid > *, .activity-list > * { min-width: 0; margin: 0; }
+.status-bar,.page-grid { display: grid; gap: var(--space-3); }
+
+@media (max-width: 32rem) { .site-shell { padding-inline: 0.6rem; } }
+@media (min-width: 42rem) {
+  .site-shell { gap: var(--space-4); }
+}
+@media (min-width: 64rem) {
+  .status-bar { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}

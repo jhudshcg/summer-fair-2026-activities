@@ -129,4 +129,4 @@ Recommended starting focus for the next dev session:
 - Build Algorithm Maze on top of the existing shared assembly engine and shared page shell.
 - Define the first maze program piece set, validation model and explorer animation as the next vertical slice.
 - Reuse the same standards for contrast, card treatment, breakpoint discipline and mobile-first testing that were locked in during the Bubble Sort refinement pass.
-- Early in the next slice, audit the shared CSS with the specific goal of simplifying ensure CSS file and specifically Bubble Sort's mobile overrides and making better use of Pico CSS classes and usage best practice where that reduces bespoke layout code.
+- Early in the next slice, audit the shared CSS with the specific goal of simplifying entire CSS file and specifically Bubble Sort's mobile overrides and making better use of Pico CSS classes and usage of best practice where that reduces bespoke layout code.

@@ -5,37 +5,40 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Bubble Sort Beach | Summer Fair 2026</title>
-    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/layout.css">
+    <link rel="stylesheet" href="css/puzzles.css">
     <script src="js/app.js" defer></script>
     <script src="js/vendor/Sortable.min.js" defer></script>
     <script src="js/assembly.js" defer></script>
     <script src="js/bubble-sort.js" defer></script>
   </head>
   <body data-page="bubble-sort">
-    <main class="site-shell" data-bubble-sort-page>
-      <a class="back-link" href="index.html">← Back to all activities</a>
-      <section class="status-bar" data-status-bar aria-label="Current progress"></section>
-      <section class="page-header">
-        <article class="info-block panel activity-summary">
-          <div class="info-block">
-            <h1 class="page-title">Bubble Sort Beach</h1>
-            <p class="lede">
-              Build the bubble sort program by placing loop blocks and conditions in the right structure.
-            </p>
-            <p class="mini-note">
-              Bubble sort compares neighbouring numbers and swaps them until the list is in order.
-            </p>
-          </div>
+    <main class="container site-shell" data-bubble-sort-page>
+      <section class="hero page-hero">
+        <div class="page-nav">
+          <span class="eyebrow">SHCG Southampton College</span>
+          <a class="back-link" href="index.html">← Back to all activities</a>
+        </div>
+        <div class="info-block">
+          <h1 class="page-title">Bubble Sort Beach</h1>
+          <p class="lede">
+            Build the bubble sort program by placing loop blocks and conditions in the right structure.
+          </p>
+          <p class="mini-note">
+            Bubble sort compares neighbouring numbers and swaps them until the list is in order.
+          </p>
           <div class="tag-row">
             <div class="tag">Key part: <span data-bubble-key-part></span></div>
             <div class="tag" data-bubble-state>Ready to build</div>
           </div>
-        </article>
-        <article class="placeholder-art">
-          <p>Arrange the code cards so neighbouring shells get checked again and again until the line is sorted.</p>
-        </article>
+        </div>
+        <section class="status-bar" data-status-bar aria-label="Current progress"></section>
       </section>
-      <article class="panel info-block">
+      <article class="placeholder-art">
+        <p>Arrange the code cards so neighbouring shells get checked again and again until the line is sorted.</p>
+      </article>
+      <article class="info-block">
         <h2>See It First</h2>
         <div class="demo-strip">
           <div class="info-block">
@@ -56,10 +59,10 @@
               </div>
             </div>
           </div>
-          <button class="ghost-button" type="button" data-demo-replay>Replay demo</button>
+            <button class="secondary outline" type="button" data-demo-replay>Replay demo</button>
         </div>
       </article>
-      <article class="panel info-block">
+          <article class="info-block">
         <h2>Your Number List</h2>
         <p class="mini-note">Build the program for this six-number list.</p>
         <div class="number-list-stack">
@@ -78,7 +81,7 @@
         </div>
       </article>
       <section class="page-grid">
-        <article class="panel info-block">
+        <article class="info-block">
           <h2>Build The Program</h2>
           <p class="mini-note">
             Drag pieces from the palette into the workspace. Wrong-but-possible structures are allowed.
@@ -88,7 +91,7 @@
           </p>
           <div class="assembly-tools">
             <button
-              class="ghost-button assembly-overview-toggle"
+              class="secondary outline assembly-overview-toggle"
               type="button"
               data-overview-toggle
               aria-pressed="false"
@@ -96,7 +99,7 @@
               Overview: off
             </button>
             <p class="mini-note assembly-tools__note">
-              Overview mode shrinks the assembly area on phones so the palette and workspace are easier to see together.
+              Overview mode shrinks the assembly area on phones and tablets so the palette and workspace are easier to see together.
             </p>
           </div>
           <div class="assembly-layout">
@@ -110,12 +113,12 @@
             </div>
           </div>
         </article>
-        <article class="panel info-block">
+        <article class="info-block">
           <h2>Check Your Thinking</h2>
           <div class="control-row">
-            <button class="action-button" type="button" data-check-order>Check order</button>
-            <button class="ghost-button" type="button" data-reset-order>Reset</button>
-            <button class="ghost-button" type="button" data-show-hint>Hint</button>
+            <button type="button" data-check-order>Check order</button>
+            <button class="secondary outline" type="button" data-reset-order>Reset</button>
+            <button class="secondary outline" type="button" data-show-hint>Hint</button>
           </div>
           <section class="results-region" data-bubble-results>
             <div class="feedback-stack">
@@ -128,10 +131,10 @@
             </div>
             <section class="success-panel" data-bubble-success hidden>
               <div class="success-burst" aria-hidden="true">
-                <span class="success-burst__item success-burst__item--flower">🌺</span>
-                <span class="success-burst__item success-burst__item--parrot">🦜</span>
-                <span class="success-burst__item success-burst__item--leaf">🌴</span>
-                <span class="success-burst__item success-burst__item--shell">🐚</span>
+                <span class="success-burst__item success-burst__item--flower" draggable="false" role="presentation"></span>
+                <span class="success-burst__item success-burst__item--parrot" draggable="false" role="presentation"></span>
+                <span class="success-burst__item success-burst__item--leaf" draggable="false" role="presentation"></span>
+                <span class="success-burst__item success-burst__item--shell" draggable="false" role="presentation"></span>
               </div>
               <div class="success-panel__content">
                 <div class="success-badge">Correct solution</div>
@@ -141,7 +144,7 @@
                   <strong data-bubble-key-part-repeat></strong>.
                 </p>
                 <div class="number-row" data-success-row aria-label="Sorted number animation"></div>
-                <button class="ghost-button" type="button" data-success-replay>Replay celebration</button>
+                <button class="secondary outline" type="button" data-success-replay>Replay celebration</button>
               </div>
             </section>
           </section>

@@ -9,13 +9,14 @@
       name="description"
       content="Short tropical-themed computational thinking challenges for visitors at the summer fair."
     >
-    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/layout.css">
     <script src="js/app.js" defer></script>
   </head>
   <body data-page="index">
-    <main class="site-shell">
+    <main class="container site-shell">
       <section class="hero">
-        <span class="eyebrow">South Hampshire College Group</span>
+        <span class="eyebrow">SHCG Southampton College</span>
         <h1>Tropical Computing Trails</h1>
         <p class="support-copy">
           Pick a challenge, learn some computational thinking, and unlock the hidden reef finale.
@@ -24,14 +25,14 @@
 
       <section class="status-bar" data-status-bar aria-label="Current progress"></section>
 
-      <section class="panel">
+      <article>
         <p class="lede">
           Each activity is designed to take around 3 to 6 minutes. They are mobile friendly,
           re-attemptable, and share progress on this device.
         </p>
-      </section>
+      </article>
 
-      <section class="activity-list" data-activity-list aria-label="Challenge list"></section>
+      <section class="activity-list grid" data-activity-list aria-label="Challenge list"></section>
 
       <p class="footer-note">
         Static prototype scaffold for Summer Fair <span data-year></span>. Challenge mechanics land in the next slices.

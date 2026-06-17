@@ -7,11 +7,22 @@
   const ACTIVITY_ID = "bubble-sort";
   const DEMO_NUMBERS = [7, 3, 6, 2, 5];
   const LOOP_IDS = ["outer-loop", "inner-loop"];
+  const ANIMATION_SPEED = 0.85;
   const ANIMATION_TIMINGS = {
-    compare: 560,
-    swap: 1700,
-    settle: 420,
-    complete: 1650,
+    compare: Math.round(560 * ANIMATION_SPEED),
+    swap: Math.round(1160 * ANIMATION_SPEED),
+    settle: Math.round(420 * ANIMATION_SPEED),
+    complete: Math.round(1650 * ANIMATION_SPEED),
+  };
+
+  const FLIP_DURATION = {
+    compare: Math.round(520 * ANIMATION_SPEED),
+    swap: Math.round(1160 * ANIMATION_SPEED),
+  };
+
+  const FLIP_EASING = {
+    compare: "cubic-bezier(0.22, 1, 0.36, 1)",
+    swap: "cubic-bezier(0.16, 0.84, 0.32, 1)",
   };
 
   function uniqueNumbers(count, min, max) {
@@ -26,20 +37,24 @@
 
   function buildFrames(numbers) {
     const values = [...numbers];
-    const frames = [{ numbers: [...values], active: [], swapped: false, complete: false, phase: "settle" }];
+    const frames = [{ numbers: [...values], active: [], swapped: false, complete: false, completeIndices: [], phase: "settle" }];
+
+    let completeIndices = [];
 
     for (let pass = 2; pass <= values.length; pass += 1) {
       for (let index = 0; index <= values.length - pass; index += 1) {
-        frames.push({ numbers: [...values], active: [index, index + 1], swapped: false, complete: false, phase: "compare" });
+        frames.push({ numbers: [...values], active: [index, index + 1], swapped: false, complete: false, completeIndices: [...completeIndices], phase: "compare" });
         if (values[index] > values[index + 1]) {
           [values[index], values[index + 1]] = [values[index + 1], values[index]];
-          frames.push({ numbers: [...values], active: [index, index + 1], swapped: true, complete: false, phase: "swap" });
-          frames.push({ numbers: [...values], active: [index, index + 1], swapped: false, complete: false, phase: "settle" });
+          frames.push({ numbers: [...values], active: [index, index + 1], swapped: true, complete: false, completeIndices: [...completeIndices], phase: "swap" });
         }
       }
+
+      completeIndices = Array.from({ length: pass - 1 }, (_, offset) => values.length - 1 - offset).reverse();
+      frames.push({ numbers: [...values], active: [], swapped: false, complete: false, completeIndices: [...completeIndices], phase: "settle" });
     }
 
-    frames.push({ numbers: [...values], active: [], swapped: false, complete: true, phase: "complete" });
+    frames.push({ numbers: [...values], active: [], swapped: false, complete: true, completeIndices: values.map((_, index) => index), phase: "complete" });
     return frames;
   }
 
@@ -55,7 +70,7 @@
       }
     }
 
-    if (frame.complete) {
+    if (frame.complete || frame.completeIndices?.includes(index)) {
       chip.classList.add("is-complete");
     }
   }
@@ -99,8 +114,8 @@
             { transform: "translate(0px, 0px)" },
           ],
           {
-            duration: frame.phase === "swap" ? 1450 : 520,
-            easing: "cubic-bezier(0.22, 1, 0.36, 1)",
+            duration: frame.phase === "swap" ? FLIP_DURATION.swap : FLIP_DURATION.compare,
+            easing: frame.phase === "swap" ? FLIP_EASING.swap : FLIP_EASING.compare,
             composite: "add",
           },
         );
@@ -112,8 +127,8 @@
       chip.style.setProperty("--flip-y", `${deltaY}px`);
       void chip.offsetWidth;
       chip.style.transition = frame.phase === "swap"
-        ? "transform 1450ms cubic-bezier(0.22, 1, 0.36, 1), background-color 220ms ease, color 220ms ease, box-shadow 220ms ease"
-        : "transform 520ms cubic-bezier(0.22, 1, 0.36, 1), background-color 220ms ease, color 220ms ease, box-shadow 220ms ease";
+        ? `transform ${FLIP_DURATION.swap}ms ${FLIP_EASING.swap}, background-color 180ms ease, color 180ms ease, box-shadow 180ms ease`
+        : `transform ${FLIP_DURATION.compare}ms ${FLIP_EASING.compare}, background-color 180ms ease, color 180ms ease, box-shadow 180ms ease`;
 
       window.requestAnimationFrame(() => {
         chip.style.setProperty("--flip-x", "0px");
@@ -392,7 +407,7 @@
     const hintButton = page.querySelector("[data-show-hint]");
     const demoReplay = page.querySelector("[data-demo-replay]");
     const successReplay = page.querySelector("[data-success-replay]");
-    const compactOverviewQuery = window.matchMedia("(max-width: 41.99rem)");
+    const compactOverviewQuery = window.matchMedia("(max-width: 63.99rem)");
 
     let failedAttempts = 0;
     let hasSolvedThisAttempt = false;
@@ -453,8 +468,9 @@
 
       const enabled = compactOverviewQuery.matches && overviewEnabled;
       page.classList.toggle("is-assembly-overview", enabled);
+      overviewToggle.disabled = !compactOverviewQuery.matches;
       overviewToggle.setAttribute("aria-pressed", String(enabled));
-      overviewToggle.textContent = enabled ? "Overview: on" : "Overview: off";
+      overviewToggle.textContent = compactOverviewQuery.matches ? (enabled ? "Overview: on" : "Overview: off") : "Overview unavailable";
     }
 
     function applyBaseState() {
