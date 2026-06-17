@@ -1003,6 +1003,18 @@ a {
 }
 
 @media (max-width: 41.99rem) {
+  [data-page="bubble-sort"] .number-index--demo .number-index__values {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 0.45rem;
+    width: 100%;
+  }
+
+  [data-page="bubble-sort"] .number-index__values {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 0.35rem;
+    width: 100%;
+  }
+
   .assembly-overview-toggle {
     display: inline-flex;
   }
