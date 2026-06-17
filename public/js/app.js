@@ -328,8 +328,49 @@ function renderPageOrnaments() {
   document.body.prepend(ornaments);
 }
 
+function updateBrowserChromeOffsets() {
+  const root = document.documentElement;
+  const viewport = window.visualViewport;
+
+  if (!viewport) {
+    root.style.setProperty("--browser-top-offset", "0px");
+    root.style.setProperty("--browser-bottom-offset", "0px");
+    root.style.setProperty("--browser-right-offset", "0px");
+    return;
+  }
+
+  const layoutWidth = Math.max(window.innerWidth, document.documentElement.clientWidth);
+  const layoutHeight = Math.max(window.innerHeight, document.documentElement.clientHeight);
+  const topInset = Math.max(0, viewport.offsetTop);
+  const rightInset = Math.max(0, layoutWidth - (viewport.width + viewport.offsetLeft));
+  const bottomInset = Math.max(0, layoutHeight - (viewport.height + viewport.offsetTop));
+
+  // Ignore sub-pixel noise so ornaments do not drift on browsers without visible overlay chrome.
+  const topOffset = topInset > 2 ? topInset : 0;
+  const rightOffset = rightInset > 2 ? rightInset : 0;
+  const bottomOffset = bottomInset > 2 ? bottomInset : 0;
+
+  root.style.setProperty("--browser-top-offset", `${Math.round(topOffset)}px`);
+  root.style.setProperty("--browser-right-offset", `${Math.round(rightOffset)}px`);
+  root.style.setProperty("--browser-bottom-offset", `${Math.round(bottomOffset)}px`);
+}
+
+function bindBrowserChromeOffsets() {
+  updateBrowserChromeOffsets();
+
+  const viewport = window.visualViewport;
+  if (viewport) {
+    viewport.addEventListener("resize", updateBrowserChromeOffsets);
+    viewport.addEventListener("scroll", updateBrowserChromeOffsets);
+  }
+
+  window.addEventListener("resize", updateBrowserChromeOffsets);
+  window.addEventListener("orientationchange", updateBrowserChromeOffsets);
+}
+
 function init() {
   renderPageOrnaments();
+  bindBrowserChromeOffsets();
   renderYear();
   refreshPageChrome();
   renderActivityList();

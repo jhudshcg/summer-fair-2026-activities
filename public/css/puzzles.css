@@ -18,6 +18,42 @@
 :where(.demo-strip,.activity-summary,.control-row,.feedback-stack,.results-region,.assembly-column,.assembly-tools,.assembly-surface,.assembly-sequence) { display: grid; gap: var(--space-2); }
 .demo-strip > button { justify-self: start; }
 .control-row { grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr)); }
+
+.maze-demo,.maze-stage { display: grid; gap: var(--space-2); }
+.maze-demo > button { justify-self: start; }
+.maze-command-strip { display: flex; flex-wrap: wrap; gap: 0.55rem; }
+.maze-command {
+  display: inline-flex; align-items: center; padding: 0.5rem 0.8rem; border-radius: 999px; color: var(--color-night); font-weight: 800;
+  background: rgba(255, 255, 255, 0.92); box-shadow: var(--shadow-soft);
+}
+.maze-board {
+  --maze-width: min(100%, 32rem);
+  position: relative; width: var(--maze-width); max-width: 100%; padding: clamp(0.6rem, 2vw, 0.9rem); border: 1px solid rgba(23, 50, 51, 0.12);
+  border-radius: var(--radius-large); overflow: hidden; background: linear-gradient(180deg, rgba(178, 236, 239, 0.8), rgba(255, 247, 223, 0.92)); box-shadow: var(--shadow-soft);
+}
+.maze-board--demo { --maze-width: min(100%, 24rem); }
+.maze-board__frame { position: relative; aspect-ratio: 1.62; border-radius: calc(var(--radius-large) - 0.3rem); overflow: hidden; background: radial-gradient(circle at 18% 18%, rgba(255, 179, 71, 0.32), transparent 20%), linear-gradient(145deg, rgba(214, 249, 221, 0.96), rgba(247, 239, 207, 0.96)); }
+.maze-board__svg { display: block; width: 100%; height: 100%; }
+.maze-trail-base { fill: none; stroke: rgba(232, 197, 139, 0.94); stroke-linecap: round; stroke-linejoin: round; stroke-width: 24; }
+.maze-trail-top { fill: none; stroke: rgba(194, 145, 92, 0.42); stroke-dasharray: 1 16; stroke-linecap: round; stroke-linejoin: round; stroke-width: 10; }
+.maze-trail-node { fill: rgba(255, 240, 220, 0.96); stroke: rgba(208, 165, 112, 0.78); stroke-width: 4; }
+.maze-water-dot { fill: rgba(60, 185, 201, 0.16); }
+.maze-start-badge,.maze-finish-badge { fill: rgba(255, 255, 255, 0.9); stroke: rgba(23, 50, 51, 0.12); stroke-width: 1.5; }
+.maze-label { fill: var(--color-night); font: 800 13px/1 var(--font-body); letter-spacing: 0.05em; text-transform: uppercase; }
+.maze-finish-label { fill: var(--color-leaf-deep); }
+.maze-explorer {
+  position: absolute; width: clamp(1rem, 4.2vw, 1.35rem); aspect-ratio: 1; border-radius: 999px; left: var(--maze-x, 0%); top: var(--maze-y, 0%);
+  background: radial-gradient(circle at 35% 35%, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.08) 38%), linear-gradient(180deg, rgba(255, 179, 71, 1), rgba(255, 111, 97, 0.96));
+  border: 2px solid rgba(255, 255, 255, 0.95); box-shadow: 0 8px 18px rgba(23, 50, 51, 0.24);
+  transform: translate(-50%, -50%) rotate(var(--maze-rotation, 0deg)); transition: left 340ms cubic-bezier(0.22, 1, 0.36, 1), top 340ms cubic-bezier(0.22, 1, 0.36, 1), transform 240ms ease, box-shadow 180ms ease;
+}
+.maze-explorer::after {
+  content: ""; position: absolute; left: 50%; top: -0.38rem; width: 0; height: 0; transform: translateX(-50%);
+  border-left: 0.28rem solid transparent; border-right: 0.28rem solid transparent; border-bottom: 0.42rem solid rgba(23, 50, 51, 0.95);
+}
+.maze-explorer.is-stuck { box-shadow: 0 0 0 0.3rem rgba(255, 111, 97, 0.22), 0 8px 18px rgba(23, 50, 51, 0.24); }
+.maze-explorer.is-finished { box-shadow: 0 0 0 0.35rem rgba(27, 127, 90, 0.18), 0 10px 22px rgba(23, 50, 51, 0.28); }
+
 .assembly-tools { gap: 0.35rem; }
 .assembly-tools__prompt,.assembly-tools__note { max-width: 36rem; }
 .assembly-tools__note { margin: 0 0 0.45rem; font-size: 0.74rem; }
@@ -71,7 +107,7 @@
 .number-chip.is-complete { color: var(--color-night); background: radial-gradient(circle at 50% 18%, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0) 22%), linear-gradient(180deg, rgba(184, 236, 209, 0.98), rgba(110, 197, 159, 0.94)); }
 @keyframes shell-swap-pulse { 0% { transform: translateY(-1px) scale(1.01); } 55% { transform: translateY(-4px) scale(1.05) rotate(-1deg); } 100% { transform: translateY(-3px) scale(1.04); } }
 
-[data-bubble-sort-page] {
+:where([data-bubble-sort-page],[data-algorithm-maze-page]) {
   --assembly-columns: 1fr; --assembly-gap: var(--space-2); --assembly-pad: var(--space-2); --assembly-surface-min: 18rem;
   --assembly-slot-min: 3.5rem; --assembly-slot-pad: 0.8rem; --assembly-piece-gap: 0.6rem; --assembly-piece-pad: 0.9rem;
   --assembly-kicker-size: 0.75rem; --assembly-label-size: 1rem; --assembly-socket-gap: 0.55rem; --assembly-socket-pad: 0.75rem;
@@ -154,14 +190,14 @@
 
 @media (max-width: 63.99rem) {
   .assembly-tools { display: grid; }
-  [data-bubble-sort-page].is-assembly-overview {
+  :where([data-bubble-sort-page],[data-algorithm-maze-page]).is-assembly-overview {
     --assembly-columns: repeat(2, minmax(0, 1fr)); --assembly-gap: 0.75rem; --assembly-pad: var(--space-1); --assembly-surface-min: 11rem;
     --assembly-slot-min: 2.75rem; --assembly-slot-pad: 0.55rem; --assembly-piece-gap: 0.35rem; --assembly-piece-pad: 0.6rem;
     --assembly-kicker-size: 0.65rem; --assembly-label-size: 0.82rem; --assembly-socket-gap: 0.4rem; --assembly-socket-pad: 0.45rem;
     --assembly-socket-single-min: 3.8rem; --assembly-socket-sequence-min: 5rem; --assembly-heading-size: 1.15rem; --assembly-heading-gap: 0.1rem;
   }
-  [data-bubble-sort-page].is-assembly-overview .assembly-layout { margin-inline: -0.3rem; }
-  [data-bubble-sort-page].is-assembly-overview .assembly-column { gap: var(--space-1); }
+  :where([data-bubble-sort-page],[data-algorithm-maze-page]).is-assembly-overview .assembly-layout { margin-inline: -0.3rem; }
+  :where([data-bubble-sort-page],[data-algorithm-maze-page]).is-assembly-overview .assembly-column { gap: var(--space-1); }
 }
 @media (max-width: 32rem) {
   .number-list-stack,.number-row,.number-index__values { width: 100%; }
@@ -169,9 +205,11 @@
   .number-list-stack--demo { --number-gap: 0.45rem; }
   .number-chip { min-width: 0; min-height: 0; aspect-ratio: 3.8 / 4.25; padding: 0.92rem 0.55rem 0.72rem; font-size: 1rem; }
   .number-list-stack--demo .number-chip { padding: 0.98rem 0.65rem 0.76rem; }
+  .maze-command-strip { gap: 0.45rem; }
+  .maze-command { font-size: 0.88rem; }
 }
 @media (min-width: 42rem) {
   .feedback-stack { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  [data-bubble-sort-page] { --assembly-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); }
+  :where([data-bubble-sort-page],[data-algorithm-maze-page]) { --assembly-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); }
   .results-region { padding-bottom: 0; }
 }

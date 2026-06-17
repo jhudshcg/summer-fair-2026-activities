@@ -1,6 +1,6 @@
 <!doctype html>
-<!-- Placeholder shell for the algorithm maze activity page. -->
-<html lang="en">
+<!-- Algorithm Maze activity page using the shared block assembly system. -->
+<html lang="en" data-theme="light">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -9,39 +9,122 @@
     <link rel="stylesheet" href="css/layout.css">
     <link rel="stylesheet" href="css/puzzles.css">
     <script src="js/app.js" defer></script>
+    <script src="js/vendor/Sortable.min.js" defer></script>
+    <script src="js/assembly.js" defer></script>
+    <script src="js/algorithm-maze.js" defer></script>
   </head>
   <body data-page="algorithm-maze">
-    <main class="container site-shell">
+    <main class="container site-shell" data-algorithm-maze-page>
       <section class="hero page-hero">
         <div class="page-nav">
           <span class="eyebrow">SHCG Southampton College</span>
           <a class="back-link" href="index.html">← Back to all activities</a>
         </div>
-        <article class="info-block">
-          <h1 class="page-title" data-page-title></h1>
-          <p class="lede" data-page-description></p>
+        <div class="info-block">
+          <h1 class="page-title">Algorithm Lagoon Maze</h1>
+          <p class="lede">Build a tiny program that guides the explorer along the island trail to the finish.</p>
+          <p class="mini-note">The explorer follows each instruction exactly, so loops and choices matter at every fork.</p>
           <div class="tag-row">
-            <div class="tag" data-page-state></div>
-            <div class="tag" data-key-part></div>
+            <div class="tag">Key part: <span data-maze-key-part></span></div>
+            <div class="tag" data-maze-state>Ready to map the route</div>
           </div>
-        </article>
+        </div>
         <section class="status-bar" data-status-bar aria-label="Current progress"></section>
       </section>
       <article class="placeholder-art">
-        <p>Paths, branches and loop choices will guide visitors through a tropical maze here.</p>
+        <p>Use repeated steps and a smart fork choice to guide the explorer through the lagoon trail.</p>
       </article>
       <article class="info-block">
-        <h2>Planned interaction</h2>
-        <ul>
-          <li>Choose the next step based on algorithm rules and feedback.</li>
-          <li>Use clear success and hint messages after each choice.</li>
-          <li>Reveal one key part when the route is completed.</li>
-        </ul>
+        <h2>See It First</h2>
+        <div class="maze-demo">
+          <div class="info-block">
+            <p class="mini-note">This tiny example shows how the explorer obeys the program one step at a time.</p>
+            <div class="maze-command-strip" aria-label="Demo commands">
+              <span class="maze-command">move forward</span>
+              <span class="maze-command">turn right</span>
+              <span class="maze-command">move forward</span>
+            </div>
+            <div class="maze-stage">
+              <div class="maze-board maze-board--demo" data-demo-board aria-label="Demo maze route"></div>
+            </div>
+          </div>
+          <button class="secondary outline" type="button" data-demo-replay>Replay demo</button>
+        </div>
       </article>
-      <article class="hint">
-        <strong>Slice note:</strong>
-        <span data-page-hint></span>
+      <article class="info-block activity-summary">
+        <h2>Island Trail</h2>
+        <p class="lede">Start on the left, travel along the beach path, then make the correct fork choice to reach the coral gate.</p>
+        <p class="mini-note">The explorer begins facing east. One long straight section should be repeated instead of written out again and again.</p>
+        <div class="maze-stage">
+          <div class="maze-board" data-puzzle-board aria-label="Algorithm maze"></div>
+        </div>
       </article>
+      <section class="page-grid">
+        <article class="info-block">
+          <h2>Build The Program</h2>
+          <p class="mini-note">Drag the blocks into a program. Wrong-but-possible structures are still allowed.</p>
+          <p class="mini-note assembly-tools__prompt">Use the loop for the repeated straight path, then use the choice block at the fork.</p>
+          <div class="assembly-tools">
+            <button
+              class="secondary outline assembly-overview-toggle"
+              type="button"
+              data-overview-toggle
+              aria-pressed="false"
+            >
+              Overview: off
+            </button>
+            <p class="mini-note assembly-tools__note">
+              Overview mode compresses the assembly area on phones and tablets so the palette and workspace are easier to compare.
+            </p>
+          </div>
+          <div class="assembly-layout">
+            <div class="assembly-column">
+              <h3>Palette</h3>
+              <div class="assembly-palette" data-assembly-palette></div>
+            </div>
+            <div class="assembly-column">
+              <h3>Workspace</h3>
+              <div class="assembly-workspace" data-assembly-workspace></div>
+            </div>
+          </div>
+        </article>
+        <article class="info-block">
+          <h2>Test The Route</h2>
+          <div class="control-row">
+            <button type="button" data-run-program>Run program</button>
+            <button class="secondary outline" type="button" data-check-solution>Check solution</button>
+            <button class="secondary outline" type="button" data-reset-program>Reset</button>
+            <button class="secondary outline" type="button" data-show-hint>Hint</button>
+          </div>
+          <section class="results-region" data-maze-results>
+            <div class="feedback-stack">
+              <div class="feedback-box" data-maze-feedback aria-live="polite">
+                Build the route, then run the program to see where the explorer goes.
+              </div>
+              <div class="hint-box" data-maze-hint>
+                Hints will help with the loop, the fork choice and the turn order.
+              </div>
+            </div>
+            <section class="success-panel" data-maze-success hidden>
+              <div class="success-burst" aria-hidden="true">
+                <span class="success-burst__item success-burst__item--flower" draggable="false" role="presentation"></span>
+                <span class="success-burst__item success-burst__item--parrot" draggable="false" role="presentation"></span>
+                <span class="success-burst__item success-burst__item--leaf" draggable="false" role="presentation"></span>
+                <span class="success-burst__item success-burst__item--shell" draggable="false" role="presentation"></span>
+              </div>
+              <div class="success-panel__content">
+                <div class="success-badge">Trail completed</div>
+                <h3>Coral Gate Opened</h3>
+                <p>
+                  You guided the explorer to the finish and earned the key part
+                  <strong data-maze-key-part-repeat></strong>.
+                </p>
+                <button class="secondary outline" type="button" data-success-replay>Replay route</button>
+              </div>
+            </section>
+          </section>
+        </article>
+      </section>
     </main>
   </body>
 </html>

@@ -7,6 +7,25 @@
 - Make better use of vendored Pico CSS for container sizing, grid structure, article/card semantics, spacing rhythm, buttons and default typography so bespoke layout code is only kept where it materially improves the experience.
 - Keep the existing stylesheet available during the refactor as a reference source for current spacing, layout and responsive behaviour.
 
+## Current state after the recent refactor work
+
+- `public/css/old_style.css` is now the frozen reference copy and is no longer part of the active page load path.
+- The active stylesheet split is in place across the site:
+  - `public/css/style.css` for shared theme, tokens, status chips, page chrome and ornaments
+  - `public/css/layout.css` for shared shell and responsive layout structure
+  - `public/css/puzzles.css` for Bubble Sort and Algorithm Maze puzzle presentation
+- Shared pages and active puzzle pages now load the split CSS files rather than the legacy stylesheet.
+- Shared decorative ornaments were moved to a common injected layer so the same markup and positioning logic can be reused across pages.
+- Decorative glyphs used for ornaments and celebration effects now render through CSS-generated content rather than copyable text nodes in the DOM.
+- Mobile browser chrome handling has been moved onto shared viewport-geometry logic in `public/js/app.js` using `visualViewport` plus safe-area insets.
+- Safari-specific ornament layout overrides have been removed; the current layout path is geometry-based rather than browser-family-based.
+
+## Current follow-up focus for this refactor
+
+- Keep the shared styling split stable while the remaining puzzle pages are implemented.
+- Tune ornament base offsets only if device testing shows a mismatch; do not reintroduce browser-specific layout branches unless the geometry approach is proven insufficient.
+- Revisit further CSS line-count trimming after more puzzle slices are live, so reductions do not fight still-moving UI requirements.
+
 ## Agreed file structure
 
 - `public/css/old_style.css`
@@ -111,3 +130,8 @@
 - Bubble Sort remains usable with the assembly workspace, demo chips, success state and overview mode intact.
 - No editor-reported CSS errors are introduced in the new files.
 - The total active production CSS line count is materially lower than before.
+
+## Recent validation completed
+
+- The shared CSS files and recent ornament-layout changes validated clean in the editor.
+- The final ornament-positioning route now depends on shared CSS variables fed by viewport geometry rather than Safari-only CSS overrides.
