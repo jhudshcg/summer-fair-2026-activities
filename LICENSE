@@ -1,0 +1,87 @@
+Summer Fair 2026 Activities Licensing
+==========================
+
+Scope
+-----
+
+Unless a file says otherwise, this repository uses a split licensing model:
+
+1. Source code and project-authored technical assets are licensed under the MIT License.
+2. Project-authored non-code content is licensed under Creative Commons Attribution 4.0 International (CC BY 4.0).
+3. Third-party vendored dependencies keep their own original licenses and are not re-licensed by this file.
+
+What Counts As Code Under MIT
+-----------------------------
+
+The MIT License applies to project-authored source files such as:
+
+- HTML, CSS, and JavaScript in this repository
+- project-authored inline SVG/data-URI artwork embedded in source files
+- project-authored configuration and workflow files
+
+MIT License
+-----------
+
+Copyright (c) 2026 the contributors to this repository
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+What Counts As Non-Code Content Under CC BY 4.0
+-----------------------------------------------
+
+CC BY 4.0 applies to original non-code content in this repository, including:
+
+- challenge copy and educational wording
+- page text, instructional text, and specification prose
+- original visual direction and placeholder creative content authored for this project
+
+Creative Commons Attribution 4.0 International
+----------------------------------------------
+
+The non-code content described above is licensed under the Creative Commons
+Attribution 4.0 International License.
+
+You are free to:
+
+- Share: copy and redistribute the material in any medium or format
+- Adapt: remix, transform, and build upon the material for any purpose, even commercially
+
+Under the following term:
+
+- Attribution: You must give appropriate credit, provide a link to the license,
+  and indicate if changes were made.
+
+License URL:
+<https://creativecommons.org/licenses/by/4.0/>
+
+Third-Party Components
+----------------------
+
+The following vendored third-party files are included under their own MIT licenses:
+
+- public/js/vendor/Sortable.min.js — SortableJS 1.15.7 — MIT
+- public/css/vendor/pico.min.css — Pico CSS 2.1.1 — MIT
+
+Notes On Images And Celebration Icons
+-------------------------------------
+
+- public/images currently contains no standalone image assets.
+- The success-state flower, parrot, palm, and shell visuals are Unicode emoji characters
+  in public/bubble-sort.html, rendered by the user's platform emoji font at runtime.
+- The repository does not currently bundle separate image files for those celebration icons.
