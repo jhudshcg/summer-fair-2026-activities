@@ -729,7 +729,7 @@ a {
 
 .success-panel {
   position: relative;
-  overflow: clip;
+  overflow: visible;
   display: grid;
   gap: var(--space-2);
   background: linear-gradient(155deg, rgba(27, 127, 90, 0.26), rgba(255, 179, 71, 0.3));
@@ -770,29 +770,29 @@ a {
 
 .success-burst__item {
   position: absolute;
-  font-size: clamp(2.8rem, 6vw, 3.4rem);
+  font-size: clamp(8.4rem, 18vw, 10.2rem);
   opacity: 0;
   transform: translateY(1rem) scale(0.7);
 }
 
 .success-burst__item--parrot {
-  top: 0.35rem;
-  right: 0.55rem;
+  top: -1.3rem;
+  right: 20%;
 }
 
 .success-burst__item--flower {
-  top: 0.8rem;
-  left: 0.8rem;
+  top: -0.9rem;
+  left: 20%;
 }
 
 .success-burst__item--leaf {
-  bottom: 1.1rem;
-  left: 1.2rem;
+  bottom: -1.1rem;
+  left: 0.7rem;
 }
 
 .success-burst__item--shell {
-  bottom: 0.75rem;
-  right: 1.2rem;
+  bottom: -1.45rem;
+  right: 0.8rem;
 }
 
 .success-panel.is-celebrating {
