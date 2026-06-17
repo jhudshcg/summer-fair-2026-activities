@@ -193,12 +193,6 @@
         label: "for pass from 2 to length(numbers):",
       },
       {
-        id: "reset-swapped",
-        kind: "statement",
-        kicker: "Step",
-        label: "set swapped to false",
-      },
-      {
         id: "inner-loop",
         kind: "container",
         kicker: "Loop",
@@ -229,10 +223,25 @@
         label: "for index from 0 to length(numbers) - pass:",
       },
       {
-        id: "compare-swap",
+        id: "compare-condition",
+        kind: "container",
+        kicker: "Check",
+        label: "if numbers[index] > numbers[index + 1]:",
+        sockets: [
+          {
+            key: "body",
+            mode: "sequence",
+            label: "If true",
+            emptyLabel: "Drop a card into this check",
+            acceptKinds: ["statement", "container"],
+          },
+        ],
+      },
+      {
+        id: "swap-step",
         kind: "statement",
         kicker: "Step",
-        label: "if numbers[index] > numbers[index + 1], swap them and set swapped to true",
+        label: "swap them",
       },
     ];
   }
@@ -305,24 +314,24 @@
       return "Think about which condition controls the bigger repeat and which belongs inside it.";
     }
 
-    if (!getBody(snapshot, topLoopId).includes("reset-swapped")) {
-      return "The reset step belongs inside a loop, before the comparison work starts again.";
-    }
-
-    if (getBody(snapshot, topLoopId)[0] !== "reset-swapped") {
-      return "Inside the bigger repeat, reset before the comparison work.";
-    }
-
     if (!getBody(snapshot, topLoopId).includes(nestedLoopId)) {
       return "The smaller repeat should sit inside the bigger one.";
     }
 
-    if (!getBody(snapshot, nestedLoopId).includes("compare-swap")) {
-      return "The compare-and-swap step belongs inside the smaller repeated section.";
+    if (!getBody(snapshot, nestedLoopId).includes("compare-condition")) {
+      return "The comparison block belongs inside the smaller repeated section.";
     }
 
-    if (getBody(snapshot, nestedLoopId)[0] !== "compare-swap") {
-      return "Inside the smaller repeat, the compare-and-swap step should be the work being repeated.";
+    if (getBody(snapshot, nestedLoopId)[0] !== "compare-condition") {
+      return "Inside the smaller repeat, compare the two neighbouring numbers before anything else.";
+    }
+
+    if (!getBody(snapshot, "compare-condition").includes("swap-step")) {
+      return "Swapping only happens inside the comparison block.";
+    }
+
+    if (getBody(snapshot, "compare-condition")[0] !== "swap-step") {
+      return "Place the swap step inside the comparison block.";
     }
 
     return attemptCount > 1
@@ -343,14 +352,17 @@
     const nestedLoopId = LOOP_IDS.find((pieceId) => pieceId !== topLoopId);
     const outer = snapshot.sockets[topLoopId];
     const inner = snapshot.sockets[nestedLoopId];
+    const compare = snapshot.sockets["compare-condition"];
 
     return (
       Boolean(outer) &&
       Boolean(inner) &&
+      Boolean(compare) &&
       outer.header === "outer-condition" &&
-      JSON.stringify(outer.body) === JSON.stringify(["reset-swapped", nestedLoopId]) &&
+      JSON.stringify(outer.body) === JSON.stringify([nestedLoopId]) &&
       inner.header === "inner-condition" &&
-      JSON.stringify(inner.body) === JSON.stringify(["compare-swap"])
+      JSON.stringify(inner.body) === JSON.stringify(["compare-condition"]) &&
+      JSON.stringify(compare.body) === JSON.stringify(["swap-step"])
     );
   }
 

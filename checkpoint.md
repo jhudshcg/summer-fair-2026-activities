@@ -16,6 +16,7 @@ Current progress within this slice:
 - Bubble Sort page now uses the shared assembly engine instead of the placeholder shell.
 - Bubble Sort includes demo animation, puzzle workspace, validation, hints, reset and success flow.
 - Bubble Sort styling and responsive behaviour have been stabilised enough for handoff.
+- Bubble Sort piece set has been revised to remove learner-facing `swapped` variable steps and instead use a comparison block that contains a separate `swap them` step while keeping the total piece count at seven.
 
 ## Agreed decisions
 
@@ -47,6 +48,15 @@ Current progress within this slice:
 - Bubble Sort now keeps the check button below the workspace and scrolls the feedback region into view after each answer check.
 - Bubble Sort uses a persistent results region with reserved mobile scroll space so success feedback can be reached by layout, not timing workarounds.
 - Bubble Sort now has a mobile overview toggle that compresses the assembly area and defaults on for narrow screens.
+- Bubble Sort now shows shell index guides under both the demo list and the six-number puzzle list.
+- Small-screen Bubble Sort refinements this morning focused on shell sizing, index-row alignment, overview-toggle copy spacing and overview-mode column spacing.
+
+### Issues encountered 17/6/26 AM
+
+- Several mobile-only CSS tweaks interacted in non-obvious ways: shell sizing changes, index-row wrappers and overview-mode spacing all affected each other at the narrowest width.
+- A shrink-wrapped wrapper around the numbered-shell row temporarily forced the puzzle shells smaller than intended.
+- One narrow-screen spacing override landed in the wrong part of the stylesheet and therefore did not participate in the active smallest-width cascade until corrected.
+- Repeated browser measurement was needed to separate true outer-margin problems from inner panel padding and local heading/card spacing issues.
 
 ## Notes for upcoming slice
 
@@ -119,3 +129,4 @@ Recommended starting focus for the next dev session:
 - Build Algorithm Maze on top of the existing shared assembly engine and shared page shell.
 - Define the first maze program piece set, validation model and explorer animation as the next vertical slice.
 - Reuse the same standards for contrast, card treatment, breakpoint discipline and mobile-first testing that were locked in during the Bubble Sort refinement pass.
+- Early in the next slice, audit the shared CSS with the specific goal of simplifying ensure CSS file and specifically Bubble Sort's mobile overrides and making better use of Pico CSS classes and usage best practice where that reduces bespoke layout code.

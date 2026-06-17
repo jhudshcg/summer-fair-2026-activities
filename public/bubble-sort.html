@@ -42,7 +42,19 @@
             <p class="mini-note">
               Demo list: the numbers below will sort themselves so visitors can see the goal before building the code.
             </p>
-            <div class="number-row" data-demo-row aria-label="Bubble sort demo numbers"></div>
+            <div class="number-list-stack number-list-stack--demo">
+              <div class="number-row" data-demo-row aria-label="Bubble sort demo numbers"></div>
+              <div class="number-index number-index--demo minor-info" aria-hidden="true">
+                <span class="number-index__label">index</span>
+                <div class="number-index__values">
+                  <span class="number-index__value">0</span>
+                  <span class="number-index__value">1</span>
+                  <span class="number-index__value">2</span>
+                  <span class="number-index__value">3</span>
+                  <span class="number-index__value">4</span>
+                </div>
+              </div>
+            </div>
           </div>
           <button class="ghost-button" type="button" data-demo-replay>Replay demo</button>
         </div>
@@ -50,13 +62,29 @@
       <article class="panel info-block">
         <h2>Your Number List</h2>
         <p class="mini-note">Build the program for this six-number list.</p>
-        <div class="number-row" data-puzzle-row aria-label="Current number list"></div>
+        <div class="number-list-stack">
+          <div class="number-row" data-puzzle-row aria-label="Current number list"></div>
+          <div class="number-index minor-info" aria-hidden="true">
+            <span class="number-index__label">index</span>
+            <div class="number-index__values">
+              <span class="number-index__value">0</span>
+              <span class="number-index__value">1</span>
+              <span class="number-index__value">2</span>
+              <span class="number-index__value">3</span>
+              <span class="number-index__value">4</span>
+              <span class="number-index__value">5</span>
+            </div>
+          </div>
+        </div>
       </article>
       <section class="page-grid">
         <article class="panel info-block">
           <h2>Build The Program</h2>
           <p class="mini-note">
             Drag pieces from the palette into the workspace. Wrong-but-possible structures are allowed.
+          </p>
+          <p class="mini-note assembly-tools__prompt">
+            Use loop blocks to repeat steps. Each loop block needs a 'condition' to run.
           </p>
           <div class="assembly-tools">
             <button

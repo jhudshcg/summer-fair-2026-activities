@@ -143,7 +143,7 @@
     - inner loop condition: `index from 0 to length(numbers) - pass`
     - inner loop block: `for ...:`
     - comparison condition: `if numbers[index] > numbers[index + 1]:`
-    - swap operation: `swap them and set swapped to true`
+    - swap operation: `swap them`
 - The pseudocode should stay beginner-friendly rather than aiming for language-specific accuracy.
 - The activity should treat loop blocks and loop conditions as separate pieces that must be matched together.
 - The visible labels should not reveal whether a loop or condition is the inner or outer one.
@@ -160,12 +160,12 @@
 - The list of numbers to be sorted should be six random and unique integers between 1 and 25 inclusive, generated on page load.
 - Recommended piece set, in correct assembled structure:
     1. `set numbers to [7, 3, 10, 5, 2, 6]`
-    2. `outer loop block`
+    2. `loop`
     3. `for pass from 2 to length(numbers):`
-    4. `set swapped to false`
-    5. `inner loop block`
-    6. `for index from 0 to length(numbers) - pass`
-    7. `if numbers[index] > numbers[index + 1], swap them and set swapped to true`
+    4. `loop (inner)`
+    5. `for index from 0 to length(numbers) - pass:`
+    6. `if numbers[index] > numbers[index + 1]:`
+    7. `swap them`
 - Correct structure for those pieces:
     - the initialization statement is first at the top level
     - the outer loop block comes next

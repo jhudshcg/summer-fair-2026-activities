@@ -20,8 +20,8 @@
   --shadow-soft: 0 10px 24px rgba(23, 50, 51, 0.12);
   --radius-large: 28px;
   --radius-medium: 18px;
-  --radius-small: 12px;
-  --space-1: 0.5rem;
+    padding: 0.5rem 0.8rem;
+    font-size: 0.8rem;
   --space-2: 0.875rem;
   --space-3: 1.25rem;
   --space-4: 1.75rem;
@@ -329,6 +329,65 @@ a {
   }
 }
 
+@media (max-width: 32rem) {
+  .site-shell {
+    padding-left: 0.6rem;
+    padding-right: 0.6rem;
+  }
+
+  [data-page="bubble-sort"] .page-grid > article.panel.info-block:first-child {
+    padding-left: 0.7rem;
+    padding-right: 0.7rem;
+  }
+
+  [data-page="bubble-sort"] .number-row[data-demo-row] {
+    flex-wrap: nowrap;
+    gap: 0.45rem;
+  }
+
+  [data-page="bubble-sort"] .number-row[data-demo-row] .number-chip {
+    min-width: 0;
+    width: calc((100% - (4 * 0.45rem)) / 5);
+    min-height: 0;
+    aspect-ratio: 3.8 / 4.25;
+    padding: 0.98rem 0.65rem 0.76rem;
+    font-size: 1rem;
+  }
+
+  [data-page="bubble-sort"] .number-index--demo .number-index__values {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 0.45rem;
+    width: 100%;
+  }
+
+  [data-page="bubble-sort"] .number-row[data-puzzle-row],
+  [data-page="bubble-sort"] .number-row[data-success-row] {
+    flex-wrap: nowrap;
+    gap: 0.35rem;
+  }
+
+  [data-page="bubble-sort"] .number-row[data-puzzle-row] .number-chip,
+  [data-page="bubble-sort"] .number-row[data-success-row] .number-chip {
+    min-width: 0;
+    width: calc((100% - (5 * 0.35rem)) / 6);
+    min-height: 0;
+    aspect-ratio: 3.8 / 4.25;
+    padding: 0.92rem 0.55rem 0.72rem;
+    font-size: 0.9rem;
+  }
+
+  [data-page="bubble-sort"] .number-index__values {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 0.35rem;
+    width: 100%;
+  }
+
+  [data-bubble-sort-page].is-assembly-overview .assembly-layout {
+    margin-left: -0.3rem;
+    margin-right: -0.3rem;
+  }
+}
+
 .info-block {
   display: grid;
   gap: var(--space-2);
@@ -383,6 +442,10 @@ a {
   font-size: 0.92rem;
 }
 
+.minor-info {
+  color: rgba(23, 50, 51, 0.46);
+}
+
 .activity-summary .lede {
   color: rgba(15, 90, 66, 0.92);
   font-weight: 700;
@@ -408,22 +471,68 @@ a {
 
 .assembly-tools {
   display: grid;
-  gap: var(--space-2);
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.35rem;
 }
 
 .assembly-overview-toggle {
   display: none;
   width: fit-content;
+  padding: 0.5rem 0.8rem;
+  font-size: 0.8rem;
+}
+
+.assembly-tools__prompt,
+.assembly-tools__note {
+  max-width: 36rem;
 }
 
 .assembly-tools__note {
-  max-width: 36rem;
+  margin-top: 0;
+  margin-bottom: 0.45rem;
+  font-size: 0.74rem;
+}
+
+.number-list-stack {
+  display: grid;
+  gap: 0.3rem;
 }
 
 .number-row {
   display: flex;
   flex-wrap: wrap;
   gap: 0.65rem;
+}
+
+.number-index {
+  display: grid;
+  gap: 0.12rem;
+}
+
+.number-index__label {
+  color: currentColor;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+.number-index__values {
+  display: grid;
+  grid-template-columns: repeat(6, 3.8rem);
+  gap: 0.65rem;
+  width: max-content;
+}
+
+.number-index--demo .number-index__values {
+  grid-template-columns: repeat(5, 3.8rem);
+}
+
+.number-index__value {
+  color: currentColor;
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1;
+  text-align: center;
 }
 
 .number-chip {
@@ -900,7 +1009,7 @@ a {
 
   [data-bubble-sort-page].is-assembly-overview .assembly-layout {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: var(--space-1);
+    gap: 0.75rem;
   }
 
   [data-bubble-sort-page].is-assembly-overview .assembly-column {
@@ -909,6 +1018,7 @@ a {
 
   [data-bubble-sort-page].is-assembly-overview .assembly-column h3 {
     font-size: 0.85rem;
+    margin-bottom: 0.2rem;
   }
 
   [data-bubble-sort-page].is-assembly-overview .assembly-palette,
@@ -974,6 +1084,7 @@ a {
   .activity-summary {
     grid-template-columns: 1fr auto;
     align-items: center;
+
   }
 
   .assembly-layout,
