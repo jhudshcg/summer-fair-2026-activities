@@ -330,6 +330,14 @@ a {
 }
 
 @media (max-width: 32rem) {
+  [data-page="bubble-sort"] .number-list-stack {
+    width: 100%;
+  }
+
+  [data-page="bubble-sort"] .number-list-stack--demo {
+    --number-gap: 0.45rem;
+  }
+
   .site-shell {
     padding-left: 0.6rem;
     padding-right: 0.6rem;
@@ -354,16 +362,14 @@ a {
     font-size: 1rem;
   }
 
-  [data-page="bubble-sort"] .number-index--demo .number-index__values {
-    grid-template-columns: repeat(5, minmax(0, 1fr));
-    gap: 0.45rem;
-    width: 100%;
-  }
-
   [data-page="bubble-sort"] .number-row[data-puzzle-row],
   [data-page="bubble-sort"] .number-row[data-success-row] {
     flex-wrap: nowrap;
     gap: 0.35rem;
+  }
+
+  [data-page="bubble-sort"] .number-list-stack:not(.number-list-stack--demo) {
+    --number-gap: 0.35rem;
   }
 
   [data-page="bubble-sort"] .number-row[data-puzzle-row] .number-chip,
@@ -374,12 +380,6 @@ a {
     aspect-ratio: 3.8 / 4.25;
     padding: 0.92rem 0.55rem 0.72rem;
     font-size: 0.9rem;
-  }
-
-  [data-page="bubble-sort"] .number-index__values {
-    grid-template-columns: repeat(6, minmax(0, 1fr));
-    gap: 0.35rem;
-    width: 100%;
   }
 
   [data-bubble-sort-page].is-assembly-overview .assembly-layout {
@@ -494,14 +494,23 @@ a {
 }
 
 .number-list-stack {
+  --number-count: 6;
+  --number-gap: 0.65rem;
   display: grid;
   gap: 0.3rem;
+  justify-self: start;
+  width: max-content;
+  max-width: 100%;
+}
+
+.number-list-stack--demo {
+  --number-count: 5;
 }
 
 .number-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.65rem;
+  gap: var(--number-gap);
 }
 
 .number-index {
@@ -518,13 +527,9 @@ a {
 
 .number-index__values {
   display: grid;
-  grid-template-columns: repeat(6, 3.8rem);
-  gap: 0.65rem;
-  width: max-content;
-}
-
-.number-index--demo .number-index__values {
-  grid-template-columns: repeat(5, 3.8rem);
+  grid-template-columns: repeat(var(--number-count), minmax(0, 1fr));
+  gap: var(--number-gap);
+  width: 100%;
 }
 
 .number-index__value {
@@ -1003,18 +1008,6 @@ a {
 }
 
 @media (max-width: 41.99rem) {
-  [data-page="bubble-sort"] .number-index--demo .number-index__values {
-    grid-template-columns: repeat(5, minmax(0, 1fr));
-    gap: 0.45rem;
-    width: 100%;
-  }
-
-  [data-page="bubble-sort"] .number-index__values {
-    grid-template-columns: repeat(6, minmax(0, 1fr));
-    gap: 0.35rem;
-    width: 100%;
-  }
-
   .assembly-overview-toggle {
     display: inline-flex;
   }
