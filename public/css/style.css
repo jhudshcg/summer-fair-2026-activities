@@ -182,4 +182,4 @@ article.info-block {
 .hint,.locked-note { padding: 1rem; }
 .hint { border-left: 6px solid var(--color-coral); background: rgba(255, 111, 97, 0.1); }
 .locked-note { background: rgba(23, 50, 51, 0.08); }
-.footer-note { text-align: center; }
+.footer-note { padding: 0 2.5rem 0 0.5rem; text-align: center; }
