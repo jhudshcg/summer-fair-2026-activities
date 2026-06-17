@@ -711,6 +711,11 @@ a {
   border-radius: var(--radius-medium);
 }
 
+.feedback-stack,
+.success-panel {
+  scroll-margin-top: calc(var(--space-4) + 1rem);
+}
+
 .feedback-box {
   background: rgba(255, 255, 255, 0.82);
 }

@@ -370,6 +370,7 @@
     const successRow = page.querySelector("[data-success-row]");
     const feedback = page.querySelector("[data-bubble-feedback]");
     const hint = page.querySelector("[data-bubble-hint]");
+    const feedbackStack = page.querySelector(".feedback-stack");
     const stateTag = page.querySelector("[data-bubble-state]");
     const successPanel = page.querySelector("[data-bubble-success]");
     const keyPartMounts = page.querySelectorAll("[data-bubble-key-part], [data-bubble-key-part-repeat]");
@@ -457,6 +458,7 @@
         window.summerFairApp.setCompleted(ACTIVITY_ID, true);
         window.summerFairApp.refreshPageChrome();
         animateFrames(successRow, successFrames);
+        window.summerFairApp.scrollToFeedback(feedbackStack || feedback);
         return;
       }
 
@@ -464,6 +466,7 @@
       setFeedback("Not quite yet. The structure is still off somewhere.", "error");
       setHint(getAdaptiveHint(snapshot, failedAttempts));
       stateTag.textContent = "Try again";
+      window.summerFairApp.scrollToFeedback(feedbackStack || feedback);
     });
 
     resetButton.addEventListener("click", () => {

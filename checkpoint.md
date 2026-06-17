@@ -26,6 +26,7 @@ Current progress within this slice:
 - Use localStorage for lightweight progress tracking and hidden challenge unlocking.
 - Prioritise mobile-first layout and touch-friendly controls.
 - Defer all real activity mechanics to later slices.
+- Keep answer-check buttons near the puzzle workspace and smooth-scroll to the feedback region after each check.
 
 ## Deliverables for completed slice
 
@@ -40,6 +41,10 @@ Current progress within this slice:
 - Files load as a static site without build tooling.
 - Hidden challenge appears locked until all four main activities are marked complete in storage.
 - Shared status display renders consistently across pages.
+
+## Current slice notes
+
+- Bubble Sort now keeps the check button below the workspace and scrolls the feedback region into view after each answer check.
 
 ## Notes for upcoming slice
 

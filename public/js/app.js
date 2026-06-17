@@ -259,6 +259,23 @@ function renderPageCopy() {
 }
 
 /**
+ * Smoothly scroll a target into view after feedback content changes.
+ */
+function scrollToFeedback(target) {
+  if (!(target instanceof HTMLElement)) {
+    return;
+  }
+
+  window.requestAnimationFrame(() => {
+    target.scrollIntoView({
+      behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",
+      block: "start",
+      inline: "nearest",
+    });
+  });
+}
+
+/**
  * Refresh the shared page chrome after an activity changes completion state.
  */
 function refreshPageChrome() {
@@ -285,6 +302,7 @@ window.summerFairApp = {
   setCompleted,
   isHiddenUnlocked,
   refreshPageChrome,
+  scrollToFeedback,
 };
 
 document.addEventListener("DOMContentLoaded", init);

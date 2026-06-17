@@ -69,6 +69,7 @@
     - feedback text must be easy to see and must not depend on colour alone
     - the main feedback area should use an `aria-live` region
     - motion should remain short and easy to follow
+    - when users check an answer on mobile, the page should bring the feedback region into view
 
 ## Shared interaction tooling
 
