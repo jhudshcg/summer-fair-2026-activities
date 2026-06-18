@@ -79,7 +79,7 @@ Current progress within this slice:
 - Preserve the current responsive strategy:
     - minimal breakpoint count
     - rely on shared spacing clamps and container-aware font sizing before introducing more breakpoints
-    - keep Bubble Sort header single-column until the larger breakpoint where the split remains comfortable
+    - keep Bubble Sort header single-column until the shared `1024px` desktop breakpoint where the split remains comfortable
     - keep Build The Program full width with Check Your Thinking below it
 - Preserve the status-chip structure as an explicit text-plus-icon layout so icons stay contained at narrower widths.
 - Preserve the current Bubble Sort demo direction:

@@ -5,17 +5,17 @@
 .status-bar,.page-grid { display: grid; gap: var(--space-3); }
 .activity-list { display: grid; gap: var(--space-3); grid-template-columns: minmax(0, 1fr); }
 
-@media (max-width: 32rem) { .site-shell { padding-inline: 0.6rem; } }
-@media (min-width: 32rem) {
+@media (width < 672px) { .site-shell { padding-inline: 0.6rem; } }
+@media (width >= 390px) {
   .activity-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .activity-list > :last-child:nth-child(odd) { grid-column: 1 / -1; }
 }
-@media (min-width: 42rem) {
+@media (width >= 672px) {
   .site-shell { gap: var(--space-4); }
 }
-@media (min-width: 64rem) {
+@media (width >= 1024px) {
   .activity-list { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
-@media (min-width: 64rem) {
+@media (width >= 1024px) {
   .status-bar { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }

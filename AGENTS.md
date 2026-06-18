@@ -36,11 +36,11 @@ Where activities should change between re-attempts, the alternative version can 
 
 Plan, draft, implement in small stages, verify with user and iterate. Do not dive straight into coding, without clear agreement from user.
 
-Use checkpoint.md file (create if it doesn't yet exist) to track progress, document decisions made during development and indicate next logical slice of work.
+Use checkpoint.md, checkpoint_refactor.md and checkpoint_puzzles.md files to track progress, document decisions made during development and indicate next logical slice of work. use the refactor file for refactoring work, and the puzzles file for any puzzle or challenge specific work and the general checkpoint file for general progress and decisions.
 
 All shared style and functionality should have a single source of truth, and be implemented in a way that allows for easy reuse across all activities. This includes CSS styles, JavaScript functions, and any other shared resources.
 
-Where options exist for implementing a feature, discuss with the user and agree on the best approach before proceeding. Document the agreed approach in checkpoint.md. Naturally prefer the simpler and lower code solution, but avoid hacks.
+Where options exist for implementing a feature, discuss with the user and agree on the best approach before proceeding. Document the agreed approach in the appropriate checkpoint file. Naturally prefer the simpler and lower code solution, but avoid hacks.
 
 Include clear code comments for functions and in all source file headers.
 

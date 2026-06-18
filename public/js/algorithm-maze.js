@@ -12,40 +12,71 @@
     south: { x: 0, y: 1 },
     west: { x: -1, y: 0 },
   };
-  const LOOP_ID = "repeat-loop";
-  const BRANCH_ID = "branch-check";
-  const ANIMATION_MS = {
-    move: 420,
-    turn: 260,
-    pause: 80,
+  const LOOP_IDS = ["repeat-loop-1", "repeat-loop-2", "repeat-loop-3"];
+  const BRANCH_IDS = ["branch-check-1", "branch-check-2"];
+  const COUNT_CONDITION_IDS = ["repeat-times-1", "repeat-times-2"];
+  const COUNT_VALUE_BY_CONDITION = {
+    "repeat-times-1": "repeat-count-value-1",
+    "repeat-times-2": "repeat-count-value-2",
   };
+  const UNTIL_CONDITION_ID = "repeat-until-finish";
+  const BRANCH_LEFT_CONDITION_ID = "branch-left";
+  const BRANCH_RIGHT_CONDITION_ID = "branch-right";
+  const STATEMENT_ROLES = {
+    "forward-1": "forward",
+    "forward-2": "forward",
+    "forward-3": "forward",
+    "forward-4": "forward",
+    "turn-left-1": "left",
+    "turn-left-2": "left",
+    "turn-left-3": "left",
+    "turn-right-1": "right",
+    "turn-right-2": "right",
+  };
+  const DEFAULT_MAZE_FRAME_ASPECT_RATIO = 1.24;
+  const STEP_LIMIT = 28;
+  const SHORTEST_SOLUTION_MAX_PIECES = 9;
+  const ANIMATION_MS = {
+    move: 520,
+    turn: 320,
+    pause: 140,
+  };
+  const RUN_FOCUS_SCROLL_DELAY = 180;
   const DEMO_MAZE = {
-    cols: 3,
-    rows: 3,
+    cols: 4,
+    rows: 4,
     cellSize: 64,
     padding: 28,
-    start: { x: 0, y: 1, direction: "east" },
-    finish: { x: 1, y: 2 },
+    frameAspectRatio: 1.16,
+    start: { x: 1, y: 1, direction: "east" },
+    finish: { x: 2, y: 2 },
     edges: [
-      [{ x: 0, y: 1 }, { x: 1, y: 1 }],
-      [{ x: 1, y: 1 }, { x: 1, y: 2 }],
+      [{ x: 1, y: 1 }, { x: 2, y: 1 }],
+      [{ x: 2, y: 1 }, { x: 2, y: 2 }],
     ],
   };
   const PUZZLE_MAZE = {
-    cols: 6,
-    rows: 4,
+    cols: 5,
+    rows: 7,
     cellSize: 52,
     padding: 30,
-    start: { x: 0, y: 1, direction: "east" },
-    finish: { x: 5, y: 2 },
+    frameAspectRatio: 0.88,
+    start: { x: 0, y: 6, direction: "east" },
+    finish: { x: 1, y: 0 },
     edges: [
-      [{ x: 0, y: 1 }, { x: 1, y: 1 }],
-      [{ x: 1, y: 1 }, { x: 2, y: 1 }],
-      [{ x: 2, y: 1 }, { x: 3, y: 1 }],
-      [{ x: 3, y: 1 }, { x: 4, y: 1 }],
-      [{ x: 4, y: 1 }, { x: 5, y: 1 }],
-      [{ x: 4, y: 1 }, { x: 4, y: 2 }],
-      [{ x: 4, y: 2 }, { x: 5, y: 2 }],
+      [{ x: 0, y: 6 }, { x: 1, y: 6 }],
+      [{ x: 1, y: 6 }, { x: 1, y: 4 }],
+      [{ x: 1, y: 4 }, { x: 0, y: 4 }],
+      [{ x: 0, y: 4 }, { x: 0, y: 3 }],
+      [{ x: 0, y: 3 }, { x: 3, y: 3 }],
+      [{ x: 3, y: 3 }, { x: 3, y: 0 }],
+      [{ x: 3, y: 0 }, { x: 1, y: 0 }],
+      [{ x: 3, y: 3 }, { x: 4, y: 3 }],
+      [{ x: 4, y: 3 }, { x: 4, y: 4 }],
+      [{ x: 4, y: 4 }, { x: 3, y: 4 }],
+      [{ x: 3, y: 4 }, { x: 3, y: 3 }],
+      [{ x: 3, y: 0 }, { x: 4, y: 0 }],
+      [{ x: 4, y: 0 }, { x: 4, y: 1 }],
     ],
   };
   const DEMO_COMMANDS = ["move-forward", "turn-right", "move-forward"];
@@ -64,6 +95,18 @@
     return { x: position.x, y: position.y, direction: position.direction };
   }
 
+  function isLoopContainer(pieceId) {
+    return LOOP_IDS.includes(pieceId);
+  }
+
+  function isBranchContainer(pieceId) {
+    return BRANCH_IDS.includes(pieceId);
+  }
+
+  function isCountCondition(pieceId) {
+    return COUNT_CONDITION_IDS.includes(pieceId);
+  }
+
   function buildAdjacency(maze) {
     const adjacency = new Map();
 
@@ -77,8 +120,20 @@
     };
 
     maze.edges.forEach(([from, to]) => {
-      add(from, to);
-      add(to, from);
+      const deltaX = Math.sign(to.x - from.x);
+      const deltaY = Math.sign(to.y - from.y);
+      const distance = Math.abs(to.x - from.x) + Math.abs(to.y - from.y);
+      let current = { x: from.x, y: from.y };
+
+      for (let step = 0; step < distance; step += 1) {
+        const next = {
+          x: current.x + deltaX,
+          y: current.y + deltaY,
+        };
+        add(current, next);
+        add(next, current);
+        current = next;
+      }
     });
 
     return adjacency;
@@ -91,6 +146,79 @@
     };
   }
 
+  function getMazeContentBounds(maze) {
+    const TRAIL_RADIUS = 12;
+    const START_BADGE = { width: 56, height: 20, offsetX: 28, top: 34 };
+    const FINISH_BADGE = { width: 60, height: 20, offsetX: 30, top: -12 };
+    const EXPLORER_RADIUS = 14;
+    const OUTER_PADDING = 16;
+
+    let minX = Number.POSITIVE_INFINITY;
+    let minY = Number.POSITIVE_INFINITY;
+    let maxX = Number.NEGATIVE_INFINITY;
+    let maxY = Number.NEGATIVE_INFINITY;
+
+    const includeRect = (x, y, width, height) => {
+      minX = Math.min(minX, x);
+      minY = Math.min(minY, y);
+      maxX = Math.max(maxX, x + width);
+      maxY = Math.max(maxY, y + height);
+    };
+
+    const includePoint = (x, y, radius = 0) => {
+      includeRect(x - radius, y - radius, radius * 2, radius * 2);
+    };
+
+    maze.edges.forEach(([from, to]) => {
+      const start = toPixel(maze, from.x, from.y);
+      const end = toPixel(maze, to.x, to.y);
+      includeRect(
+        Math.min(start.x, end.x) - TRAIL_RADIUS,
+        Math.min(start.y, end.y) - TRAIL_RADIUS,
+        Math.abs(end.x - start.x) + TRAIL_RADIUS * 2,
+        Math.abs(end.y - start.y) + TRAIL_RADIUS * 2
+      );
+    });
+
+    const nodes = new Map();
+    maze.edges.flat().forEach((cell) => {
+      nodes.set(cellKey(cell), cell);
+    });
+    nodes.set(cellKey(maze.start), maze.start);
+    nodes.set(cellKey(maze.finish), maze.finish);
+
+    nodes.forEach((cell) => {
+      const pixel = toPixel(maze, cell.x, cell.y);
+      includePoint(pixel.x, pixel.y, TRAIL_RADIUS);
+    });
+
+    const startPixel = toPixel(maze, maze.start.x, maze.start.y);
+    includeRect(
+      startPixel.x - START_BADGE.offsetX,
+      startPixel.y - START_BADGE.top,
+      START_BADGE.width,
+      START_BADGE.height
+    );
+
+    const finishPixel = toPixel(maze, maze.finish.x, maze.finish.y);
+    includeRect(
+      finishPixel.x - FINISH_BADGE.offsetX,
+      finishPixel.y - FINISH_BADGE.top,
+      FINISH_BADGE.width,
+      FINISH_BADGE.height
+    );
+
+    includePoint(startPixel.x, startPixel.y, EXPLORER_RADIUS);
+    includePoint(finishPixel.x, finishPixel.y, EXPLORER_RADIUS);
+
+    return {
+      originX: minX - OUTER_PADDING,
+      originY: minY - OUTER_PADDING,
+      width: maxX - minX + OUTER_PADDING * 2,
+      height: maxY - minY + OUTER_PADDING * 2,
+    };
+  }
+
   function toPixel(maze, x, y) {
     return {
       x: maze.padding + x * maze.cellSize,
@@ -98,17 +226,36 @@
     };
   }
 
-  function toPercent(maze, position) {
-    const metrics = getMazeMetrics(maze);
+  function toPercent(maze, position, renderMetrics = null) {
+    const metrics = renderMetrics || {
+      originX: 0,
+      originY: 0,
+      ...getMazeMetrics(maze),
+    };
     const pixel = toPixel(maze, position.x, position.y);
     return {
-      left: `${(pixel.x / metrics.width) * 100}%`,
-      top: `${(pixel.y / metrics.height) * 100}%`,
+      left: `${((pixel.x - metrics.originX) / metrics.width) * 100}%`,
+      top: `${((pixel.y - metrics.originY) / metrics.height) * 100}%`,
     };
   }
 
   function getRotation(direction) {
     return `${DIRECTION_ORDER.indexOf(direction) * 90}deg`;
+  }
+
+  function getExplorerOffset(direction) {
+    switch (direction) {
+      case "east":
+        return { x: "1.5px", y: "0px" };
+      case "south":
+        return { x: "0px", y: "-1.5px" };
+      case "west":
+        return { x: "-1.5px", y: "0px" };
+      case "north":
+        return { x: "0px", y: "1.5px" };
+      default:
+        return { x: "0px", y: "0px" };
+    }
   }
 
   function rotateDirection(direction, turn) {
@@ -143,118 +290,190 @@
     return position.x === maze.finish.x && position.y === maze.finish.y;
   }
 
+  function createLoopPiece(pieceId) {
+    return {
+      id: pieceId,
+      kind: "container",
+      kicker: "Loop",
+      label: "repeat",
+      sockets: [
+        {
+          key: "header",
+          mode: "single",
+          label: "Condition",
+          emptyLabel: "Drop a loop condition here",
+          acceptKinds: ["condition"],
+          acceptFamilies: ["repeat"],
+        },
+        {
+          key: "body",
+          mode: "sequence",
+          label: "Inside this loop",
+          emptyLabel: "Drop a step into this loop",
+          acceptKinds: ["statement", "container"],
+        },
+      ],
+    };
+  }
+
+  function createCountCondition(pieceId, valueFamily) {
+    return {
+      id: pieceId,
+      kind: "condition",
+      family: "repeat",
+      kicker: "Condition",
+      label: "repeat _ times",
+      sockets: [
+        {
+          key: "value",
+          mode: "single",
+          label: "Number",
+          emptyLabel: "Drop a number here",
+          acceptKinds: ["value"],
+          acceptFamilies: [valueFamily],
+        },
+      ],
+    };
+  }
+
+  function createValuePiece(pieceId, family) {
+    return {
+      id: pieceId,
+      kind: "value",
+      family,
+      kicker: "Number",
+      label: "",
+      input: {
+        type: "number",
+        inputMode: "numeric",
+        min: "1",
+        max: "4",
+        step: "1",
+        placeholder: "2",
+        defaultValue: "",
+        ariaLabel: "Repeat count",
+      },
+    };
+  }
+
+  function createBranchPiece(pieceId) {
+    return {
+      id: pieceId,
+      kind: "container",
+      kicker: "Choice",
+      label: "if ... then ... else ...",
+      sockets: [
+        {
+          key: "header",
+          mode: "single",
+          label: "Condition",
+          emptyLabel: "Drop a choice condition here",
+          acceptKinds: ["condition"],
+          acceptFamilies: ["branch"],
+        },
+        {
+          key: "ifTrue",
+          mode: "sequence",
+          label: "If true",
+          emptyLabel: "Drop a step into this path",
+          acceptKinds: ["statement", "container"],
+        },
+        {
+          key: "otherwise",
+          mode: "sequence",
+          label: "Otherwise",
+          emptyLabel: "Optional other path",
+          acceptKinds: ["statement", "container"],
+        },
+      ],
+    };
+  }
+
   function createPieces() {
     return [
+      createLoopPiece(LOOP_IDS[0]),
+      createLoopPiece(LOOP_IDS[1]),
+      createLoopPiece(LOOP_IDS[2]),
+      createCountCondition(COUNT_CONDITION_IDS[0], "repeat-value-1"),
+      createCountCondition(COUNT_CONDITION_IDS[1], "repeat-value-2"),
       {
-        id: LOOP_ID,
-        kind: "container",
-        kicker: "Loop",
-        label: "repeat",
-        sockets: [
-          {
-            key: "header",
-            mode: "single",
-            label: "Condition",
-            emptyLabel: "Drop a loop condition here",
-            acceptKinds: ["condition"],
-            acceptFamilies: ["repeat"],
-          },
-          {
-            key: "body",
-            mode: "sequence",
-            label: "Inside this loop",
-            emptyLabel: "Drop a step into this loop",
-            acceptKinds: ["statement", "container"],
-          },
-        ],
-      },
-      {
-        id: "repeat-4",
+        id: UNTIL_CONDITION_ID,
         kind: "condition",
         family: "repeat",
         kicker: "Condition",
-        label: "repeat 4 times",
+        label: "repeat until finish",
       },
+      createValuePiece("repeat-count-value-1", "repeat-value-1"),
+      createValuePiece("repeat-count-value-2", "repeat-value-2"),
+      createBranchPiece(BRANCH_IDS[0]),
+      createBranchPiece(BRANCH_IDS[1]),
       {
-        id: "repeat-3",
-        kind: "condition",
-        family: "repeat",
-        kicker: "Condition",
-        label: "repeat 3 times",
-      },
-      {
-        id: BRANCH_ID,
-        kind: "container",
-        kicker: "Choice",
-        label: "if ... then ... else ...",
-        sockets: [
-          {
-            key: "header",
-            mode: "single",
-            label: "Condition",
-            emptyLabel: "Drop a choice condition here",
-            acceptKinds: ["condition"],
-            acceptFamilies: ["branch"],
-          },
-          {
-            key: "ifTrue",
-            mode: "sequence",
-            label: "If true",
-            emptyLabel: "Drop a step into this path",
-            acceptKinds: ["statement", "container"],
-          },
-          {
-            key: "otherwise",
-            mode: "sequence",
-            label: "Otherwise",
-            emptyLabel: "Optional other path",
-            acceptKinds: ["statement", "container"],
-          },
-        ],
-      },
-      {
-        id: "branch-right",
-        kind: "condition",
-        family: "branch",
-        kicker: "Condition",
-        label: "if there is a path to the right",
-      },
-      {
-        id: "branch-left",
+        id: BRANCH_LEFT_CONDITION_ID,
         kind: "condition",
         family: "branch",
         kicker: "Condition",
         label: "if there is a path to the left",
       },
       {
-        id: "forward-loop",
+        id: BRANCH_RIGHT_CONDITION_ID,
+        kind: "condition",
+        family: "branch",
+        kicker: "Condition",
+        label: "if there is a path to the right",
+      },
+      {
+        id: "forward-1",
         kind: "statement",
         kicker: "Step",
         label: "move forward",
       },
       {
-        id: "turn-right",
-        kind: "statement",
-        kicker: "Step",
-        label: "turn right",
-      },
-      {
-        id: "forward-after-branch",
+        id: "forward-2",
         kind: "statement",
         kicker: "Step",
         label: "move forward",
       },
       {
-        id: "turn-left",
+        id: "forward-3",
+        kind: "statement",
+        kicker: "Step",
+        label: "move forward",
+      },
+      {
+        id: "forward-4",
+        kind: "statement",
+        kicker: "Step",
+        label: "move forward",
+      },
+      {
+        id: "turn-left-1",
         kind: "statement",
         kicker: "Step",
         label: "turn left",
       },
       {
-        id: "forward-finish",
+        id: "turn-left-2",
         kind: "statement",
         kicker: "Step",
-        label: "move forward",
+        label: "turn left",
+      },
+      {
+        id: "turn-left-3",
+        kind: "statement",
+        kicker: "Step",
+        label: "turn left",
+      },
+      {
+        id: "turn-right-1",
+        kind: "statement",
+        kicker: "Step",
+        label: "turn right",
+      },
+      {
+        id: "turn-right-2",
+        kind: "statement",
+        kicker: "Step",
+        label: "turn right",
       },
     ];
   }
@@ -267,18 +486,33 @@
     return element;
   }
 
-  function renderMazeBoard(mount, maze, className = "") {
+  function renderMazeBoard(mount, maze, options = {}) {
     mount.innerHTML = "";
     const frame = document.createElement("div");
-    frame.className = `maze-board__frame${className ? ` ${className}` : ""}`;
+    frame.className = `maze-board__frame${options.className ? ` ${options.className}` : ""}`;
+    frame.style.setProperty(
+      "--maze-frame-ratio",
+      String(options.frameAspectRatio || maze.frameAspectRatio || DEFAULT_MAZE_FRAME_ASPECT_RATIO)
+    );
+
+    const scene = document.createElement("div");
+    scene.className = "maze-board__scene";
+
+    const background = document.createElement("div");
+    background.className = "maze-board__background";
 
     const metrics = getMazeMetrics(maze);
+    const viewport = document.createElement("div");
+    viewport.className = "maze-board__viewport";
+
     const svg = createSvgElement("svg", {
       class: "maze-board__svg",
       viewBox: `0 0 ${metrics.width} ${metrics.height}`,
       role: "img",
       "aria-hidden": "true",
     });
+    const content = createSvgElement("g");
+    svg.append(content);
 
     [
       { cx: metrics.width * 0.12, cy: metrics.height * 0.14, r: 18 },
@@ -286,14 +520,20 @@
       { cx: metrics.width * 0.78, cy: metrics.height * 0.82, r: 20 },
       { cx: metrics.width * 0.24, cy: metrics.height * 0.76, r: 12 },
     ].forEach((dot) => {
-      svg.append(createSvgElement("circle", { class: "maze-water-dot", ...dot }));
+      const dotElement = document.createElement("span");
+      dotElement.className = "maze-water-dot";
+      dotElement.style.left = `${(dot.cx / metrics.width) * 100}%`;
+      dotElement.style.top = `${(dot.cy / metrics.height) * 100}%`;
+      dotElement.style.width = `${dot.r * 2}px`;
+      dotElement.style.height = `${dot.r * 2}px`;
+      background.append(dotElement);
     });
 
     maze.edges.forEach(([from, to]) => {
       const start = toPixel(maze, from.x, from.y);
       const end = toPixel(maze, to.x, to.y);
-      svg.append(createSvgElement("line", { class: "maze-trail-base", x1: start.x, y1: start.y, x2: end.x, y2: end.y }));
-      svg.append(createSvgElement("line", { class: "maze-trail-top", x1: start.x, y1: start.y, x2: end.x, y2: end.y }));
+      content.append(createSvgElement("line", { class: "maze-trail-base", x1: start.x, y1: start.y, x2: end.x, y2: end.y }));
+      content.append(createSvgElement("line", { class: "maze-trail-top", x1: start.x, y1: start.y, x2: end.x, y2: end.y }));
     });
 
     const nodes = new Map();
@@ -305,90 +545,218 @@
 
     nodes.forEach((cell) => {
       const pixel = toPixel(maze, cell.x, cell.y);
-      svg.append(createSvgElement("circle", { class: "maze-trail-node", cx: pixel.x, cy: pixel.y, r: 10 }));
+      content.append(createSvgElement("circle", { class: "maze-trail-node", cx: pixel.x, cy: pixel.y, r: 10 }));
     });
 
     const startPixel = toPixel(maze, maze.start.x, maze.start.y);
-    svg.append(createSvgElement("rect", { class: "maze-start-badge", x: startPixel.x - 28, y: startPixel.y - 34, rx: 10, ry: 10, width: 56, height: 20 }));
+    content.append(createSvgElement("rect", { class: "maze-start-badge", x: startPixel.x - 28, y: startPixel.y - 34, rx: 10, ry: 10, width: 56, height: 20 }));
     const startLabel = createSvgElement("text", { class: "maze-label", x: startPixel.x, y: startPixel.y - 20, "text-anchor": "middle" });
     startLabel.textContent = "Start";
-    svg.append(startLabel);
+    content.append(startLabel);
 
     const finishPixel = toPixel(maze, maze.finish.x, maze.finish.y);
-    svg.append(createSvgElement("rect", { class: "maze-finish-badge", x: finishPixel.x - 30, y: finishPixel.y + 12, rx: 10, ry: 10, width: 60, height: 20 }));
+    content.append(createSvgElement("rect", { class: "maze-finish-badge", x: finishPixel.x - 30, y: finishPixel.y + 12, rx: 10, ry: 10, width: 60, height: 20 }));
     const finishLabel = createSvgElement("text", { class: "maze-label maze-finish-label", x: finishPixel.x, y: finishPixel.y + 27, "text-anchor": "middle" });
     finishLabel.textContent = "Finish";
-    svg.append(finishLabel);
+    content.append(finishLabel);
 
     const explorer = document.createElement("div");
     explorer.className = "maze-explorer";
     explorer.setAttribute("aria-hidden", "true");
 
-    frame.append(svg, explorer);
+    viewport.append(svg, explorer);
+    scene.append(background, viewport);
+    frame.append(scene);
     mount.append(frame);
+
+    const renderMetrics = getMazeContentBounds(maze);
+    const contentAspectRatio = renderMetrics.width / renderMetrics.height;
+    const frameAspectRatio = options.frameAspectRatio || maze.frameAspectRatio || DEFAULT_MAZE_FRAME_ASPECT_RATIO;
+
+    svg.setAttribute("viewBox", `${renderMetrics.originX} ${renderMetrics.originY} ${renderMetrics.width} ${renderMetrics.height}`);
+    viewport.style.aspectRatio = `${renderMetrics.width} / ${renderMetrics.height}`;
+    if (contentAspectRatio <= frameAspectRatio) {
+      viewport.style.height = "100%";
+      viewport.style.width = `${(contentAspectRatio / frameAspectRatio) * 100}%`;
+    } else {
+      viewport.style.width = "100%";
+      viewport.style.height = `${(frameAspectRatio / contentAspectRatio) * 100}%`;
+    }
+    explorer._renderMetrics = renderMetrics;
+
     return explorer;
   }
 
   function placeExplorer(explorer, maze, position, state = "idle") {
-    const coords = toPercent(maze, position);
+    const coords = toPercent(maze, position, explorer._renderMetrics || null);
+    const offset = getExplorerOffset(position.direction);
     explorer.style.setProperty("--maze-x", coords.left);
     explorer.style.setProperty("--maze-y", coords.top);
     explorer.style.setProperty("--maze-rotation", getRotation(position.direction));
+    explorer.style.setProperty("--maze-offset-x", offset.x);
+    explorer.style.setProperty("--maze-offset-y", offset.y);
     explorer.classList.toggle("is-stuck", state === "stuck");
     explorer.classList.toggle("is-finished", state === "finished");
   }
 
-  function getHint(snapshot, attempts = 0) {
-    const loopPlaced = snapshot.root.includes(LOOP_ID);
-    const branchPlaced = snapshot.root.includes(BRANCH_ID);
-    const loopState = snapshot.sockets[LOOP_ID] || { body: [] };
-    const branchState = snapshot.sockets[BRANCH_ID] || { ifTrue: [], otherwise: [] };
-
-    if (!loopPlaced || snapshot.root[0] !== LOOP_ID) {
-      return "The long straight section should probably be your loop, and it belongs near the start.";
+  function getRepeatCount(snapshot, conditionId) {
+    const valuePieceId = COUNT_VALUE_BY_CONDITION[conditionId];
+    if (!valuePieceId) {
+      return null;
     }
 
-    if (loopState.header !== "repeat-4" || JSON.stringify(loopState.body) !== JSON.stringify(["forward-loop"])) {
-      return attempts > 0
-        ? "Put the repeated straight move inside the loop, then check which repeat count fits the beach path."
-        : "The repeated straight section should sit inside the loop block.";
+    const valueSocket = snapshot.sockets[conditionId] || {};
+    if (valueSocket.value !== valuePieceId) {
+      return null;
     }
 
-    if (!branchPlaced || !snapshot.root.includes(BRANCH_ID)) {
-      return "After the long straight section, the fork needs the choice block.";
-    }
-
-    if (branchState.header !== "branch-right") {
-      return "At the fork, think about whether the correct path is on the left or on the right.";
-    }
-
-    if (JSON.stringify(branchState.ifTrue) !== JSON.stringify(["turn-right"])) {
-      return "If the right-hand path exists, the explorer should turn before moving on.";
-    }
-
-    if (snapshot.root[2] !== "forward-after-branch" || snapshot.root[3] !== "turn-left" || snapshot.root[4] !== "forward-finish") {
-      return attempts > 1
-        ? "Check the order around the fork: turn, move, turn, move."
-        : "Check the order of the steps after the fork.";
-    }
-
-    return "You are close. Check the loop count, the fork condition and the turn order around the finish.";
+    const rawValue = snapshot.values?.[valuePieceId] ?? "";
+    const count = Number.parseInt(String(rawValue), 10);
+    return Number.isInteger(count) ? count : null;
   }
 
-  function validate(snapshot) {
-    const loopState = snapshot.sockets[LOOP_ID];
-    const branchState = snapshot.sockets[BRANCH_ID];
+  function getPlacedPieceIds(snapshot) {
+    const visited = new Set();
 
+    const visit = (pieceId) => {
+      if (!pieceId || visited.has(pieceId)) {
+        return;
+      }
+
+      visited.add(pieceId);
+      const socketState = snapshot.sockets[pieceId];
+      if (!socketState) {
+        return;
+      }
+
+      Object.values(socketState).forEach((value) => {
+        if (Array.isArray(value)) {
+          value.forEach(visit);
+        } else {
+          visit(value);
+        }
+      });
+    };
+
+    snapshot.root.forEach(visit);
+    return visited;
+  }
+
+  function countPlacedPieces(snapshot) {
+    return getPlacedPieceIds(snapshot).size;
+  }
+
+  function hasAnyCountedLoop(snapshot) {
+    return LOOP_IDS.some((loopId) => {
+      const header = (snapshot.sockets[loopId] || {}).header;
+      return isCountCondition(header);
+    });
+  }
+
+  function hasUntilLoop(snapshot) {
+    return LOOP_IDS.some((loopId) => (snapshot.sockets[loopId] || {}).header === UNTIL_CONDITION_ID);
+  }
+
+  function missingCountValue(snapshot) {
+    return COUNT_CONDITION_IDS.some((conditionId) => {
+      const isPlaced = getPlacedPieceIds(snapshot).has(conditionId);
+      return isPlaced && getRepeatCount(snapshot, conditionId) === null;
+    });
+  }
+
+  function matchesShortestShape(snapshot) {
+    if (snapshot.root.length !== 1 || !isLoopContainer(snapshot.root[0])) {
+      return false;
+    }
+
+    const outerLoopId = snapshot.root[0];
+    const outerLoop = snapshot.sockets[outerLoopId] || {};
+    if (outerLoop.header !== UNTIL_CONDITION_ID || !Array.isArray(outerLoop.body) || outerLoop.body.length !== 2) {
+      return false;
+    }
+
+    const [firstPiece, branchOneId] = outerLoop.body;
+    if (STATEMENT_ROLES[firstPiece] !== "forward" || !isBranchContainer(branchOneId)) {
+      return false;
+    }
+
+    const branchOne = snapshot.sockets[branchOneId] || {};
+    if (branchOne.header !== BRANCH_LEFT_CONDITION_ID) {
+      return false;
+    }
+
+    if (!Array.isArray(branchOne.ifTrue) || branchOne.ifTrue.length !== 1 || STATEMENT_ROLES[branchOne.ifTrue[0]] !== "left") {
+      return false;
+    }
+
+    if (!Array.isArray(branchOne.otherwise) || branchOne.otherwise.length !== 1 || !isBranchContainer(branchOne.otherwise[0])) {
+      return false;
+    }
+
+    const branchTwo = snapshot.sockets[branchOne.otherwise[0]] || {};
     return (
-      JSON.stringify(snapshot.root) === JSON.stringify([LOOP_ID, BRANCH_ID, "forward-after-branch", "turn-left", "forward-finish"]) &&
-      Boolean(loopState) &&
-      Boolean(branchState) &&
-      loopState.header === "repeat-4" &&
-      JSON.stringify(loopState.body) === JSON.stringify(["forward-loop"]) &&
-      branchState.header === "branch-right" &&
-      JSON.stringify(branchState.ifTrue) === JSON.stringify(["turn-right"]) &&
-      JSON.stringify(branchState.otherwise) === JSON.stringify([])
+      branchTwo.header === BRANCH_RIGHT_CONDITION_ID &&
+      Array.isArray(branchTwo.ifTrue) &&
+      branchTwo.ifTrue.length === 1 &&
+      STATEMENT_ROLES[branchTwo.ifTrue[0]] === "right"
     );
+  }
+
+  function analyzeSolution(snapshot, result) {
+    const placedCount = countPlacedPieces(snapshot);
+    const works = !result.failure && result.endedAtFinish;
+
+    if (!works) {
+      return {
+        works: false,
+        placedCount,
+        isShortest: false,
+        usedCountedLoops: hasAnyCountedLoop(snapshot),
+      };
+    }
+
+    const isShortest = matchesShortestShape(snapshot) || placedCount <= SHORTEST_SOLUTION_MAX_PIECES;
+    return {
+      works: true,
+      placedCount,
+      isShortest,
+      usedCountedLoops: hasAnyCountedLoop(snapshot),
+    };
+  }
+
+  function resetExplorerImmediately(explorer, maze, position, state = "idle") {
+    explorer.classList.add("is-resetting");
+    placeExplorer(explorer, maze, position, state);
+    void explorer.offsetWidth;
+    explorer.classList.remove("is-resetting");
+  }
+
+  function setActiveDemoCommand(commandElements, index = -1) {
+    commandElements.forEach((element, elementIndex) => {
+      element.classList.toggle("is-active", elementIndex === index);
+    });
+  }
+
+  function getHint(snapshot, attempts = 0) {
+    const placedCount = countPlacedPieces(snapshot);
+
+    if (placedCount === 0) {
+      return "Look for repeated movement patterns. You can solve this maze with counted loops, or try one repeat-until-finish loop with turn checks.";
+    }
+
+    if (missingCountValue(snapshot)) {
+      return "If you use a counted loop, the number matters. Think about how many times that forward-and-turn pattern repeats.";
+    }
+
+    if (!hasUntilLoop(snapshot) && attempts > 0) {
+      return "One working strategy uses counted loops first, then a repeat-until-finish loop for the last part of the route.";
+    }
+
+    if (attempts > 1) {
+      return "There is more than one working solution here. After you find one, see if you can shorten it by reacting to left and right paths.";
+    }
+
+    return "Check where the explorer needs to turn left, where it needs to turn right, and whether a repeat-until-finish loop could simplify the code.";
   }
 
   function simulate(snapshot, maze, adjacency) {
@@ -405,14 +773,18 @@
       failure = { message, state };
     }
 
+    function guardSteps() {
+      if (stepCount > STEP_LIMIT) {
+        fail("That program keeps going for too long. Try a shorter or more direct idea.");
+        return true;
+      }
+
+      return false;
+    }
+
     function runSequence(pieceIds) {
       for (const pieceId of pieceIds) {
         if (failure) {
-          return;
-        }
-
-        if (stepCount > 18) {
-          fail("That route keeps going for too long. Try simplifying the program.");
           return;
         }
 
@@ -420,19 +792,17 @@
       }
     }
 
-    function runPiece(pieceId) {
-      const loopState = snapshot.sockets[LOOP_ID];
-      const branchState = snapshot.sockets[BRANCH_ID];
+    function runLoop(pieceId) {
+      const loopState = snapshot.sockets[pieceId];
+      if (!loopState?.header) {
+        fail("That loop needs a condition before the explorer can use it.");
+        return;
+      }
 
-      if (pieceId === LOOP_ID) {
-        if (!loopState?.header) {
-          fail("The loop needs a condition before the explorer can repeat those steps.");
-          return;
-        }
-
-        const repeatCount = loopState.header === "repeat-4" ? 4 : loopState.header === "repeat-3" ? 3 : 0;
+      if (isCountCondition(loopState.header)) {
+        const repeatCount = getRepeatCount(snapshot, loopState.header);
         if (!repeatCount) {
-          fail("That loop condition does not match this trail.");
+          fail("A counted loop needs a number before the explorer knows how many repeats to use.");
           return;
         }
 
@@ -445,28 +815,67 @@
         return;
       }
 
-      if (pieceId === BRANCH_ID) {
-        if (!branchState?.header) {
-          fail("The choice block needs a condition so the explorer knows what to check at the fork.");
-          return;
+      if (loopState.header === UNTIL_CONDITION_ID) {
+        let guard = 0;
+        while (!isAtFinish(maze, position)) {
+          guard += 1;
+          if (guard > STEP_LIMIT) {
+            fail("That repeat-until-finish idea kept going for too long. Check the turns inside it.");
+            return;
+          }
+
+          runSequence(loopState.body || []);
+          if (failure) {
+            return;
+          }
         }
-
-        const condition = branchState.header === "branch-right"
-          ? hasEdge(adjacency, position, getTargetCell(position, "right"))
-          : hasEdge(adjacency, position, getTargetCell(position, "left"));
-
-        runSequence(condition ? branchState.ifTrue || [] : branchState.otherwise || []);
         return;
       }
 
-      if (pieceId === "turn-right" || pieceId === "turn-left") {
-        position.direction = rotateDirection(position.direction, pieceId === "turn-right" ? "right" : "left");
+      fail("That loop condition does not fit this maze.");
+    }
+
+    function runBranch(pieceId) {
+      const branchState = snapshot.sockets[pieceId];
+      if (!branchState?.header) {
+        fail("That choice block needs a condition before the explorer can decide which way to turn.");
+        return;
+      }
+
+      let condition = false;
+      if (branchState.header === BRANCH_RIGHT_CONDITION_ID) {
+        condition = hasEdge(adjacency, position, getTargetCell(position, "right"));
+      } else if (branchState.header === BRANCH_LEFT_CONDITION_ID) {
+        condition = hasEdge(adjacency, position, getTargetCell(position, "left"));
+      } else {
+        fail("That choice condition does not fit this maze.");
+        return;
+      }
+
+      runSequence(condition ? branchState.ifTrue || [] : branchState.otherwise || []);
+    }
+
+    function runPiece(pieceId) {
+      if (isLoopContainer(pieceId)) {
+        runLoop(pieceId);
+        return;
+      }
+
+      if (isBranchContainer(pieceId)) {
+        runBranch(pieceId);
+        return;
+      }
+
+      const statementRole = STATEMENT_ROLES[pieceId];
+      if (statementRole === "left" || statementRole === "right") {
+        position.direction = rotateDirection(position.direction, statementRole === "right" ? "right" : "left");
         stepCount += 1;
         pushFrame(pieceId);
+        guardSteps();
         return;
       }
 
-      if (["forward-loop", "forward-after-branch", "forward-finish"].includes(pieceId)) {
+      if (statementRole === "forward") {
         const target = getTargetCell(position, "forward");
         if (!hasEdge(adjacency, position, target)) {
           fail("The explorer walked into a dead end instead of following the trail.");
@@ -477,7 +886,7 @@
         position.y = target.y;
         stepCount += 1;
         pushFrame(pieceId);
-        return;
+        guardSteps();
       }
     }
 
@@ -495,8 +904,9 @@
     };
   }
 
-  async function playFrames(explorer, maze, frames, finalState) {
+  async function playFrames(explorer, maze, frames, finalState, hooks = {}) {
     for (const frame of frames) {
+      hooks.onFrameStart?.(frame);
       placeExplorer(explorer, maze, frame.position);
       await wait(frame.action.startsWith("turn") ? ANIMATION_MS.turn : ANIMATION_MS.move);
       await wait(ANIMATION_MS.pause);
@@ -506,15 +916,18 @@
       await wait(ANIMATION_MS.pause);
     }
 
+    hooks.onFrameStart?.(null);
     placeExplorer(explorer, maze, finalState.position, finalState.state);
   }
 
-  async function replayDemo(explorer) {
+  async function replayDemo(explorer, commandElements) {
     const position = clonePosition(DEMO_MAZE.start);
-    placeExplorer(explorer, DEMO_MAZE, position);
-    await wait(180);
+    resetExplorerImmediately(explorer, DEMO_MAZE, position);
+    setActiveDemoCommand(commandElements, -1);
+    await wait(220);
 
-    for (const action of DEMO_COMMANDS) {
+    for (const [index, action] of DEMO_COMMANDS.entries()) {
+      setActiveDemoCommand(commandElements, index);
       if (action === "turn-right") {
         position.direction = rotateDirection(position.direction, "right");
         placeExplorer(explorer, DEMO_MAZE, position);
@@ -530,6 +943,7 @@
       await wait(ANIMATION_MS.pause);
     }
 
+    setActiveDemoCommand(commandElements, -1);
     placeExplorer(explorer, DEMO_MAZE, position, "finished");
   }
 
@@ -542,20 +956,25 @@
     const activity = window.summerFairApp.getActivityById(ACTIVITY_ID);
     const puzzleBoard = page.querySelector("[data-puzzle-board]");
     const demoBoard = page.querySelector("[data-demo-board]");
+    const summaryCard = page.querySelector("[data-maze-summary]");
+    const buildCard = page.querySelector("[data-maze-build]");
+    const testCard = page.querySelector("[data-maze-test]");
+    const resultsDock = page.querySelector("[data-maze-results-dock]");
+    const resultsHome = page.querySelector("[data-maze-results-home]");
     const resultsRegion = page.querySelector("[data-maze-results]");
     const feedback = page.querySelector("[data-maze-feedback]");
     const hint = page.querySelector("[data-maze-hint]");
     const successPanel = page.querySelector("[data-maze-success]");
     const stateTag = page.querySelector("[data-maze-state]");
     const overviewToggle = page.querySelector("[data-overview-toggle]");
-    const runButton = page.querySelector("[data-run-program]");
     const checkButton = page.querySelector("[data-check-solution]");
     const resetButton = page.querySelector("[data-reset-program]");
     const hintButton = page.querySelector("[data-show-hint]");
     const demoReplay = page.querySelector("[data-demo-replay]");
     const successReplay = page.querySelector("[data-success-replay]");
+    const demoCommands = Array.from(page.querySelectorAll("[data-demo-command]"));
     const keyPartMounts = page.querySelectorAll("[data-maze-key-part], [data-maze-key-part-repeat]");
-    const compactOverviewQuery = window.matchMedia("(max-width: 63.99rem)");
+    const compactOverviewQuery = window.matchMedia("(width < 1024px)");
     const adjacency = buildAdjacency(PUZZLE_MAZE);
 
     const puzzleExplorer = renderMazeBoard(puzzleBoard, PUZZLE_MAZE);
@@ -575,7 +994,12 @@
       workspaceMount: page.querySelector("[data-assembly-workspace]"),
       pieces: createPieces(),
       onChange(event) {
-        if (event.type === "place" && hasSolvedThisAttempt) {
+        if (["place", "value", "reset"].includes(event.type)) {
+          clearRunHighlight();
+          setRunFocus(false);
+        }
+
+        if (["place", "value", "reset"].includes(event.type) && hasSolvedThisAttempt) {
           hasSolvedThisAttempt = false;
           successPanel.hidden = true;
           successPanel.classList.remove("is-celebrating");
@@ -586,12 +1010,74 @@
       },
     });
 
+    if (window.location.hash === "#debug") {
+      window.__summerFairMazeDebug = {
+        buildEmptyState() {
+          return engine.buildEmptyState();
+        },
+        getSnapshot() {
+          return engine.getSnapshot();
+        },
+        applySnapshot(snapshot) {
+          engine.state = JSON.parse(JSON.stringify(snapshot));
+          engine.render();
+        },
+        simulate(snapshot = engine.getSnapshot()) {
+          const result = simulate(snapshot, PUZZLE_MAZE, adjacency);
+          return {
+            result,
+            analysis: analyzeSolution(snapshot, result),
+          };
+        },
+        async run(checkMode = true) {
+          return runSnapshot(engine.getSnapshot(), checkMode);
+        },
+      };
+    }
+
     function setBusy(isBusy) {
       isRunning = isBusy;
-      [runButton, checkButton, resetButton, hintButton, demoReplay, successReplay, overviewToggle].forEach((button) => {
+      [checkButton, resetButton, hintButton, demoReplay, successReplay, overviewToggle].forEach((button) => {
         if (button) {
           button.disabled = isBusy || (button === overviewToggle && !compactOverviewQuery.matches);
         }
+      });
+    }
+
+    function setRunFocus(enabled) {
+      const isEnabled = enabled && Boolean(summaryCard && buildCard && testCard && resultsDock && resultsHome && resultsRegion);
+      page.classList.toggle("is-run-focus", isEnabled);
+
+      if (!resultsRegion || !resultsDock || !resultsHome) {
+        return;
+      }
+
+      if (isEnabled) {
+        if (resultsRegion.parentElement !== resultsDock) {
+          resultsDock.append(resultsRegion);
+        }
+        return;
+      }
+
+      if (resultsRegion.parentElement !== resultsHome) {
+        resultsHome.append(resultsRegion);
+      }
+    }
+
+    function clearRunHighlight() {
+      page.querySelectorAll(".assembly-piece.is-running").forEach((piece) => {
+        piece.classList.remove("is-running");
+      });
+    }
+
+    function setRunHighlight(pieceId) {
+      clearRunHighlight();
+      if (!pieceId) {
+        return;
+      }
+
+      page.querySelectorAll(`[data-piece-id="${pieceId}"]`).forEach((piece) => {
+        piece.classList.add("is-running");
       });
     }
 
@@ -608,6 +1094,19 @@
 
     function setHint(message) {
       hint.textContent = message;
+    }
+
+    function scrollMazeIntoView() {
+      const target = puzzleBoard || summaryCard || testCard || resultsRegion || feedback;
+      if (!(target instanceof HTMLElement)) {
+        return;
+      }
+
+      const top = Math.max(0, window.scrollY + target.getBoundingClientRect().top - 12);
+      window.scrollTo({
+        top,
+        behavior: "auto",
+      });
     }
 
     function resetPuzzleExplorer() {
@@ -638,8 +1137,10 @@
       hasSolvedThisAttempt = false;
       successPanel.hidden = true;
       successPanel.classList.remove("is-celebrating");
-      setFeedback("Build the route, then run the program to see where the explorer goes.", null);
-      setHint("Hints will help with the loop, the fork choice and the turn order.");
+      clearRunHighlight();
+      setRunFocus(false);
+      setFeedback("Build the route, then check the solution to see where the explorer goes.", null);
+      setHint("Hints can steer you toward a working solution, and then toward a shorter one.");
       stateTag.textContent = window.summerFairApp.getProgress().completed[ACTIVITY_ID]
         ? "Completed earlier"
         : "Ready to map the route";
@@ -648,55 +1149,73 @@
 
     async function runSnapshot(snapshot, checkMode) {
       const result = simulate(snapshot, PUZZLE_MAZE, adjacency);
+      const analysis = analyzeSolution(snapshot, result);
+      setRunFocus(true);
+      scrollMazeIntoView();
+      await wait(RUN_FOCUS_SCROLL_DELAY);
       resetPuzzleExplorer();
       setBusy(true);
       await playFrames(puzzleExplorer, PUZZLE_MAZE, result.frames, {
         position: result.finalPosition,
         state: result.failure ? result.failure.state : "finished",
+      }, {
+        onFrameStart(frame) {
+          setRunHighlight(frame?.action || null);
+        },
       });
       setBusy(false);
       renderOverviewToggle();
 
-      const solved = !result.failure && result.endedAtFinish && validate(snapshot);
-
       if (!checkMode) {
-        if (solved) {
-          setFeedback("The explorer reached the finish. This route works.", "success");
-          stateTag.textContent = "Route runs";
+        if (analysis.works) {
+          setFeedback(
+            analysis.isShortest
+              ? "The explorer reached the finish with the shortest code route."
+              : "The explorer reached the finish. This route works.",
+            "success"
+          );
+          stateTag.textContent = analysis.isShortest ? "Shortest route" : "Route runs";
         } else {
           setFeedback(result.failure?.message || "The explorer reached the end of the program without solving the maze.", "error");
           stateTag.textContent = "Route tested";
         }
 
-        return solved;
+        return analysis.works;
       }
 
-      if (solved) {
+      if (analysis.works) {
         hasSolvedThisAttempt = true;
         playCelebration();
-        setFeedback("Correct. Your program guides the explorer all the way to the finish.", "success");
-        setHint("Great. The loop handled the long path and the choice block handled the fork.");
-        stateTag.textContent = "Completed";
+        if (analysis.isShortest) {
+          setFeedback("Correct. Your program reaches the finish, and it is the shortest code solution.", "success");
+          setHint("You found the shortest route. Nice use of repeat-until-finish with left and right checks.");
+          stateTag.textContent = "Shortest solution";
+        } else {
+          setFeedback("Correct. Your program reaches the finish. Now see if you can find a shorter one.", "success");
+          setHint("That works. There is also a shorter solution that keeps moving until the finish and reacts to left or right paths.");
+          stateTag.textContent = "Completed";
+        }
+
         window.summerFairApp.setCompleted(ACTIVITY_ID, true);
         window.summerFairApp.refreshPageChrome();
-        window.summerFairApp.scrollToFeedback(resultsRegion || feedback);
+        scrollMazeIntoView();
         return true;
       }
 
       failedAttempts += 1;
       setFeedback(
-        result.failure?.message || "The explorer moved, but the final program shape is still not the expected one.",
+        result.failure?.message || "That program moved the explorer, but it did not solve the maze.",
         "error"
       );
       setHint(getHint(snapshot, failedAttempts));
       stateTag.textContent = "Try again";
-      window.summerFairApp.scrollToFeedback(resultsRegion || feedback);
+      scrollMazeIntoView();
       return false;
     }
 
     applyBaseState();
     renderOverviewToggle();
-    replayDemo(demoExplorer);
+    replayDemo(demoExplorer, demoCommands);
 
     const handleOverviewMediaChange = (event) => {
       overviewEnabled = event.matches;
@@ -724,17 +1243,9 @@
       }
 
       setBusy(true);
-      await replayDemo(demoExplorer);
+      await replayDemo(demoExplorer, demoCommands);
       setBusy(false);
       renderOverviewToggle();
-    });
-
-    runButton.addEventListener("click", async () => {
-      if (isRunning) {
-        return;
-      }
-
-      await runSnapshot(engine.getSnapshot(), false);
     });
 
     checkButton.addEventListener("click", async () => {

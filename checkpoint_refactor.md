@@ -23,6 +23,7 @@
 - All live page entry points now load `public/js/mobile-layout.js` before `public/js/app.js`, and `app.js` has been reduced back toward shared metadata, progress and page-render orchestration.
 - Device testing showed that a geometry-only approach was not sufficient to fix the bottom toolbar mismatch on iPhone Safari.
 - The current ornament positioning path therefore uses geometry and safe-area measurements as the baseline, but adds a targeted iOS Safari fallback class and offset variables for the bottom-right ornaments.
+- Shared ornament positioning now also supports a general Apple-platform root class so the top-left palm ornament can apply a small macOS/iOS-specific left offset through `--mac-palm-left-adjustment` without affecting other platforms.
 - Temporary browser-chrome diagnostics are now written to `console.log` from the shared mobile layout module so Safari measurements can still be inspected without adding visible debug UI.
 
 ## Current follow-up focus for this refactor
@@ -85,6 +86,18 @@
 - Keep only the smallest set of project breakpoints needed for real layout changes.
 - Prefer intrinsic layout, Pico grid behaviour, `clamp(...)` and CSS custom properties before adding extra breakpoint overrides.
 - Shift Bubble Sort compact mode toward variable-driven scaling rather than many descendant selector overrides.
+- Current agreed breakpoint direction for the next responsive cleanup pass:
+  - treat below `390px` as the smallest-phone baseline with mostly single-column layout
+  - use `390px` as the first shared enhancement point where portrait-mobile-safe two-column layouts can begin
+  - keep `672px` as the tablet transition width
+  - keep `1024px` as the desktop breakpoint
+  - do not introduce a `481px` tier in the initial conversion pass
+  - when expressing breakpoint boundaries in CSS, prefer exact shared values with range syntax such as `@media (width >= 390px)` and `@media (width < 672px)` rather than `+1`, `-1`, or `.99` handoff numbers
+  - initial conversion scope is intentionally narrow: move the first shared two-column layout promotion to `390px`, while leaving current single-column and later breakpoint rules in place until a later cleanup pass
+  - agreed follow-up adjustments for the remaining formerly-`512px` rules:
+    - keep shell padding tighter below `672px`
+    - keep placeholder-art narrow typography rules active through `672px`, with the larger placeholder-art typography only above that point
+    - keep the Bubble Sort and maze compact puzzle overrides at `480px` and below
 
 ### 5. Separate common layout from puzzle styling
 

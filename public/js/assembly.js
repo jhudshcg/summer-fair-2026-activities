@@ -44,10 +44,15 @@
       const state = {
         root: [],
         sockets: {},
+        values: {},
       };
 
       this.allPieceIds.forEach((pieceId) => {
         const piece = this.piecesById.get(pieceId);
+        if (piece.input) {
+          state.values[pieceId] = piece.input.defaultValue ?? "";
+        }
+
         if (!piece.sockets) {
           return;
         }
@@ -225,10 +230,43 @@
         element.append(kicker);
       }
 
-      const label = document.createElement("p");
-      label.className = "assembly-piece__label";
-      label.textContent = piece.label;
-      element.append(label);
+      if (piece.label) {
+        const label = document.createElement("p");
+        label.className = "assembly-piece__label";
+        label.textContent = piece.label;
+        element.append(label);
+      }
+
+      if (piece.input) {
+        const field = document.createElement("label");
+        field.className = "assembly-piece__field";
+
+        const input = document.createElement("input");
+        input.className = "assembly-piece__input";
+        input.dataset.pieceInputFor = pieceId;
+        input.type = piece.input.type || "text";
+        input.inputMode = piece.input.inputMode || "text";
+        input.min = piece.input.min ?? "";
+        input.max = piece.input.max ?? "";
+        input.step = piece.input.step ?? "1";
+        input.placeholder = piece.input.placeholder || "";
+        input.value = this.state.values[pieceId] ?? piece.input.defaultValue ?? "";
+        input.setAttribute("aria-label", piece.input.ariaLabel || piece.label);
+
+        ["pointerdown", "mousedown", "touchstart", "click", "keydown"].forEach((eventName) => {
+          input.addEventListener(eventName, (event) => {
+            event.stopPropagation();
+          });
+        });
+
+        input.addEventListener("input", () => {
+          this.state.values[pieceId] = input.value;
+          this.onChange({ type: "value", pieceId, value: input.value });
+        });
+
+        field.append(input);
+        element.append(field);
+      }
 
       if (piece.sockets) {
         piece.sockets.forEach((socket) => {
@@ -274,7 +312,7 @@
         ownerId: null,
         socketKey: "palette",
         mode: "sequence",
-        acceptKinds: ["statement", "container", "condition"],
+        acceptKinds: ["statement", "container", "condition", "value"],
         acceptFamilies: [],
       };
       const container = this.createContainer(paletteMeta, "All pieces are in the workspace.");
@@ -331,6 +369,7 @@
     syncStateFromDom() {
       const nextState = this.buildEmptyState();
       nextState.root = this.readContainerPieces(this.containerElements.get("root"));
+      nextState.values = this.readInputValues(nextState.values);
 
       this.allPieceIds.forEach((pieceId) => {
         const piece = this.getPiece(pieceId);
@@ -347,6 +386,21 @@
 
       this.syncPaletteOrder();
       this.state = nextState;
+    }
+
+    readInputValues(seedValues = {}) {
+      const nextValues = { ...seedValues };
+      [this.paletteMount, this.workspaceMount].forEach((mount) => {
+        if (!mount) {
+          return;
+        }
+
+        mount.querySelectorAll("[data-piece-input-for]").forEach((input) => {
+          nextValues[input.dataset.pieceInputFor] = input.value;
+        });
+      });
+
+      return nextValues;
     }
 
     updateEmptyStates() {

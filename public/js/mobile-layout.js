@@ -42,6 +42,13 @@
     return isAppleMobile && isWebKit && !isAlternativeIosBrowser;
   }
 
+  function usesApplePlatformOrnamentAdjustment() {
+    const ua = window.navigator.userAgent;
+    const platform = window.navigator.userAgentData?.platform || window.navigator.platform || "";
+
+    return /Mac|iPhone|iPad|iPod/i.test(platform) || /Macintosh|iPhone|iPad|iPod/i.test(ua);
+  }
+
   function logBrowserChromeMetrics(metrics) {
     const logKey = JSON.stringify(metrics);
     if (logKey === lastBrowserChromeLogKey) {
@@ -56,8 +63,10 @@
     const root = document.documentElement;
     const viewport = window.visualViewport;
     const useIosSafariFallback = usesIosSafariOrnamentFallback();
+    const useApplePlatformAdjustment = usesApplePlatformOrnamentAdjustment();
 
     root.classList.toggle("ios-safari-ornaments-fallback", useIosSafariFallback);
+    root.classList.toggle("apple-platform-ornaments", useApplePlatformAdjustment);
 
     if (!viewport) {
       root.style.setProperty("--browser-top-offset", "0px");

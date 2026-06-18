@@ -10,6 +10,7 @@
   --browser-right-offset: 0px;
   --ios-safari-bottom-toolbar-adjustment: 0px;
   --ios-parrot-left-adjustment: 0px;
+  --mac-palm-left-adjustment: 0px;
   --color-leaf: #1b7f5a; --color-leaf-deep: #0f5a42; --color-sun: #ffb347; --color-coral: #ff6f61;
   --color-sea: #3cb9c9; --color-foam: #f7fff9; --color-night: #173233; --color-muted: rgba(23, 50, 51, 0.68);
   --surface: rgba(247, 255, 249, 0.8); --surface-strong: rgba(255, 255, 255, 0.88);
@@ -30,9 +31,13 @@
 }
 
 :root.ios-safari-ornaments-fallback {
-  --ios-safari-bottom-toolbar-adjustment: 1.2rem;
+  --ios-safari-bottom-toolbar-adjustment: 20px;
   /* iOS parrot left adjustment */
-  --ios-parrot-left-adjustment: 3rem;
+  --ios-parrot-left-adjustment: 48px;
+}
+
+:root.apple-platform-ornaments {
+  --mac-palm-left-adjustment: -12px;
 }
 
 *,*::before,*::after { box-sizing: border-box; }
@@ -59,7 +64,7 @@ html,html[data-theme="light"] { color-scheme: light; scroll-behavior: smooth; }
 }
 .page-ornament--leaves { top: calc(-10.6rem + var(--browser-top-offset)); left: -5rem; font-size: clamp(8.25rem, 20vw, 13.5rem); transform: rotate(-10deg); }
 .page-ornament--palm {
-  top: calc(-6.35rem + var(--browser-top-offset)); left: -11rem;
+  top: calc(-6.35rem + var(--browser-top-offset)); left: calc(-11.2rem + var(--mac-palm-left-adjustment));
   font-size: clamp(14.8rem, 31vw, 21.6rem); transform: rotate(120deg); animation: ornament-palm-shake 24s ease-in-out infinite;
 }
 .page-ornament--parrot {

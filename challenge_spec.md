@@ -50,15 +50,17 @@
 - Use the display font for headings and feature-card copy only where it improves emphasis and remains readable.
 - Use container-aware font sizing for prominent card copy rather than adding many viewport-only breakpoint overrides.
 - Keep breakpoints minimal:
-    - use one shared medium breakpoint for broader layout enhancement
-    - use a later larger breakpoint for optional multi-column header splits
+    - use exact pixel breakpoint values with clear range syntax where supported, for example `@media (width >= 390px)` or `@media (width < 672px)`, rather than handoff values like `671.99px` or `673px`
+    - use `390px` as the first shared enhancement point for layouts already proven safe above the smallest-phone baseline
+    - use `672px` as the shared tablet breakpoint for broader layout enhancement
+    - use `1024px` as the shared desktop breakpoint for larger multi-column layout changes
     - prefer `clamp(...)`, shared spacing variables and container queries before adding extra breakpoints
 - Keep section cards on pale tropical surfaces with the established soft shadow and radius system rather than introducing new card treatments per page.
 - For status chips and similar small summary cards, use explicit text-and-icon layout structure so icons stay contained at narrow widths.
 - For content-heavy card grids like the home activity list, prefer explicit shared column caps over framework `auto-fit` behaviour:
-    - keep one column below `32rem`
-    - switch to two columns from `32rem`
-    - use three columns only at a later larger breakpoint
+    - keep one column below `390px`
+    - switch to two columns from `390px`
+    - use three columns only at the later desktop breakpoint
     - if a lone final card sits on its own row in a two-column layout, let it span the full row
     - equal-height cards are acceptable, but card contents should flow top-to-bottom with normal gaps rather than being stretched apart to fill height
 - For Bubble Sort specifically, keep the instructional card and demo animation readable at in-between tablet and landscape-phone widths before adding any further visual complexity.
@@ -271,7 +273,7 @@
 - Prefer the shared library wrapper and adapter layer for drag behaviour rather than wiring raw drag events directly inside each activity script.
 - Preserve the current Bubble Sort responsive approach:
     - keep the main activity sections full width with Check Your Thinking below Build The Program
-    - let the header remain single-column until a later large breakpoint
+    - let the header remain single-column until the shared `1024px` desktop breakpoint
     - avoid reintroducing layout helper classes that add conflicting breakpoint behaviour to this page
 - Suggested data structure:
     - one array of piece objects with fields such as `id`, `label`, `type`, `acceptedParentTypes` and `correctParent`
@@ -315,9 +317,12 @@
 - The activity must present a visible maze and a movable explorer marker.
 - The main interaction is assembling a short block-based program that can solve the maze.
 - The program must include:
-    - one loop block with a separate choosable loop condition
-    - one selection block with a separate choosable selection condition
+    - one or more loop blocks with separate choosable loop conditions
+    - one or more selection blocks with separate choosable selection conditions
     - a number of movement operation blocks including forward, turn left and turn right
+- The activity should preserve learner-entered loop counts as part of the problem solving rather than hard-coding every repeat count.
+- The activity may accept more than one correct program when those programs genuinely solve the maze.
+- The activity should encourage users to look for a shorter solution after they find a longer working one.
 - The page must include a brief explanation of how the maze program controls the explorer.
 
 #### Maze page structure
@@ -356,30 +361,45 @@
 
 #### Maze content definition
 
-- Use one fixed maze layout for the first full implementation.
+- Use one fixed maze layout based on the agreed sketch for the current implementation.
 - The maze should be small enough to fit on a phone screen without requiring precise zooming.
-- The correct route should clearly require:
-    - repeated forward movement, best represented by a loop
-    - at least one turn decision at a fork, best represented by a selection block
-    - a mix of forward, turn left and turn right operations
+- The agreed maze shape for this slice is:
+    - start at the lower-left corner facing east
+    - a short eastward approach from start, then a turn north
+    - a left-hand lower square path section
+    - a central vertical spine running upward toward the finish
+    - a right-hand lower square path section that makes an alternative turn possible
+    - a short top-right spur
+    - finish at the upper-left end of the top path
+- The route should support at least two valid program strategies:
+    - a longer strategy using counted loops plus a repeat-until-finish loop
+    - a shorter strategy using a repeat-until-finish loop with nested if/else branching
+- The intended puzzle should still clearly reward:
+    - treating each `move forward` as one grid space rather than jumping to the next junction
+    - repeated forward movement represented by loops
+    - conditional turning at meaningful junctions
+    - choosing loop counts by reasoning about the route rather than by guessing
+    - choosing between a merely working solution and a shorter working solution
 - The maze should feel like a tropical island path, for example with sand, stepping stones, palms, rocks or shallow water.
 - The program piece set should be constrained and finite rather than free-form.
 - Recommended piece categories:
-    - one start or initial program statement if needed by the layout
-    - one loop block container
-    - two or more possible loop-condition pieces, with only one correct for the target route
-    - one selection block container
-    - two or more possible selection-condition pieces, with only one correct for the target fork
-    - multiple movement operation blocks, including several forward blocks plus turn left and turn right blocks
+    - loop block containers, with enough availability for more than one loop in a working program
+    - counted-loop condition pieces that accept learner-entered numbers
+    - a repeat-until-finish condition piece
+    - value pieces that slot into counted-loop headers and hold learner-entered loop counts
+    - selection block containers, with enough availability for a nested else-if alternative
+    - condition pieces such as `if there is a path to the left` and `if there is a path to the right`
+    - movement operation blocks, including several forward blocks plus turn left and turn right blocks
 - Recommended example movement wording:
     - `move forward`
     - `turn left`
     - `turn right`
 - Recommended example condition wording:
-    - loop condition: `repeat 3 times`
-    - distractor loop condition: `repeat 2 times`
-    - selection condition: `if there is a path to the right`
-    - distractor selection condition: `if there is a path to the left`
+    - loop header: `repeat _ times`
+    - repeat value piece: learner enters a number such as `2`
+    - alternate loop header: `repeat until finish`
+    - selection conditions: `if there is a path to the left` and `if there is a path to the right`
+- For this slice, do not introduce free-form while-condition text entry. Keep loop and branch conditions as fixed pieces, with numeric entry only for counted repeats.
 - The exact number of movement blocks should be chosen so the correct route can be assembled without unnecessary spare pieces overwhelming the user.
 
 #### Algorithm Maze interaction behaviour
@@ -396,16 +416,31 @@
     - restrict only attachment types that are structurally impossible, for example a condition piece may snap only into the correct kind of header socket
     - make container sockets expand to fit the nested blocks placed inside them, then collapse again when emptied
     - animate movement and resizing lightly so the structural change is clear
-- If drag behaviour becomes unreliable on mobile, provide a tap fallback in the same slice or immediately after:
+- Given the larger maze palette and the amount of vertical scrolling on phones, the next maze UX slice should add a tap-to-move fallback alongside drag:
     - first tap selects a piece
     - second tap selects a valid target slot or socket
     - the piece moves into that location
+    - valid targets should be highlighted while a piece is selected
+    - the selected state should be easy to clear without accidental moves
 
 #### Algorithm Maze validation rules
 
-- The activity is correct only when the assembled program structure matches the expected solution and the program would move the explorer from start to finish correctly.
+- The activity is correct when the assembled program moves the explorer from start to finish correctly without breaking the maze rules.
+- The validator should support more than one accepted solution shape when those solutions are intentionally designed into the puzzle.
+- The validator should distinguish between:
+    - a working longer solution
+    - a working shortest solution
+    - a non-working solution
 - The activity should not prevent a wrong solution from being assembled if the structure is still mechanically valid.
 - Validation is triggered by the Run program button or Check solution button, not continuously during dragging.
+- When users press Check solution, the page should bring the maze run back into view before the animation plays so the route, feedback and celebration stay close together on mobile.
+- Maze display containers should stay full width, while the actual maze graphic inside each container may use a smaller capped width chosen to keep path thickness visually consistent.
+- The maze container height should grow from the maze graphic it contains, plus padding, rather than forcing the graphic to scale up just because the outer container is wider.
+- The blue/yellow outer maze card and the inner scenic maze background should be treated as separate layers:
+    - the outer card provides the visible frame or border
+    - the inner scenic green/yellow scene scales to the maze area inside that frame
+    - the maze SVG and explorer sit above the scenic scene layer
+- For the maze page specifically, if run-focus layout is used, move only the feedback/results subsection near the maze; keep the check/reset/hint buttons in their normal control area.
 - On incorrect attempts:
     - keep the current assembled structure on screen
     - animate the explorer following the wrong program briefly, then stop where the logic fails or where the wrong turn becomes obvious
@@ -415,15 +450,20 @@
     - show a success message
     - mark the activity complete in shared progress
     - reveal the key-part reward
+- Planned run-focus layout improvement for a later slice:
+    - while the program is running, the workspace column should temporarily shrink and float up to the left of the maze area so users can watch both the code and the explorer together
+    - when the run finishes, the workspace should return to its normal size and position
+- When a user finds a longer working solution first, the feedback should invite them to try for the shortest code solution.
+- When a user finds the shortest intended solution, the feedback should acknowledge that more strongly.
 
 #### Algorithm Maze hint behaviour
 
 - Hints should guide without revealing the entire final program immediately.
 - Use staged hints tied to the number of failed checks in the current attempt.
 - Recommended hint progression:
-    1. remind the user that the repeated straight section should probably sit inside the loop block
-    2. remind the user that the fork in the maze needs the selection block and the correct condition
-    3. remind the user to check whether left and right turns are placed in the correct order around the fork
+    1. remind the user to look for repeated movement patterns that can use a counted loop
+    2. remind the user that the maze can also be solved by continuing until the finish and reacting to left or right paths
+    3. remind the user that a working solution is not always the shortest one
 - The Hint button may either reveal the next hint directly or repeat the most relevant hint for the current failure stage.
 
 #### Algorithm Maze success feedback and reward
@@ -462,22 +502,25 @@
     - one array of piece objects with fields such as `id`, `label`, `type`, `acceptedParentTypes` and `correctParent`
     - one layout model describing top-level slots, header sockets and body sockets, with slots created relative to currently placed pieces
     - one state object tracking which piece is currently placed in each slot or socket
-    - one run simulator that can interpret the assembled block sequence against the maze
+    - one small value-state model for learner-editable numeric blocks used by counted loop conditions
+    - one run simulator that can interpret assembled control flow against the maze, including counted loops, repeat-until-finish loops and nested selection blocks
     - one counter for failed attempts
 - Suggested rendering approach:
     - render the maze as HTML elements or simple SVG rather than canvas for easier layout and styling
+    - render demo command blocks as a stacked list and highlight the current command while the demo runs
     - render the palette separately from the program assembly area
     - render one central starting slot for the first placement
     - render loop and selection blocks as containers with dedicated header and body sockets
+    - render the repeat-value block with a small inline numeric input so the learner can set the repeat count after placing it in the loop condition header
     - create new sibling or nested slots only when the current placed structure makes them available
     - recalculate slot and socket dimensions after each move so nested pieces fit naturally
     - rerender or reposition DOM nodes after each move
     - keep feedback and status updates in small dedicated functions
 - Suggested maze logic approach:
-    - define the correct route explicitly for the first implementation rather than computing general pathfinding
-    - interpret the assembled blocks into a short command sequence or control-flow simulation
+    - define the route explicitly for the agreed sketch rather than computing general pathfinding
+    - interpret the assembled blocks as control flow rather than flattening everything into one fixed expected program shape
     - stop the run early when the explorer hits a wall, leaves the intended path or reaches an impossible step
-    - keep the number of pieces small enough that the puzzle remains legible on a phone
+    - keep the number of pieces small enough that the puzzle remains legible on a phone while still allowing the intended alternative solutions
 
 #### Algorithm Maze acceptance criteria
 
