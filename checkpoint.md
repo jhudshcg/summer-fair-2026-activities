@@ -58,6 +58,18 @@ Current progress within this slice:
 - One narrow-screen spacing override landed in the wrong part of the stylesheet and therefore did not participate in the active smallest-width cascade until corrected.
 - Repeated browser measurement was needed to separate true outer-margin problems from inner panel padding and local heading/card spacing issues.
 
+### Repo recovery 18/6/26
+
+- After OneDrive was enabled, the working copy showed duplicate `*-Mac Studio` files and invalid git refs such as `main-Mac Studio`, which is consistent with repo corruption caused by sync interference.
+- A clean recovery source existed on GitHub at commit `17f231a` (`maze challenge - redesign`), which matched the recent maze redesign work.
+- Recovery approach used:
+    - clone a fresh copy from GitHub into a sibling folder
+    - verify the clone was clean and on the expected commit
+    - rename the damaged folder to `summer fair 2026 activities.corrupt-backup`
+    - rename the clean clone back to `summer fair 2026 activities`
+- Result: the active working folder is now the clean GitHub clone, and the corrupted local copy is preserved separately as a backup.
+- Ongoing risk note: keeping the repo inside OneDrive may allow the same `.git` corruption to happen again, so long-term the safer setup is to work outside OneDrive and only copy/export deliverables in when needed.
+
 ## Notes for upcoming slice
 
 - Treat Bubble Sort as a vertical slice of a shared block-assembly system, not as a one-off page feature.
