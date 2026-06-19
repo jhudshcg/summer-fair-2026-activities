@@ -425,6 +425,11 @@
       workspaceMount: page.querySelector("[data-assembly-workspace]"),
       pieces: createPieces(puzzleNumbers),
       onChange(event) {
+        if (event.type === "reject") {
+          setFeedback(event.message, "error");
+          return;
+        }
+
         if (event.type === "place" && hasSolvedThisAttempt) {
           hasSolvedThisAttempt = false;
           successPanel.hidden = true;

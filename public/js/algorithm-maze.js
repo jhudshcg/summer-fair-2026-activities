@@ -994,6 +994,11 @@
       workspaceMount: page.querySelector("[data-assembly-workspace]"),
       pieces: createPieces(),
       onChange(event) {
+        if (event.type === "reject") {
+          setFeedback(event.message, "error");
+          return;
+        }
+
         if (["place", "value", "reset"].includes(event.type)) {
           clearRunHighlight();
           setRunFocus(false);

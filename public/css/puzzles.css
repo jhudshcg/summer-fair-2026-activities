@@ -153,10 +153,15 @@
 .assembly-slot:is(.is-drop-target,.is-selected-target) { border-color: var(--color-coral); background: rgba(255, 111, 97, 0.12); transform: scale(1.01); }
 
 .assembly-piece {
-  position: relative; display: grid; gap: var(--assembly-piece-gap); padding: var(--assembly-piece-pad); border: 1px solid rgba(23, 50, 51, 0.1);
-  border-radius: var(--radius-medium); background: rgba(255, 255, 255, 0.96); box-shadow: var(--shadow-soft); cursor: grab; touch-action: none;
+  position: relative; display: grid; gap: var(--assembly-piece-gap); padding: var(--assembly-piece-pad) calc(var(--assembly-piece-pad) + 1.4rem) var(--assembly-piece-pad) var(--assembly-piece-pad); border: 1px solid rgba(23, 50, 51, 0.1);
+  border-radius: var(--radius-medium); background: rgba(255, 255, 255, 0.96); box-shadow: var(--shadow-soft); touch-action: pan-y;
 }
 .assembly-piece:active,.sortable-drag,.sortable-fallback { cursor: grabbing; }
+.assembly-piece__handle {
+  position: absolute; top: 0.45rem; right: 0.45rem; display: inline-flex; align-items: center; justify-content: center; width: 1.5rem; height: 1.5rem;
+  border-radius: 999px; background: rgba(23, 50, 51, 0.08); color: var(--color-leaf-deep); cursor: grab; touch-action: none; user-select: none;
+}
+.assembly-piece__handle::before { content: "::"; font-size: 1rem; font-weight: 800; line-height: 1; letter-spacing: -0.08em; }
 .assembly-piece.is-selected { outline: 3px solid rgba(255, 111, 97, 0.4); }
 .assembly-piece.is-running { outline: 3px solid rgba(255, 179, 71, 0.48); box-shadow: 0 14px 30px rgba(255, 179, 71, 0.24); transform: translateY(-2px); }
 .assembly-piece.is-drag-source,.sortable-chosen { opacity: 0.35; }

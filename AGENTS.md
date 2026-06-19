@@ -36,7 +36,7 @@ Where activities should change between re-attempts, the alternative version can 
 
 Plan, draft, implement in small stages, verify with user and iterate. Do not dive straight into coding, without clear agreement from user.
 
-Use checkpoint.md, checkpoint_refactor.md and checkpoint_puzzles.md files to track progress, document decisions made during development and indicate next logical slice of work. use the refactor file for refactoring work, and the puzzles file for any puzzle or challenge specific work and the general checkpoint file for general progress and decisions.
+Use checkpoint.md, checkpoint_refactor.md, checkpoint_assembly.md, checkpoint_ui.md and checkpoint_puzzles.md files to track progress, plans, document decisions made during development and indicate next logical slice of work. use the refactor file for refactoring work, the puzzles file for any puzzle or challenge specific work, the ui file for ui tweaks and the assembly file for work on the shared block assembly feature used in different puzzles. Use the general checkpoint file for general progress and decisions that don't fit into a more specialised checkpoint file.
 
 All shared style and functionality should have a single source of truth, and be implemented in a way that allows for easy reuse across all activities. This includes CSS styles, JavaScript functions, and any other shared resources.
 
