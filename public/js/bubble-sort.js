@@ -169,33 +169,35 @@
     });
   }
 
-  function createPieces(numbers) {
+  function createPieces(numbers, vocabulary) {
+    const { families, kickers, labels, socketLabels, emptyLabels } = vocabulary;
+
     return [
       {
         id: "init",
         kind: "statement",
-        kicker: "Setup",
+        kicker: kickers.step,
         label: `set numbers to [${numbers.join(", ")}]`,
       },
       {
         id: "outer-loop",
         kind: "container",
-        kicker: "Loop",
-        label: "loop",
+        kicker: kickers.repeat,
+        label: "",
         sockets: [
           {
             key: "header",
             mode: "single",
-            label: "Condition",
-            emptyLabel: "Drop a condition here",
+            label: socketLabels.repeatHeader,
+            emptyLabel: emptyLabels.condition,
             acceptKinds: ["condition"],
-            acceptFamilies: ["loop"],
+            acceptFamilies: [families.repeat],
           },
           {
             key: "body",
             mode: "sequence",
-            label: "Inside this loop",
-            emptyLabel: "Drop a card into this loop",
+            label: socketLabels.repeatBody,
+            emptyLabel: emptyLabels.stepInLoop,
             acceptKinds: ["statement", "container"],
           },
         ],
@@ -203,29 +205,29 @@
       {
         id: "outer-condition",
         kind: "condition",
-        family: "loop",
-        kicker: "Condition",
+        family: families.repeat,
+        kicker: kickers.condition,
         label: "for pass from 2 to length(numbers):",
       },
       {
         id: "inner-loop",
         kind: "container",
-        kicker: "Loop",
-        label: "loop",
+        kicker: kickers.repeat,
+        label: "",
         sockets: [
           {
             key: "header",
             mode: "single",
-            label: "Condition",
-            emptyLabel: "Drop a condition here",
+            label: socketLabels.repeatHeader,
+            emptyLabel: emptyLabels.condition,
             acceptKinds: ["condition"],
-            acceptFamilies: ["loop"],
+            acceptFamilies: [families.repeat],
           },
           {
             key: "body",
             mode: "sequence",
-            label: "Inside this loop",
-            emptyLabel: "Drop a card into this loop",
+            label: socketLabels.repeatBody,
+            emptyLabel: emptyLabels.stepInLoop,
             acceptKinds: ["statement", "container"],
           },
         ],
@@ -233,29 +235,44 @@
       {
         id: "inner-condition",
         kind: "condition",
-        family: "loop",
-        kicker: "Condition",
+        family: families.repeat,
+        kicker: kickers.condition,
         label: "for index from 0 to length(numbers) - pass:",
       },
       {
-        id: "compare-condition",
+        id: "compare-choice",
         kind: "container",
-        kicker: "Check",
-        label: "if numbers[index] > numbers[index + 1]:",
+        kicker: kickers.choice,
+        label: labels.ifOnly,
         sockets: [
           {
-            key: "body",
+            key: "header",
+            mode: "single",
+            label: socketLabels.choiceHeader,
+            emptyLabel: emptyLabels.condition,
+            acceptKinds: ["condition"],
+            acceptFamilies: [families.choice],
+          },
+          {
+            key: "ifTrue",
             mode: "sequence",
-            label: "If true",
-            emptyLabel: "Drop a card into this check",
+            label: socketLabels.choiceTrue,
+            emptyLabel: emptyLabels.stepInPath,
             acceptKinds: ["statement", "container"],
           },
         ],
       },
       {
+        id: "compare-condition",
+        kind: "condition",
+        family: families.choice,
+        kicker: kickers.condition,
+        label: "numbers[index] > numbers[index + 1]",
+      },
+      {
         id: "swap-step",
         kind: "statement",
-        kicker: "Step",
+        kicker: kickers.step,
         label: "swap them",
       },
     ];
@@ -297,29 +314,29 @@
     });
 
     if (snapshot.root.length === 0) {
-      return "Start with the setup card, then think about the repeated work.";
+      return "Start with the set numbers step, then think about the repeated work.";
     }
 
     if (snapshot.root[0] !== "init") {
-      return "The setup card usually belongs near the start, before the repeated work.";
+      return "The set numbers step usually belongs near the start, before the repeated work.";
     }
 
     if (rootLoops.length === 0) {
-      return "After setup, you still need a loop card to begin the repeating part.";
+      return "After the set numbers step, you still need a repeat block to begin the repeating part.";
     }
 
     if (rootLoops.length > 1) {
       return attemptCount > 0
-        ? "Try putting one loop inside the other instead of leaving both at the top."
-        : "One loop can sit inside another.";
+        ? "Try putting one repeat block inside the other instead of leaving both at the top."
+        : "One repeat block can sit inside another.";
     }
 
     if (placedLoops.some((pieceId) => !snapshot.sockets[pieceId]?.header)) {
-      return "Each loop needs a condition card attached to it.";
+      return "Each repeat block needs a condition attached to it.";
     }
 
     if (!nestedLoopId) {
-      return "One loop can sit inside another so the comparisons repeat inside a bigger repeat.";
+      return "One repeat block can sit inside another so the comparisons repeat inside a bigger repeat.";
     }
 
     if (
@@ -333,24 +350,29 @@
       return "The smaller repeat should sit inside the bigger one.";
     }
 
-    if (!getBody(snapshot, nestedLoopId).includes("compare-condition")) {
-      return "The comparison block belongs inside the smaller repeated section.";
+    if (!getBody(snapshot, nestedLoopId).includes("compare-choice")) {
+      return "The choice block belongs inside the smaller repeated section.";
     }
 
-    if (getBody(snapshot, nestedLoopId)[0] !== "compare-condition") {
-      return "Inside the smaller repeat, compare the two neighbouring numbers before anything else.";
+    if (getBody(snapshot, nestedLoopId)[0] !== "compare-choice") {
+      return "Inside the smaller repeat, use the choice block before anything else.";
     }
 
-    if (!getBody(snapshot, "compare-condition").includes("swap-step")) {
-      return "Swapping only happens inside the comparison block.";
+    const compareChoice = snapshot.sockets["compare-choice"] || {};
+    if (compareChoice.header !== "compare-condition") {
+      return "The choice block needs the comparison condition in its if slot.";
     }
 
-    if (getBody(snapshot, "compare-condition")[0] !== "swap-step") {
-      return "Place the swap step inside the comparison block.";
+    if (!(compareChoice.ifTrue || []).includes("swap-step")) {
+      return "Swapping only happens inside the choice block's true path.";
+    }
+
+    if ((compareChoice.ifTrue || [])[0] !== "swap-step") {
+      return "Place the swap step inside the choice block's true path.";
     }
 
     return attemptCount > 1
-      ? "Check that setup comes first, one loop contains another, and both loops have conditions."
+      ? "Check that the set numbers step comes first, one repeat block contains another, and both repeat blocks have conditions."
       : "You are close. Check what happens first, then what repeats inside what.";
   }
 
@@ -367,7 +389,7 @@
     const nestedLoopId = LOOP_IDS.find((pieceId) => pieceId !== topLoopId);
     const outer = snapshot.sockets[topLoopId];
     const inner = snapshot.sockets[nestedLoopId];
-    const compare = snapshot.sockets["compare-condition"];
+    const compare = snapshot.sockets["compare-choice"];
 
     return (
       Boolean(outer) &&
@@ -376,8 +398,9 @@
       outer.header === "outer-condition" &&
       JSON.stringify(outer.body) === JSON.stringify([nestedLoopId]) &&
       inner.header === "inner-condition" &&
-      JSON.stringify(inner.body) === JSON.stringify(["compare-condition"]) &&
-      JSON.stringify(compare.body) === JSON.stringify(["swap-step"])
+      JSON.stringify(inner.body) === JSON.stringify(["compare-choice"]) &&
+      compare.header === "compare-condition" &&
+      JSON.stringify(compare.ifTrue || []) === JSON.stringify(["swap-step"])
     );
   }
 
@@ -420,10 +443,11 @@
     renderNumberRow(puzzleRow, { numbers: puzzleNumbers, active: [], swapped: false, complete: false });
     animateFrames(demoRow, demoFrames);
 
+    const vocabulary = window.summerFairAssembly.vocabulary;
     const engine = new window.summerFairAssembly.BlockAssemblyEngine({
       paletteMount: page.querySelector("[data-assembly-palette]"),
       workspaceMount: page.querySelector("[data-assembly-workspace]"),
-      pieces: createPieces(puzzleNumbers),
+      pieces: createPieces(puzzleNumbers, vocabulary),
       onChange(event) {
         if (event.type === "reject") {
           setFeedback(event.message, "error");

@@ -5,6 +5,42 @@
 
 (function () {
   const SORTABLE_GROUP = "summer-fair-assembly";
+  const REPLACEMENT_GAP_THRESHOLD = 10;
+  const SEQUENCE_INSERT_BAND = 18;
+  const ASSEMBLY_VOCABULARY = Object.freeze({
+    families: {
+      repeat: "repeat",
+      choice: "choice",
+    },
+    kickers: {
+      repeat: "Repeat",
+      choice: "Choice",
+      step: "Step",
+      condition: "Condition",
+      number: "Number",
+    },
+    labels: {
+      repeatCount: "for count",
+      untilFinish: "until finish",
+      choice: "",
+      ifOnly: "",
+    },
+    socketLabels: {
+      repeatHeader: "",
+      repeatBody: "Inside this loop",
+      choiceHeader: "If",
+      choiceTrue: "Is true",
+      choiceOtherwise: "Otherwise",
+      number: "Number",
+    },
+    emptyLabels: {
+      condition: "Drop a condition here",
+      stepInLoop: "Drop a step into this loop",
+      stepInPath: "Drop a step into this path",
+      optionalPath: "Optional other path",
+      number: "Drop a number here",
+    },
+  });
 
   function shuffle(items) {
     const copy = [...items];
@@ -21,6 +57,7 @@
     return JSON.parse(JSON.stringify(value));
   }
 
+  // Shared assembly state and placement rules live here so puzzles only provide piece data and validation.
   class BlockAssemblyEngine {
     constructor(options) {
       if (!window.Sortable) {
@@ -38,6 +75,14 @@
       this.containerMetas = new Map();
       this.selectedPieceId = null;
       this.lastPointerPoint = null;
+      this.lastDragRect = null;
+      this.activeResolvedTarget = null;
+      this.activeDragPieceId = null;
+      this.activeDragElement = null;
+      this.replacementGapThreshold = options.replacementGapThreshold ?? REPLACEMENT_GAP_THRESHOLD;
+      this.handleTrackedDragMove = (event) => {
+        this.handleGlobalDragMove(event);
+      };
 
       this.bindMountEvents();
 
@@ -86,6 +131,9 @@
       this.state.palette = shuffle(this.allPieceIds);
       this.selectedPieceId = null;
       this.lastPointerPoint = null;
+      this.lastDragRect = null;
+      this.activeResolvedTarget = null;
+      this.stopDragTracking();
       this.render();
 
       if (emit) {
@@ -116,6 +164,7 @@
         return { parentType: "root", ownerId: null, socketKey: "root", index: rootIndex, mode: "sequence" };
       }
 
+      // Walk downward through nested sockets and report the immediate owner of the requested piece.
       const searchOwner = (ownerId) => {
         const socketState = this.state.sockets[ownerId];
         if (!socketState) {
@@ -258,10 +307,6 @@
       const handle = document.createElement("span");
       handle.className = "assembly-piece__handle";
       handle.setAttribute("aria-hidden", "true");
-      handle.addEventListener("click", (event) => {
-        event.preventDefault();
-        event.stopPropagation();
-      });
       element.append(handle);
 
       if (piece.kicker) {
@@ -293,7 +338,11 @@
         input.placeholder = piece.input.placeholder || "";
         input.value = this.state.values[pieceId] ?? piece.input.defaultValue ?? "";
         input.setAttribute("aria-label", piece.input.ariaLabel || piece.label);
+        if (piece.input.maxLength) {
+          input.maxLength = piece.input.maxLength;
+        }
 
+        // Inputs keep their own pointer/key events so editing values does not trigger selection or dragging.
         ["pointerdown", "mousedown", "touchstart", "click", "keydown"].forEach((eventName) => {
           input.addEventListener(eventName, (event) => {
             event.stopPropagation();
@@ -314,10 +363,12 @@
           const socketWrap = document.createElement("section");
           socketWrap.className = `assembly-container__socket assembly-container__socket--${socket.mode}`;
 
-          const socketLabel = document.createElement("p");
-          socketLabel.className = "assembly-container__socket-label";
-          socketLabel.textContent = socket.label;
-          socketWrap.append(socketLabel);
+          if (socket.label) {
+            const socketLabel = document.createElement("p");
+            socketLabel.className = "assembly-container__socket-label";
+            socketLabel.textContent = socket.label;
+            socketWrap.append(socketLabel);
+          }
 
           const socketMeta = {
             ownerId: pieceId,
@@ -388,6 +439,18 @@
         .map((child) => child.dataset.pieceId);
     }
 
+    // Ghost placeholders help Sortable show provisional spacing, but they must not become semantic targets.
+    getMaterialContainerPieces(container) {
+      if (!container) {
+        return [];
+      }
+
+      return Array.from(container.children).filter((child) => {
+        return child.classList.contains("assembly-piece") && !child.classList.contains("sortable-ghost");
+      });
+    }
+
+    // Sortable mutates the DOM first, so drag completion rebuilds the canonical state from the current containers.
     syncStateFromDom() {
       const nextState = this.buildEmptyState();
       nextState.palette = this.readContainerPieces(this.containerElements.get("palette"));
@@ -526,26 +589,6 @@
       return state.sockets[targetMeta.ownerId]?.[targetMeta.socketKey] || null;
     }
 
-    getSequenceInsertIndex(container, point) {
-      if (!container) {
-        return 0;
-      }
-
-      const children = Array.from(container.children).filter((child) => child.classList.contains("assembly-piece"));
-      if (children.length === 0 || !point) {
-        return children.length;
-      }
-
-      for (let index = 0; index < children.length; index += 1) {
-        const rect = children[index].getBoundingClientRect();
-        if (point.y < rect.top + rect.height / 2) {
-          return index;
-        }
-      }
-
-      return children.length;
-    }
-
     getPointFromEvent(event) {
       const source = event?.changedTouches?.[0] || event?.touches?.[0] || event;
       if (typeof source?.clientX !== "number" || typeof source?.clientY !== "number") {
@@ -584,42 +627,211 @@
       return scope === "workspace" ? this.workspaceMount : this.paletteMount;
     }
 
-    getDistanceToRect(point, rect) {
-      const dx = point.x < rect.left ? rect.left - point.x : point.x > rect.right ? point.x - rect.right : 0;
-      const dy = point.y < rect.top ? rect.top - point.y : point.y > rect.bottom ? point.y - rect.bottom : 0;
-      return Math.hypot(dx, dy);
+    createRect(left, top, right, bottom) {
+      return {
+        left,
+        top,
+        right,
+        bottom,
+        width: Math.max(0, right - left),
+        height: Math.max(0, bottom - top),
+      };
     }
 
-    resolvePlacementTarget(pieceId, scope, point, exactContainerId = null) {
-      const scopeMount = this.getScopeMount(scope);
-      if (!scopeMount) {
+    getRectFromPoint(point) {
+      if (!point) {
         return null;
       }
 
-      const exactContainer = exactContainerId ? this.containerElements.get(exactContainerId) : null;
-      const exactMeta = exactContainerId ? this.containerMetas.get(exactContainerId) : null;
-      if (exactContainer && exactMeta && scopeMount.contains(exactContainer) && this.canPlace(pieceId, exactMeta)) {
-        return {
-          slotMeta: exactMeta,
-          index: exactMeta.mode === "sequence" ? this.getSequenceInsertIndex(exactContainer, point) : 0,
-        };
+      return this.createRect(point.x, point.y, point.x, point.y);
+    }
+
+    isPointInsideRect(point, rect) {
+      if (!point || !rect) {
+        return false;
       }
 
-      let bestMatch = null;
+      return point.x >= rect.left && point.x <= rect.right && point.y >= rect.top && point.y <= rect.bottom;
+    }
 
+    getRectGap(sourceRect, targetRect) {
+      if (!sourceRect || !targetRect) {
+        return Number.POSITIVE_INFINITY;
+      }
+
+      const dx = sourceRect.right < targetRect.left
+        ? targetRect.left - sourceRect.right
+        : targetRect.right < sourceRect.left
+          ? sourceRect.left - targetRect.right
+          : 0;
+      const dy = sourceRect.bottom < targetRect.top
+        ? targetRect.top - sourceRect.bottom
+        : targetRect.bottom < sourceRect.top
+          ? sourceRect.top - targetRect.bottom
+          : 0;
+
+      return Math.hypot(dx, dy);
+    }
+
+    getPieceElement(pieceId) {
+      for (const mount of [this.paletteMount, this.workspaceMount]) {
+        const element = mount?.querySelector(`[data-piece-id="${pieceId}"]`);
+        if (element) {
+          return element;
+        }
+      }
+
+      return null;
+    }
+
+    getDragRect(draggedElement, point) {
+      const liveDragElement = document.querySelector(".sortable-fallback") || document.querySelector(".sortable-drag");
+      const rectSource = liveDragElement || draggedElement;
+      if (rectSource) {
+        return rectSource.getBoundingClientRect();
+      }
+
+      return this.getRectFromPoint(point);
+    }
+
+    getSequenceCandidateRect(containerRect, lineY) {
+      const halfBand = SEQUENCE_INSERT_BAND / 2;
+      return this.createRect(
+        containerRect.left,
+        Math.max(containerRect.top, lineY - halfBand),
+        containerRect.right,
+        Math.min(containerRect.bottom, lineY + halfBand)
+      );
+    }
+
+    buildSequenceCandidates(container, slotMeta) {
+      const containerRect = container.getBoundingClientRect();
+      const children = this.getMaterialContainerPieces(container);
+
+      if (children.length === 0) {
+        return [{
+          container,
+          containerId: container.dataset.containerId,
+          slotMeta,
+          index: 0,
+          rect: containerRect,
+          occupantPieceId: null,
+          occupantRect: null,
+        }];
+      }
+
+      const childRects = children.map((child) => child.getBoundingClientRect());
+      const insertionLines = [
+        childRects[0].top > containerRect.top
+          ? (containerRect.top + childRects[0].top) / 2
+          : childRects[0].top,
+      ];
+      for (let index = 1; index < childRects.length; index += 1) {
+        insertionLines.push((childRects[index - 1].bottom + childRects[index].top) / 2);
+      }
+      insertionLines.push(
+        childRects[childRects.length - 1].bottom < containerRect.bottom
+          ? (childRects[childRects.length - 1].bottom + containerRect.bottom) / 2
+          : childRects[childRects.length - 1].bottom,
+      );
+
+      return insertionLines.map((lineY, index) => ({
+        container,
+        containerId: container.dataset.containerId,
+        slotMeta,
+        index,
+        rect: this.getSequenceCandidateRect(containerRect, lineY),
+        occupantPieceId: null,
+        occupantRect: null,
+      }));
+    }
+
+    buildSingleCandidate(container, slotMeta, draggedPieceId) {
+      const occupantElement = this.getMaterialContainerPieces(container).find((child) => {
+        return child.classList.contains("assembly-piece") && child.dataset.pieceId !== draggedPieceId;
+      });
+
+      return {
+        container,
+        containerId: container.dataset.containerId,
+        slotMeta,
+        index: 0,
+        rect: occupantElement?.getBoundingClientRect() || container.getBoundingClientRect(),
+        occupantPieceId: occupantElement?.dataset.pieceId || null,
+        occupantRect: occupantElement?.getBoundingClientRect() || null,
+      };
+    }
+
+    // Build every structurally valid landing option in the requested column before choosing a winner.
+    collectPlacementCandidates(pieceId, scope) {
+      const scopeMount = this.getScopeMount(scope);
+      if (!scopeMount) {
+        return [];
+      }
+
+      const candidates = [];
       this.containerElements.forEach((container, containerId) => {
         const slotMeta = this.containerMetas.get(containerId);
         if (!slotMeta || !scopeMount.contains(container) || !this.canPlace(pieceId, slotMeta)) {
           return;
         }
 
-        const rect = container.getBoundingClientRect();
-        const distance = point ? this.getDistanceToRect(point, rect) : 0;
+        if (slotMeta.mode === "sequence") {
+          candidates.push(...this.buildSequenceCandidates(container, slotMeta));
+          return;
+        }
 
-        if (!bestMatch || distance < bestMatch.distance) {
-          bestMatch = { container, slotMeta, distance };
+        candidates.push(this.buildSingleCandidate(container, slotMeta, pieceId));
+      });
+
+      return candidates;
+    }
+
+    chooseBestCandidate(candidates, draggedRect, point, exactContainerId = null, preferExactContainer = false) {
+      let bestMatch = null;
+
+      candidates.forEach((candidate) => {
+        const distance = this.getRectGap(draggedRect, candidate.rect);
+        const exactPriority = preferExactContainer && exactContainerId === candidate.containerId && this.isPointInsideRect(point, candidate.rect) ? 1 : 0;
+
+        if (
+          !bestMatch
+          || exactPriority > bestMatch.exactPriority
+          || (exactPriority === bestMatch.exactPriority && distance < bestMatch.distance)
+        ) {
+          bestMatch = { candidate, distance, exactPriority };
         }
       });
+
+      return bestMatch?.candidate || null;
+    }
+
+    // Replacement is intentional only when the dragged block is truly on top of a compatible occupant.
+    resolvePlacementTarget(pieceId, scope, options = {}) {
+      const point = options.point || null;
+      const draggedRect = options.dragRect || this.getDragRect(options.draggedElement, point);
+      const candidates = this.collectPlacementCandidates(pieceId, scope);
+      if (!candidates.length) {
+        return null;
+      }
+
+      const replacementCandidates = candidates.filter((candidate) => {
+        if (!candidate.occupantPieceId) {
+          return false;
+        }
+
+        return this.getRectGap(draggedRect, candidate.occupantRect || candidate.rect) <= this.replacementGapThreshold;
+      });
+
+      const unoccupiedCandidates = candidates.filter((candidate) => !candidate.occupantPieceId);
+      const pool = replacementCandidates.length > 0 ? replacementCandidates : unoccupiedCandidates;
+      const bestMatch = this.chooseBestCandidate(
+        pool,
+        draggedRect,
+        point,
+        options.exactContainerId || null,
+        options.preferExactContainer || false
+      );
 
       if (!bestMatch) {
         return null;
@@ -627,8 +839,106 @@
 
       return {
         slotMeta: bestMatch.slotMeta,
-        index: bestMatch.slotMeta.mode === "sequence" ? this.getSequenceInsertIndex(bestMatch.container, point) : 0,
+        index: bestMatch.index,
+        candidate: bestMatch,
       };
+    }
+
+    clearResolvedTargetHighlight() {
+      [this.paletteMount, this.workspaceMount].forEach((mount) => {
+        if (!mount) {
+          return;
+        }
+
+        mount.querySelectorAll(".is-drop-target, .is-replacement-target, .is-insert-before, .is-insert-after").forEach((element) => {
+          element.classList.remove("is-drop-target", "is-replacement-target", "is-insert-before", "is-insert-after");
+        });
+
+        mount.querySelectorAll("[data-insert-marker]").forEach((element) => {
+          delete element.dataset.insertMarker;
+        });
+      });
+    }
+
+    applyResolvedTargetHighlight(resolvedTarget) {
+      this.clearResolvedTargetHighlight();
+      if (!resolvedTarget?.candidate) {
+        return;
+      }
+
+      const { candidate } = resolvedTarget;
+      const container = this.containerElements.get(candidate.containerId);
+      if (!container) {
+        return;
+      }
+
+      if (candidate.occupantPieceId) {
+        container.classList.add("is-drop-target");
+        const occupantElement = this.getPieceElement(candidate.occupantPieceId);
+        occupantElement?.classList.add("is-replacement-target");
+        return;
+      }
+
+      if (candidate.slotMeta.mode !== "sequence") {
+        container.classList.add("is-drop-target");
+        return;
+      }
+
+      const pieces = this.getMaterialContainerPieces(container);
+      if (pieces.length === 0) {
+        container.classList.add("is-drop-target");
+        return;
+      }
+
+      const containerRect = container.getBoundingClientRect();
+      const markerY = ((candidate.rect.top + candidate.rect.bottom) / 2) - containerRect.top;
+      container.dataset.insertMarker = "line";
+      container.style.setProperty("--assembly-insert-marker-y", `${markerY}px`);
+    }
+
+    startDragTracking(pieceId, draggedElement) {
+      this.activeDragPieceId = pieceId;
+      this.activeDragElement = draggedElement;
+      window.addEventListener("mousemove", this.handleTrackedDragMove, { passive: true });
+      window.addEventListener("touchmove", this.handleTrackedDragMove, { passive: true });
+    }
+
+    stopDragTracking() {
+      window.removeEventListener("mousemove", this.handleTrackedDragMove);
+      window.removeEventListener("touchmove", this.handleTrackedDragMove);
+      this.activeDragPieceId = null;
+      this.activeDragElement = null;
+    }
+
+    // Sortable's move callback is not continuous inside one container, so highlighting needs its own light retarget pass.
+    handleGlobalDragMove(event) {
+      if (!this.activeDragPieceId) {
+        return;
+      }
+
+      const point = this.getPointFromEvent(event) || this.lastPointerPoint;
+      if (!point) {
+        return;
+      }
+
+      this.lastPointerPoint = point;
+      this.lastDragRect = this.getDragRect(this.activeDragElement, point);
+
+      const scope = this.getScopeForPoint(point);
+      if (!scope) {
+        this.activeResolvedTarget = null;
+        this.clearResolvedTargetHighlight();
+        return;
+      }
+
+      const resolved = this.resolvePlacementTarget(this.activeDragPieceId, scope, {
+        point,
+        dragRect: this.lastDragRect,
+        draggedElement: this.activeDragElement,
+      });
+
+      this.activeResolvedTarget = resolved ? { ...resolved, pieceId: this.activeDragPieceId, scope } : null;
+      this.applyResolvedTargetHighlight(this.activeResolvedTarget);
     }
 
     movePiece(pieceId, targetMeta, index = 0) {
@@ -672,7 +982,13 @@
 
     handlePieceClick(event, pieceId) {
       if (this.selectedPieceId && this.selectedPieceId !== pieceId) {
-        return;
+        const clickedLocation = this.findPieceLocation(pieceId);
+        const clickedMeta = this.getMetaForLocation(clickedLocation);
+
+        // A click on an occupied compatible slot should bubble so scope click can treat it as placement/replacement.
+        if (clickedMeta && this.canPlace(this.selectedPieceId, clickedMeta)) {
+          return;
+        }
       }
 
       event.preventDefault();
@@ -688,7 +1004,12 @@
 
       const exactContainerId = event.target.closest("[data-container-id]")?.dataset.containerId || null;
       const point = this.getPointFromEvent(event);
-      const target = this.resolvePlacementTarget(this.selectedPieceId, scope, point, exactContainerId);
+      const target = this.resolvePlacementTarget(this.selectedPieceId, scope, {
+        point,
+        dragRect: this.getRectFromPoint(point),
+        exactContainerId,
+        preferExactContainer: true,
+      });
 
       if (!target) {
         this.emitPlacementRejected(this.selectedPieceId);
@@ -726,33 +1047,39 @@
       });
     }
 
-    isMoveAllowed(draggedPieceId, targetMeta, targetContainer, sourceContainer) {
-      if (!this.canPlace(draggedPieceId, targetMeta)) {
-        return false;
-      }
-
-      if (targetMeta.mode === "single") {
-        const existing = this.readContainerPieces(targetContainer).filter((pieceId) => pieceId !== draggedPieceId);
-        if (existing.length > 0 && sourceContainer !== targetContainer) {
-          return false;
-        }
-      }
-
-      return true;
+    isMoveAllowed(draggedPieceId, targetMeta) {
+      return Boolean(targetMeta) && this.canPlace(draggedPieceId, targetMeta);
     }
 
     handleSortMove(event, originalEvent) {
-      this.lastPointerPoint = this.getPointFromEvent(originalEvent) || this.lastPointerPoint;
+      const point = this.getPointFromEvent(originalEvent) || this.lastPointerPoint;
+      this.lastPointerPoint = point;
+      this.lastDragRect = this.getDragRect(event.dragged, point);
 
       const draggedPieceId = event.dragged?.dataset.pieceId;
       const targetId = event.to?.dataset.containerId;
       const targetMeta = this.containerMetas.get(targetId);
+      const scope = this.getScopeForPoint(point);
+
+      if (draggedPieceId && scope) {
+        const resolved = this.resolvePlacementTarget(draggedPieceId, scope, {
+          point,
+          dragRect: this.lastDragRect,
+          draggedElement: event.dragged,
+        });
+
+        this.activeResolvedTarget = resolved ? { ...resolved, pieceId: draggedPieceId, scope } : null;
+        this.applyResolvedTargetHighlight(this.activeResolvedTarget);
+      } else {
+        this.activeResolvedTarget = null;
+        this.clearResolvedTargetHighlight();
+      }
 
       if (!draggedPieceId || !targetMeta) {
         return false;
       }
 
-      return this.isMoveAllowed(draggedPieceId, targetMeta, event.to, event.from);
+      return this.isMoveAllowed(draggedPieceId, targetMeta);
     }
 
     handleSortEnd(event) {
@@ -761,13 +1088,20 @@
       const targetMeta = this.containerMetas.get(targetId);
       const point = this.lastPointerPoint || this.getPointFromEvent(event.originalEvent);
       const scope = this.getScopeForPoint(point);
+      const resolvedFromMove = this.activeResolvedTarget?.pieceId === pieceId && this.activeResolvedTarget.scope === scope
+        ? this.activeResolvedTarget
+        : null;
 
       this.syncStateFromDom();
 
       let finalTargetMeta = targetMeta;
 
       if (pieceId && scope) {
-        const resolved = this.resolvePlacementTarget(pieceId, scope, point, scope === "workspace" ? targetId : null);
+        const resolved = resolvedFromMove || this.resolvePlacementTarget(pieceId, scope, {
+          point,
+          dragRect: this.lastDragRect,
+          exactContainerId: scope === "workspace" ? targetId : null,
+        });
 
         if (resolved) {
           const result = this.movePiece(pieceId, resolved.slotMeta, resolved.index);
@@ -785,7 +1119,11 @@
         this.render();
       }
 
+      this.stopDragTracking();
+      this.clearResolvedTargetHighlight();
       this.lastPointerPoint = null;
+      this.lastDragRect = null;
+      this.activeResolvedTarget = null;
       this.selectedPieceId = null;
       this.refreshSelectionState();
 
@@ -799,7 +1137,6 @@
         group: SORTABLE_GROUP,
         animation: 150,
         draggable: ".assembly-piece",
-        handle: ".assembly-piece__handle",
         sort: meta.mode !== "single",
         fallbackOnBody: true,
         forceFallback: true,
@@ -813,12 +1150,16 @@
         ghostClass: "sortable-ghost",
         chosenClass: "sortable-chosen",
         dragClass: "sortable-drag",
+        onStart: (event) => {
+          this.startDragTracking(event.item?.dataset.pieceId || null, event.item || null);
+        },
         onMove: (event, originalEvent) => this.handleSortMove(event, originalEvent),
         onEnd: (event) => this.handleSortEnd(event),
       });
     }
 
     destroySortables() {
+      this.stopDragTracking();
       this.sortables.forEach((sortable) => sortable.destroy());
       this.sortables = [];
     }
@@ -832,6 +1173,7 @@
 
     render() {
       this.destroySortables();
+      this.activeResolvedTarget = null;
       this.containerElements = new Map();
       this.containerMetas = new Map();
       this.renderPalette();
@@ -844,5 +1186,6 @@
 
   window.summerFairAssembly = {
     BlockAssemblyEngine,
+    vocabulary: ASSEMBLY_VOCABULARY,
   };
 })();

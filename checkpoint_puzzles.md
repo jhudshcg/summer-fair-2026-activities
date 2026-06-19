@@ -1,5 +1,16 @@
 ## Algorithm Maze Slice
 
+## Dev log
+
+### 2026-06-19
+
+- Keep puzzle-specific code unchanged until the shared assembly resolver is corrected in one place.
+- After the shared assembly pass lands, validate Bubble Sort and Algorithm Maze against the same target-resolution rules:
+	- workspace-top insertion still works
+	- nested "inside this loop" placements resolve from whole-block proximity
+	- condition-on-condition drops replace existing compatible occupants when directly overlapped
+	- drag highlight matches final placement
+
 Date: 2026-06-17
 
 ### Scope for this slice

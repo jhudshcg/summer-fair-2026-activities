@@ -290,45 +290,49 @@
     return position.x === maze.finish.x && position.y === maze.finish.y;
   }
 
-  function createLoopPiece(pieceId) {
+  function createLoopPiece(pieceId, vocabulary) {
+    const { families, kickers, socketLabels, emptyLabels } = vocabulary;
+
     return {
       id: pieceId,
       kind: "container",
-      kicker: "Loop",
-      label: "repeat",
+      kicker: kickers.repeat,
+      label: "",
       sockets: [
         {
           key: "header",
           mode: "single",
-          label: "Condition",
-          emptyLabel: "Drop a loop condition here",
+          label: socketLabels.repeatHeader,
+          emptyLabel: emptyLabels.condition,
           acceptKinds: ["condition"],
-          acceptFamilies: ["repeat"],
+          acceptFamilies: [families.repeat],
         },
         {
           key: "body",
           mode: "sequence",
-          label: "Inside this loop",
-          emptyLabel: "Drop a step into this loop",
+          label: socketLabels.repeatBody,
+          emptyLabel: emptyLabels.stepInLoop,
           acceptKinds: ["statement", "container"],
         },
       ],
     };
   }
 
-  function createCountCondition(pieceId, valueFamily) {
+  function createCountCondition(pieceId, valueFamily, vocabulary) {
+    const { families, kickers, labels, socketLabels, emptyLabels } = vocabulary;
+
     return {
       id: pieceId,
       kind: "condition",
-      family: "repeat",
-      kicker: "Condition",
-      label: "repeat _ times",
+      family: families.repeat,
+      kicker: kickers.condition,
+      label: labels.repeatCount,
       sockets: [
         {
           key: "value",
           mode: "single",
-          label: "Number",
-          emptyLabel: "Drop a number here",
+          label: socketLabels.number,
+          emptyLabel: emptyLabels.number,
           acceptKinds: ["value"],
           acceptFamilies: [valueFamily],
         },
@@ -336,12 +340,14 @@
     };
   }
 
-  function createValuePiece(pieceId, family) {
+  function createValuePiece(pieceId, family, vocabulary) {
+    const { kickers } = vocabulary;
+
     return {
       id: pieceId,
       kind: "value",
       family,
-      kicker: "Number",
+      kicker: kickers.number,
       label: "",
       input: {
         type: "number",
@@ -351,128 +357,133 @@
         step: "1",
         placeholder: "2",
         defaultValue: "",
+        maxLength: 6,
         ariaLabel: "Repeat count",
       },
     };
   }
 
-  function createBranchPiece(pieceId) {
+  function createBranchPiece(pieceId, vocabulary) {
+    const { families, kickers, labels, socketLabels, emptyLabels } = vocabulary;
+
     return {
       id: pieceId,
       kind: "container",
-      kicker: "Choice",
-      label: "if ... then ... else ...",
+      kicker: kickers.choice,
+      label: labels.choice,
       sockets: [
         {
           key: "header",
           mode: "single",
-          label: "Condition",
-          emptyLabel: "Drop a choice condition here",
+          label: socketLabels.choiceHeader,
+          emptyLabel: emptyLabels.condition,
           acceptKinds: ["condition"],
-          acceptFamilies: ["branch"],
+          acceptFamilies: [families.choice],
         },
         {
           key: "ifTrue",
           mode: "sequence",
-          label: "If true",
-          emptyLabel: "Drop a step into this path",
+          label: socketLabels.choiceTrue,
+          emptyLabel: emptyLabels.stepInPath,
           acceptKinds: ["statement", "container"],
         },
         {
           key: "otherwise",
           mode: "sequence",
-          label: "Otherwise",
-          emptyLabel: "Optional other path",
+          label: socketLabels.choiceOtherwise,
+          emptyLabel: emptyLabels.optionalPath,
           acceptKinds: ["statement", "container"],
         },
       ],
     };
   }
 
-  function createPieces() {
+  function createPieces(vocabulary) {
+    const { families, kickers, labels } = vocabulary;
+
     return [
-      createLoopPiece(LOOP_IDS[0]),
-      createLoopPiece(LOOP_IDS[1]),
-      createLoopPiece(LOOP_IDS[2]),
-      createCountCondition(COUNT_CONDITION_IDS[0], "repeat-value-1"),
-      createCountCondition(COUNT_CONDITION_IDS[1], "repeat-value-2"),
+      createLoopPiece(LOOP_IDS[0], vocabulary),
+      createLoopPiece(LOOP_IDS[1], vocabulary),
+      createLoopPiece(LOOP_IDS[2], vocabulary),
+      createCountCondition(COUNT_CONDITION_IDS[0], "repeat-value-1", vocabulary),
+      createCountCondition(COUNT_CONDITION_IDS[1], "repeat-value-2", vocabulary),
       {
         id: UNTIL_CONDITION_ID,
         kind: "condition",
-        family: "repeat",
-        kicker: "Condition",
-        label: "repeat until finish",
+        family: families.repeat,
+        kicker: kickers.condition,
+        label: labels.untilFinish,
       },
-      createValuePiece("repeat-count-value-1", "repeat-value-1"),
-      createValuePiece("repeat-count-value-2", "repeat-value-2"),
-      createBranchPiece(BRANCH_IDS[0]),
-      createBranchPiece(BRANCH_IDS[1]),
+      createValuePiece("repeat-count-value-1", "repeat-value-1", vocabulary),
+      createValuePiece("repeat-count-value-2", "repeat-value-2", vocabulary),
+      createBranchPiece(BRANCH_IDS[0], vocabulary),
+      createBranchPiece(BRANCH_IDS[1], vocabulary),
       {
         id: BRANCH_LEFT_CONDITION_ID,
         kind: "condition",
-        family: "branch",
-        kicker: "Condition",
-        label: "if there is a path to the left",
+        family: families.choice,
+        kicker: kickers.condition,
+        label: "there is a path to the left",
       },
       {
         id: BRANCH_RIGHT_CONDITION_ID,
         kind: "condition",
-        family: "branch",
-        kicker: "Condition",
-        label: "if there is a path to the right",
+        family: families.choice,
+        kicker: kickers.condition,
+        label: "there is a path to the right",
       },
       {
         id: "forward-1",
         kind: "statement",
-        kicker: "Step",
+        kicker: kickers.step,
         label: "move forward",
       },
       {
         id: "forward-2",
         kind: "statement",
-        kicker: "Step",
+        kicker: kickers.step,
         label: "move forward",
       },
       {
         id: "forward-3",
         kind: "statement",
-        kicker: "Step",
+        kicker: kickers.step,
         label: "move forward",
       },
       {
         id: "forward-4",
         kind: "statement",
-        kicker: "Step",
+        kicker: kickers.step,
         label: "move forward",
       },
       {
         id: "turn-left-1",
         kind: "statement",
-        kicker: "Step",
+        kicker: kickers.step,
         label: "turn left",
       },
       {
         id: "turn-left-2",
         kind: "statement",
-        kicker: "Step",
+        kicker: kickers.step,
         label: "turn left",
       },
       {
         id: "turn-left-3",
         kind: "statement",
-        kicker: "Step",
+        kicker: kickers.step,
         label: "turn left",
       },
       {
         id: "turn-right-1",
         kind: "statement",
-        kicker: "Step",
+        kicker: kickers.step,
         label: "turn right",
       },
       {
         id: "turn-right-2",
         kind: "statement",
-        kicker: "Step",
+        kicker: kickers.step,
         label: "turn right",
       },
     ];
@@ -989,10 +1000,11 @@
       node.textContent = activity.keyPart;
     });
 
+    const vocabulary = window.summerFairAssembly.vocabulary;
     const engine = new window.summerFairAssembly.BlockAssemblyEngine({
       paletteMount: page.querySelector("[data-assembly-palette]"),
       workspaceMount: page.querySelector("[data-assembly-workspace]"),
-      pieces: createPieces(),
+      pieces: createPieces(vocabulary),
       onChange(event) {
         if (event.type === "reject") {
           setFeedback(event.message, "error");

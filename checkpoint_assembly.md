@@ -2,6 +2,50 @@
 
 read the challenge_spec sections on shared assembly functionality and document implementation plans, progress and future direction here.
 
+## Dev log
+
+### 2026-06-19
+
+- Agreed implementation plan for the current shared assembly fix:
+    - replace point-led resolution with a shared bbox-led resolver in `public/js/assembly.js`
+    - treat compatible occupied single sockets as replaceable only when the dragged block overlaps or nearly overlaps the existing compatible occupant
+    - otherwise prefer unoccupied compatible targets, while keeping top and bottom sequence insertion targets available in workspace and nested sequence containers
+    - use one resolver for drag highlight, drag-end correction and tap-to-place target selection
+    - stop requiring the dotted handle as the only drag origin and remove the layout padding reserved for it
+    - add concise comments for the shared class, resolver helpers and other subtle assembly logic while implementing the change
+- First validation target after the first substantive code edit:
+    - `node --check public/js/assembly.js`
+    - then focused browser checks on Bubble Sort and Algorithm Maze for top insertion, nested insertion, replacement and drag-highlight agreement
+- Follow-up implementation refinement after first browser feedback:
+    - narrow sequence insertion candidates from large half-container regions to thin insertion bands at true top/between/bottom insertion lines
+    - add lightweight global drag-move tracking during active Sortable drags so highlight/target choice keeps updating even when Sortable does not emit a fresh `onMove` for every pointer move inside one container
+    - rename Bubble Sort's initial `set numbers` piece from `Setup` to `Step` so it behaves and reads like a normal statement rather than a special-case category
+    - exclude Sortable ghost placeholders from shared sequence-target and replacement-target calculations so provisional drag spacing does not create fake semantic targets or duplicate highlight cues
+    - make the palette and workspace column containers stretch to matching height so column-relative nearest-target behaviour has a more consistent layout surface
+    - centralize shared block vocabulary in `public/js/assembly.js` so repeat/choice/condition/number labels and socket names stay consistent across puzzles
+    - split Bubble Sort's comparison into a separate choice block plus comparison-condition piece, and update Bubble Sort validation to match that structure
+    - tighten shared container/value spacing so repeat, choice and number blocks read more compactly on phones
+- Current validation state:
+    - `node --check public/js/assembly.js`
+    - `node --check public/js/bubble-sort.js`
+    - editor checks clean for touched JS/CSS/Markdown files
+    - browser validation is partially blocked by stale cached JS in existing tabs, so the latest retargeting fix still needs a clean hard-refresh or cache-busted asset load for reliable hands-on drag verification
+- Implementation progress recorded after the first resolver pass:
+    - added shared bbox/rect helpers and candidate collection for sequence and single-socket targets
+    - added replacement precedence based on dragged-rect proximity to occupied compatible socket content
+    - added shared drag-target highlight state for replacement and sequence insertion positions
+    - removed handle-only dragging in JS and removed the extra handle padding in shared puzzle CSS
+    - added concise comments around shared state sync, subtree lookup, resolver intent and subtle tap-selection behaviour
+    - refined tap-selection so occupied compatible socket content can still bubble to scope placement logic, while ordinary piece taps can switch selection
+- Validation status after implementation:
+    - `node --check public/js/assembly.js` passes
+    - editor checks are clean for `public/js/assembly.js` and `public/css/puzzles.css`
+    - cache-busted Bubble Sort page confirms the handle padding/layout regression is removed in live CSS
+    - Bubble Sort tap-placement path was browser-checked successfully for:
+        - placing Setup above an existing loop at workspace top
+        - placing the compare block into the loop body
+    - drag-specific browser verification and clean Maze replacement verification still need another hands-on pass; browser automation was unreliable for Sortable-driven drag state and produced inconsistent synthetic-click results on the Maze page
+
 ## Assembly movement slice plan
 
 Date: 2026-06-19
@@ -22,9 +66,14 @@ Date: 2026-06-19
 - Nearest compatible target logic applies to both:
     - drag release
     - second tap placement
-- Replacement is required only where the nearest compatible target is a filled compatible socket, for example a condition/header socket.
+- Drag target resolution should use the dragged block bbox against all compatible target bboxes in the relevant column rather than a single pointer point.
+- Replacement is required only for replaceable filled compatible single sockets, for example a condition/header socket.
+- Replacement should win only when the dragged block bbox overlaps, or nearly overlaps within a small threshold, the compatible existing occupant bbox.
+- If that replacement-overlap rule is not met, unoccupied compatible targets should win instead.
+- For non-single-occupant placements inside sequence containers, the top and bottom insertion targets of the relevant workspace/container must remain valid candidates.
 - The block should return to its original position if cross-column placement finds no compatible target.
 - Compactness should improve, but only as a light shared spacing adjustment rather than a redesign.
+- During drag, the currently chosen nearest compatible target should be highlighted for UX clarity and debugging.
 - Valid-target highlighting during tap selection is not part of the agreed requirement for this slice.
 
 ### SortableJS evaluation for this slice
@@ -89,7 +138,10 @@ Date: 2026-06-19
 ### Guardrails for implementation
 
 - Do not replace SortableJS drag sensing with bespoke pointer-tracking code.
-- Do not add target-highlighting systems that are not part of the agreed requirement.
+- Keep SortableJS as the drag engine, but do not treat Sortable's hovered insertion choice as the source of truth for semantic target resolution.
+- Use one shared resolver for drag highlighting, drag-end correction, replacement selection and tap-to-place.
+- When a compatible replaceable occupant is directly overlapped or nearly overlapped, prefer replacement; otherwise prefer an unoccupied compatible target or reject.
+- Preserve top and bottom sequence insertion candidates for workspace/container placements even while adding socket replacement logic.
 - Do not widen this slice into run-trace or workspace-float work.
 - Prefer one shared placement algorithm used by both drag-drop correction and tap-to-place.
 - Preserve wrong-but-structurally-possible assemblies; only impossible attachment types should be blocked.
@@ -139,3 +191,12 @@ Date: 2026-06-19
     - replacement/displacement rules
     - drag-end correction versus normal Sortable movement
 - Keep visual trace and workspace float deferred until the movement behaviour is stable.
+
+## Testing
+
+ Bugs found 19/6/26 following recent changes to assembly drag and drop behaviour:
+
+ 1. on desktop it works, but on mobile all platforms,on the bubblesort puzzle, the setup block won't drag to the top of the workspace, if there's already a loop in the workspace. the setup block looks like it will place at the top, because you can see the ghost of it in the right place when dragging near the top, but it doesn't land when dropped. even if the drag handle is fully over hte drop zone, it doesn't take. even if the position isn't perfect, the top is still by far the closest target area, but it's not being dropped there. required behaviour: all valid target positions should be placeable by any compatable block.
+ 2. the drop target closest match doesn't work for 'inside this loop' targets. the block either goes above or below to while loop block - unless the dotted drag control is positioned inside the 'inside this loop' drop zone. required behaviour: use the whole block bounding box and all compatible target drop zone bounding boxes to judge closest compatable match.
+ 3. the new dotted drag control icon is taking up its own column in blocks, creating significant wasted right padding space. required behaviour: can keep the icon, but the blocks should be draggable from any part of their surface. and the icon should not change layout of blocks or create extra padding space.
+ 4. conditions dragged and dropped over existing conditions in the workspace are not replacing the existing condition on the maze puzzle page, but instead are returned to the palette area. required behaviour: if a compatable block requiring a socket block is dropped over an existing compatable block already in the socket, it should replace it.

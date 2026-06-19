@@ -1,5 +1,17 @@
 # Checkpoint
 
+## Dev log
+
+### 2026-06-19
+
+- Start using a dated dev-log section in every checkpoint file so current implementation plans and handoff notes have one predictable home.
+- Current shared priority: stabilise the shared assembly engine before widening puzzle-specific behaviour.
+- Planned implementation focus for the current assembly slice:
+    - replace pointer-led target matching with shared bbox-led target resolution
+    - restore whole-block dragging and remove the handle layout cost
+    - add drag-time nearest-target highlighting
+    - add concise maintainability comments while touching shared assembly code
+
 ## Essential notes for all slices
 
 - Keep shared behaviour in single sources of truth wherever possible rather than duplicating logic per activity.

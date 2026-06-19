@@ -1,5 +1,15 @@
 # Checkpoint 17/06/26
 
+## Dev log
+
+### 2026-06-19
+
+- Keep the CSS/layout refactor stable while the shared assembly fix is implemented.
+- Allow only narrow shared-style edits for this slice:
+  - remove extra block padding introduced by the dedicated drag handle
+  - add minimal shared highlight styles for resolved drag targets
+  - avoid broader puzzle restyling or breakpoint churn during the interaction fix
+
 ## Purpose of this refactor
 
 - Reduce total CSS line count aggressively while retaining current behaviour and overall visual identity.

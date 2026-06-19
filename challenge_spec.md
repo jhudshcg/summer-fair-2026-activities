@@ -99,10 +99,22 @@ The block assembly feature is shared across multiple puzzles. The following beha
 ### Required behaviour
 
 - quicker drag detection (less need for hold before drag on mobile)
-- nearest target detection on drop, when cursor/contact point is over the workspace column. dragged block should snap to the nearest compatibletarget block, if any, when dropped.
+- nearest target detection on drop, when cursor/contact point is over the workspace column. dragged block should snap to the nearest compatible target, if any, when dropped.
+- nearest-target matching for drag/drop should be based on the dragged block bounding box against all compatible target bounding boxes in the relevant column, not just the pointer/contact point.
 - 2 supported block movement methods: drag-and-drop and tap-to-place. the user should be able to choose which method to use at any time.
 - block replacement. if the moving block is a condition or something else that fits in a socket block, and there is already a compatible socket available as the nearest compatible target but it's filled, then the placement action (drop, or 2nd tap) should replace the existing content of the nearest compatible socket.
+- for replaceable single-occupant sockets, if the dragged block bounding box overlaps, or is within a small threshold gap of, the compatible existing occupant bounding box, replacement should be preferred over other target choices. if that near-overlap rule is not met, an unoccupied compatible target should be preferred instead.
+- for non-single-occupant placements such as sequence blocks placed in the workspace or inside another block, the top and bottom insertion targets of the relevant container must always remain candidate targets.
 - density of blocks should be reasonably compact (less padding between and inside blocks), to allow programs to be viewed without scrolling in most cases.
+- during drag operations, the currently chosen nearest compatible target location should be highlighted for UX clarity and debugging.
+- block vocabulary should be shared across assembly-based puzzles from one source of truth so repeated block types keep the same labels and socket names.
+- shared vocabulary rules currently agreed:
+    - repeat block top label: `Repeat`
+    - repeat block condition socket label: none
+    - choice block top label: `Choice`
+    - choice block condition socket label: `If`
+    - choice block true-path socket label: `Is true`
+    - choice block else-path socket label: `Otherwise`
 - visual trace mode for assembled program, so the user can see which operation is currently executing, by that block being highlighted. visual trace should happen automatically when the user clicks the 'test solution' (or similar) button, and should be animated with a short delay between each step. the trace should stop if the program hits an error or reaches the end of the program.
 - visual trace should be implemented in a way that allows the user to see the code being stepped through and the puzzle being solved at the same time.
 - visual trace should not stop the program simulator from running the program immediately to instantly evaluate the correctness or incorrectness of the solution.
@@ -113,6 +125,7 @@ The block assembly feature is shared across multiple puzzles. The following beha
 - if user taps or clicks on a valid target slot or socket (either in the workspace or inside another block in the palette area), the selected block should be placed there.
 - for this to be effective, a scroll must be possible between those 2 taps, so that a block can be selected, the window scrolled to a position where the target is visible, and then the target tapped to place the block.
 - if the 2nd tap is on the other column (e.g. palette to workspace or workspace to palette), then the nearest valid target in that column should be used for placement. if there is no valid target for the placement (e.g. a condition block is being moved, but there's no loop block in the workspace to place it in), then the placement should be rejected, the block returned to its original position, and a discrete message shown to the user.
+- tap-to-place should use the same compatibility and target-priority rules as drag/drop, except for drag-only target highlighting.
 - the tap to place functionality should work in tandem with the drag and drop functionality (and snap to nearest compatible target), so that the user can choose which method to use.
 
 ### Workspace float mode
@@ -174,14 +187,15 @@ The float should be initiated when the user clicks the 'test solution' (or simil
 
 #### Bubble Sort pseudocode content
 
-- Use exactly seven reorderable cards.
-- The seven cards must cover the concepts named in AGENTS.md:
-    - initialization: `set numbers to [<random unique integers between 1 and 25>]`
-    - outer loop condition: `pass from 2 to length(numbers)`
-    - outer loop block: `for ...:`
-    - inner loop condition: `index from 0 to length(numbers) - pass`
-    - inner loop block: `for ...:`
-    - comparison condition: `if numbers[index] > numbers[index + 1]:`
+- Use exactly eight reorderable cards.
+- The eight cards must cover the concepts named in AGENTS.md, with the comparison split into a choice block plus a separate condition piece:
+    - initialization step: `set numbers to [<random unique integers between 1 and 25>]`
+    - outer repeat condition: `pass from 2 to length(numbers)`
+    - outer repeat block
+    - inner repeat condition: `index from 0 to length(numbers) - pass`
+    - inner repeat block
+    - choice block: `if ... then ...`
+    - comparison condition: `numbers[index] > numbers[index + 1]`
     - swap operation: `swap them`
 - The pseudocode should stay beginner-friendly rather than aiming for language-specific accuracy.
 - The activity should treat loop blocks and loop conditions as separate pieces that must be matched together.
