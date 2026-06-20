@@ -5,6 +5,12 @@
 (() => {
   let lastBrowserChromeLogKey = "";
   let browserChromeOffsetsBound = false;
+  const ORNAMENTS = [
+    { wrapClass: "page-ornament-wrap page-ornament-wrap--leaves", ornamentClass: "page-ornament page-ornament--leaves" },
+    { wrapClass: "page-ornament-wrap page-ornament-wrap--palm", ornamentClass: "page-ornament page-ornament--palm" },
+    { wrapClass: "page-ornament-wrap page-ornament-wrap--parrot", ornamentClass: "page-ornament page-ornament--parrot" },
+    { wrapClass: "page-ornament-wrap page-ornament-wrap--shell", ornamentClass: "page-ornament page-ornament--shell" },
+  ];
 
   function renderPageOrnaments() {
     if (document.querySelector(".page-ornaments")) {
@@ -16,17 +22,20 @@
     ornaments.setAttribute("aria-hidden", "true");
     ornaments.setAttribute("inert", "");
 
-    [
-      "page-ornament page-ornament--leaves",
-      "page-ornament page-ornament--palm",
-      "page-ornament page-ornament--parrot",
-      "page-ornament page-ornament--shell",
-    ].forEach((className) => {
+    // Fixed wrappers preserve the same viewport-edge crop while the inner glyph handles motion and rotation.
+    ORNAMENTS.forEach(({ wrapClass, ornamentClass }) => {
+      const wrap = document.createElement("span");
+      wrap.className = wrapClass;
+      wrap.setAttribute("draggable", "false");
+      wrap.setAttribute("role", "presentation");
+
       const ornament = document.createElement("span");
-      ornament.className = className;
+      ornament.className = ornamentClass;
       ornament.setAttribute("draggable", "false");
       ornament.setAttribute("role", "presentation");
-      ornaments.append(ornament);
+
+      wrap.append(ornament);
+      ornaments.append(wrap);
     });
 
     document.body.prepend(ornaments);

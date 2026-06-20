@@ -25,6 +25,38 @@
     swap: "cubic-bezier(0.16, 0.84, 0.32, 1)",
   };
 
+  function initTipsToggle(page) {
+    const tipsBlock = page.querySelector("[data-tips-block]");
+    const toggle = page.querySelector("[data-tips-toggle]");
+    const panel = page.querySelector("[data-tips-panel]");
+    const tipLinks = page.querySelectorAll('a[href="#tips-section"]');
+
+    if (!tipsBlock || !toggle || !panel) {
+      return;
+    }
+
+    function setTipsOpen(isOpen) {
+      tipsBlock.classList.toggle("is-open", isOpen);
+      toggle.setAttribute("aria-expanded", String(isOpen));
+      panel.setAttribute("aria-hidden", String(!isOpen));
+      toggle.textContent = isOpen ? "Hide -" : "Reveal +";
+    }
+
+    toggle.addEventListener("click", () => {
+      setTipsOpen(!tipsBlock.classList.contains("is-open"));
+    });
+
+    tipLinks.forEach((link) => {
+      link.addEventListener("click", () => {
+        setTipsOpen(true);
+      });
+    });
+
+    if (window.location.hash === "#tips-section") {
+      setTipsOpen(true);
+    }
+  }
+
   function uniqueNumbers(count, min, max) {
     const values = new Set();
 
@@ -61,7 +93,12 @@
   function applyChipState(chip, value, frame, index) {
     chip.className = "number-chip";
     chip.dataset.value = String(value);
-    chip.textContent = value;
+
+    // Use a shared inner value box so one- and two-digit shells center consistently.
+    const valueNode = document.createElement("span");
+    valueNode.className = "number-chip__value";
+    valueNode.textContent = String(value);
+    chip.replaceChildren(valueNode);
 
     if (frame.active.includes(index)) {
       chip.classList.add(frame.swapped ? "is-swapped" : "is-active");
@@ -207,7 +244,7 @@
         kind: "condition",
         family: families.repeat,
         kicker: kickers.condition,
-        label: "for pass from 2 to length(numbers):",
+        label: "pass from 2 to length(numbers):",
       },
       {
         id: "inner-loop",
@@ -237,7 +274,7 @@
         kind: "condition",
         family: families.repeat,
         kicker: kickers.condition,
-        label: "for index from 0 to length(numbers) - pass:",
+        label: "index from 0 to length(numbers) - pass:",
       },
       {
         id: "compare-choice",
@@ -273,7 +310,7 @@
         id: "swap-step",
         kind: "statement",
         kicker: kickers.step,
-        label: "swap them",
+        label: "swap(numbers, index, index + 1)",
       },
     ];
   }
@@ -409,6 +446,8 @@
     if (!page || !window.summerFairAssembly || !window.summerFairApp) {
       return;
     }
+
+    initTipsToggle(page);
 
     const activity = window.summerFairApp.getActivityById(ACTIVITY_ID);
     const puzzleNumbers = uniqueNumbers(6, 1, 25);

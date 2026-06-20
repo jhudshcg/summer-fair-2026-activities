@@ -72,6 +72,54 @@
 .maze-explorer.is-stuck { box-shadow: 0 0 0 0.3rem rgba(255, 111, 97, 0.22), 0 8px 18px rgba(23, 50, 51, 0.24); }
 .maze-explorer.is-finished { box-shadow: 0 0 0 0.35rem rgba(27, 127, 90, 0.18), 0 10px 22px rgba(23, 50, 51, 0.28); }
 
+.tips-block {
+  position: relative;
+  padding-right: clamp(4.8rem, 14vw, 6.2rem);
+}
+
+.tips-toggle {
+  position: absolute;
+  top: clamp(0.85rem, 2vw, 1rem);
+  right: clamp(0.9rem, 2vw, 1rem);
+  z-index: 1;
+  min-width: 4.4rem;
+  margin: 0;
+  padding: 0.35rem 0.7rem;
+  color: var(--color-leaf-deep);
+  font-size: 0.7rem;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  box-shadow: var(--shadow-soft);
+  transition: transform 180ms ease, box-shadow 180ms ease;
+}
+
+.tips-toggle:hover,.tips-toggle:focus-visible {
+  transform: translateY(-1px);
+}
+
+.tips-panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  transition: grid-template-rows 240ms ease, opacity 180ms ease;
+}
+
+.tips-list {
+  display: grid;
+  gap: 0.7rem;
+  overflow: hidden;
+  padding-left: 1.35rem;
+}
+
+.tips-list li::marker { content: "🥥  "; }
+
+.tips-block.is-open .tips-panel {
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+
 .assembly-tools { gap: 0.35rem; }
 .assembly-tools__prompt,.assembly-tools__note { max-width: 36rem; }
 .assembly-tools__note { margin: 0 0 0.45rem; font-size: 0.74rem; }
@@ -91,12 +139,17 @@
 
 .number-chip {
   position: relative; isolation: isolate; --chip-rotate: 0deg; --chip-lift: 0px; --chip-scale: 1; --flip-x: 0px; --flip-y: 0px;
+  display: grid; place-items: center;
   min-width: 3.8rem; min-height: 4.25rem; padding: 1.12rem 0.98rem 0.8rem; border: 1px solid rgba(224, 185, 165, 0.72);
   border-radius: 62% 58% 38% 34% / 76% 74% 32% 26%; clip-path: polygon(50% 0%, 63% 3%, 77% 9%, 90% 21%, 97% 36%, 100% 53%, 98% 69%, 92% 81%, 80% 92%, 65% 98%, 50% 100%, 36% 98%, 21% 92%, 9% 81%, 2% 69%, 0% 53%, 3% 36%, 10% 21%, 23% 9%, 37% 3%);
   background: radial-gradient(circle at 50% 18%, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0) 22%), radial-gradient(circle at 18% 66%, rgba(244, 198, 175, 0.22), transparent 33%), radial-gradient(circle at 82% 72%, rgba(230, 185, 160, 0.18), transparent 34%), linear-gradient(180deg, rgba(255, 242, 229, 0.98), rgba(255, 220, 194, 0.95));
-  box-shadow: var(--shadow-soft); font-size: 1.18rem; font-weight: 700; line-height: 1; text-align: center;
+  box-shadow: var(--shadow-soft); font-size: 1.18rem; font-weight: 700; line-height: 1; text-align: center; white-space: nowrap; overflow-wrap: normal; word-break: normal;
   transform: translate(var(--flip-x), var(--flip-y)) translateY(var(--chip-lift)) scale(var(--chip-scale)) rotate(var(--chip-rotate));
   transition: transform 240ms cubic-bezier(0.16, 0.84, 0.32, 1), background-color 180ms ease, color 180ms ease, box-shadow 180ms ease;
+}
+.number-chip__value {
+  display: flex; width: 100%; min-width: 0; align-items: center; justify-content: center; line-height: 1; text-align: center; white-space: nowrap;
+  font-variant-numeric: lining-nums tabular-nums;
 }
 .number-chip::before,.number-chip::after { content: ""; position: absolute; pointer-events: none; }
 .number-chip::before {
@@ -166,10 +219,10 @@
 }
 .assembly-piece:active,.sortable-drag,.sortable-fallback { cursor: grabbing; }
 .assembly-piece__handle {
-  position: absolute; top: 0.45rem; right: 0.45rem; display: inline-flex; align-items: center; justify-content: center; width: 1.5rem; height: 1.5rem;
+  position: absolute; top: 0.45rem; right: 0.45rem; display: inline-flex; align-items: center; justify-content: center; width: 1.2rem; height: 1.2rem;
   border-radius: 999px; background: rgba(23, 50, 51, 0.08); color: var(--color-leaf-deep); pointer-events: none; user-select: none;
 }
-.assembly-piece__handle::before { content: "::"; font-size: 1rem; font-weight: 800; line-height: 1; letter-spacing: -0.08em; }
+.assembly-piece__handle::before { content: "::"; font-size: 1rem; font-weight: 800; opacity:0.5; line-height: 1; letter-spacing: -0.08em; }
 .assembly-piece.is-selected { outline: 3px solid rgba(255, 111, 97, 0.4); }
 .assembly-piece.is-replacement-target { outline: 3px solid rgba(255, 179, 71, 0.52); box-shadow: 0 0 0 0.22rem rgba(255, 179, 71, 0.18), var(--shadow-soft); }
 .assembly-piece.is-running { outline: 3px solid rgba(255, 179, 71, 0.48); box-shadow: 0 14px 30px rgba(255, 179, 71, 0.24); transform: translateY(-2px); }
@@ -249,8 +302,7 @@
   .number-list-stack,.number-row,.number-index__values { width: 100%; }
   .number-list-stack { --number-columns: repeat(var(--number-count), minmax(0, 1fr)); --number-gap: 0.35rem; }
   .number-list-stack--demo { --number-gap: 0.45rem; }
-  .number-chip { min-width: 0; min-height: 0; aspect-ratio: 3.8 / 4.25; padding: 0.92rem 0.55rem 0.72rem; font-size: 1rem; }
-  .number-list-stack--demo .number-chip { padding: 0.98rem 0.65rem 0.76rem; }
+  .number-chip { min-width: 0; min-height: 0; aspect-ratio: 3.8 / 4.25; padding: 0.66rem 0.46rem 0.42rem; font-size: 1rem; }
   .maze-command-strip { gap: 0.45rem; }
   .maze-command { font-size: 0.88rem; }
 }
