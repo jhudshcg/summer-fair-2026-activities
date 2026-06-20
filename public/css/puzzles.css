@@ -114,11 +114,14 @@
   transition: grid-template-rows 240ms ease, opacity 180ms ease;
 }
 
+.tips-block > p { padding-inline: 0.6rem; }
+
 .tips-list {
   display: grid;
   gap: 0.7rem;
   overflow: hidden;
-  padding-left: 1.35rem;
+  padding-right: 0.6rem;
+  padding-left: calc(1.35rem + 0.6rem);
 }
 
 .tips-list li::marker { content: "🥥  "; }

@@ -612,7 +612,7 @@ function renderFooter() {
   document.querySelectorAll("[data-site-footer]").forEach((mount) => {
     mount.innerHTML = `
       <p class="footer-note">
-        Digital/Computing learning activities for Southampton College Summer Fair <span data-year></span>. Created by Joe Hudson.
+        Digital/Computing learning activities for <a href="https://shcg.ac.uk/southampton-college/">Southampton College</a> Summer Fair <span data-year></span>. Created by Joe Hudson.
       </p>
     `;
   });
