@@ -7,14 +7,14 @@
     <meta name="color-scheme" content="light">
     <meta name="theme-color" content="#f7fff9">
     <title>Algorithm Lagoon Maze | Summer Fair 2026</title>
-    <link rel="stylesheet" href="css/style.css?v=20260620g">
-    <link rel="stylesheet" href="css/layout.css">
-    <link rel="stylesheet" href="css/puzzles.css?v=20260620k">
+    <link rel="stylesheet" href="css/style.css?v=20260620k">
+    <link rel="stylesheet" href="css/layout.css?v=20260620d">
+    <link rel="stylesheet" href="css/puzzles.css?v=20260620v">
     <script src="js/mobile-layout.js?v=20260620a" defer></script>
-    <script src="js/app.js?v=20260620f" defer></script>
+    <script src="js/app.js?v=20260620k" defer></script>
     <script src="js/vendor/Sortable.min.js" defer></script>
     <script src="js/assembly.js?v=20260620f" defer></script>
-    <script src="js/algorithm-maze.js?v=20260620k" defer></script>
+    <script src="js/algorithm-maze.js?v=20260620n" defer></script>
   </head>
   <body data-page="algorithm-maze">
     <main class="container site-shell" data-algorithm-maze-page>
@@ -54,25 +54,30 @@
           <button class="secondary outline" type="button" data-demo-replay>Replay demo</button>
         </div>
       </article>
-      <article class="info-block activity-summary" data-maze-summary>
+      <article class="info-block activity-summary" data-maze-summary data-run-focus-host>
         <h2>Island Trail</h2>
         <p class="lede">The explorer begins at the lower-left shore path and must zig-zag through the island trail to the finish near the top-left.</p>
         <p class="mini-note">One working route uses counted loops first, but there is also a shorter solution if you react to left and right paths at the right moments.</p>
-        <div class="maze-stage">
-          <div class="maze-board" data-puzzle-board aria-label="Algorithm maze"></div>
+        <div class="maze-run-focus-stage" data-maze-run-stage data-run-focus-stage>
+          <div data-maze-workspace-dock data-run-focus-workspace-dock></div>
+          <div class="maze-stage">
+            <div class="maze-board" data-puzzle-board aria-label="Algorithm maze"></div>
+          </div>
         </div>
-        <div data-maze-results-dock></div>
+        <div data-maze-results-dock data-run-focus-results-dock></div>
       </article>
       <article class="info-block tips-block" data-tips-block>
-        <button
-          class="secondary outline tips-toggle"
-          type="button"
-          data-tips-toggle
-          aria-controls="maze-tips-panel"
-          aria-expanded="false"
-          aria-label="Reveal or hide algorithm maze tips"
-        >Reveal +</button>
-        <h2 id="tips-section" data-heading-icon="coconut">Tips for New Programmers</h2>
+        <div class="tips-block__header">
+          <button
+            class="secondary outline tips-toggle"
+            type="button"
+            data-tips-toggle
+            aria-controls="maze-tips-panel"
+            aria-expanded="false"
+            aria-label="Reveal or hide algorithm maze tips"
+          >Reveal +</button>
+          <h2 id="tips-section" data-heading-icon="coconut">Tips for New Programmers</h2>
+        </div>
         <p>If you're new to these coding archipelagos, give these tips a go to help you on your way.</p>
         <div class="tips-panel" id="maze-tips-panel" data-tips-panel aria-hidden="true">
           <ul class="tips-list">
@@ -88,7 +93,7 @@
         </div>
       </article>
       <section class="page-grid">
-        <article class="info-block" data-maze-build>
+        <article class="info-block" data-maze-build data-run-focus-build>
           <h2 data-heading-icon="turtle">Build The Program</h2>
           <p class="mini-note">Drag the blocks into a program. Wrong-but-possible structures are still allowed.</p>
           <p class="mini-note assembly-tools__prompt">Try a counted-loop idea first, or see whether one repeat-until-finish loop can solve the maze in fewer blocks. See <a href="#tips-section">here</a> for more tips.</p>
@@ -110,7 +115,7 @@
               <h3>Palette</h3>
               <div class="assembly-palette" data-assembly-palette></div>
             </div>
-            <div class="assembly-column">
+            <div class="assembly-column" data-assembly-workspace-column>
               <h3>Workspace</h3>
               <div class="assembly-workspace" data-assembly-workspace></div>
             </div>
@@ -123,7 +128,7 @@
             <button class="secondary outline" type="button" data-reset-program>Reset</button>
             <button class="secondary outline" type="button" data-show-hint>Hint</button>
           </div>
-          <div data-maze-results-home>
+          <div data-maze-results-home data-run-focus-results-home>
             <section class="results-region" data-maze-results>
               <div class="feedback-stack">
                 <div class="feedback-box" data-maze-feedback aria-live="polite">
@@ -154,6 +159,7 @@
           </div>
         </article>
       </section>
+      <footer class="site-footer" data-site-footer></footer>
     </main>
   </body>
 </html>

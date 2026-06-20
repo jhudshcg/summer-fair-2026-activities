@@ -219,6 +219,20 @@ Date: 2026-06-17
 		- tapping the selected piece again or tapping a clear cancel control should exit selection mode
 	- Scope note: keep this inside the shared assembly engine so Bubble Sort and any later assembly activities can reuse it.
 
+	### 2026-06-20 Bubble Sort width diagnosis
+
+	- The 481px+ failure was a real intrinsic-width issue in the Bubble Sort number strips.
+	- At widths above the old `480px` cutoff, the puzzle and success number rows returned to `width: max-content` with six `3.8rem` minimum chips plus gaps, which gives the strip a natural width of a little over `26rem` before surrounding padding is counted.
+	- In the 481-500px band, that strip width could exceed the card's usable content width, so the card could look wrong even when the outer section box itself still fit the viewport.
+	- The earlier overview-mode fix still mattered for the build-area overflow, but it was separate from this number-strip min-width issue.
+	- Agreed fix applied in `public/css/puzzles.css`:
+		- move the compact shell-row styling from `@media (width <= 480px)` to `@media (width <= 32rem)`
+		- keep the compact rule shared for puzzle and success number rows by using the existing `.number-list-stack`, `.number-row`, and `.number-chip` selectors
+	- Validation after the number-strip change:
+		- compact mode stays active through the 490-500px failure band
+		- fixed-width shell rows return once there is enough space again
+		- page scroll width still matches viewport width in the checked narrow bands
+
 ### Additional run-focus layout planning
 
 - Agreed future run-focus enhancement:
@@ -227,9 +241,57 @@ Date: 2026-06-17
 	- float that shrunken workspace up to the left of the maze container during the run
 	- restore the workspace to its normal size and position when the run ends
 - Reason: users should be able to see both the progressing maze marker and the active program structure at the same time without losing the main puzzle context.
+- Refined implementation agreement:
+	- treat this as a dedicated run-focus presentation mode, not as an extension of overview mode
+	- during a run, move the workspace column out of normal document flow and dock it beside the maze summary card
+	- scale the floated workspace more aggressively than overview mode so the visible assembled program height fits comfortably within the viewport
+	- reserve layout space for the floated workspace so the maze resizes to the remaining width instead of being covered by the program preview
+	- keep the palette and main edit controls in their original location; only the workspace preview and results region move into the run-focus area
+	- on run end, restore the workspace and results region to their original homes and clear any run-focus sizing variables
+	- keep the implementation maze-local in `public/algorithm-maze.html`, `public/js/algorithm-maze.js` and `public/css/puzzles.css`
+	- preserve the existing maze board scroll target and block-highlight run trace while adding the float behavior
+
+### Shared tips polish
+
+- The tips reveal button should not obscure the heading at narrower widths.
+- Agreed fix: convert the tips header area into a wrapping flow so the button can sit on the first row when space allows and the title can move onto its own line when space is tighter.
 
 ### Shared polish note
 
 - Browser-chrome-sensitive ornament positioning should prefer viewport-geometry inference over browser-family assumptions.
 - Shared page chrome should use `visualViewport` overlap measurements where available so bottom-anchored and top-anchored mobile browser UI can be handled from the same mechanism.
 - Tiny sub-pixel viewport differences should be clamped out so non-overlay browsers do not get accidental ornament drift.
+
+### Run-focus parity update
+
+- The maze-local run-focus workspace float has now been extracted into a shared controller in `public/js/app.js` rather than duplicated into Bubble Sort.
+- Reason for the extraction:
+	- Bubble Sort now needs the same workspace docking, viewport scaling and restore behaviour as Algorithm Maze.
+	- `public/js/app.js` is a better fit than `public/js/assembly.js` for this slice because the feature is page-layout/runtime presentation rather than drag/drop mechanics.
+- Shared run-focus controller responsibilities now include:
+	- moving the workspace column into a summary-card dock during playback
+	- moving the results region beside the live puzzle during playback
+	- computing scaled workspace size from viewport height/width constraints
+	- restoring both moved regions to their original homes after playback
+- Current sizing adjustment applied:
+	- the floated workspace is about 15% larger than the previous maze-only version by increasing the max scale and width caps
+- Current playback timing adjustment applied:
+	- both Maze and Bubble Sort now keep the floated run-focus layout visible for 4 seconds after playback ends so the user can read feedback before the layout restores
+- Bubble Sort parity now includes:
+	- the same floated workspace/results presentation during the success replay
+	- current-step highlighting on the assembly while the shell animation runs
+	- disabled controls during the replay, with controls restored after the float closes
+- Browser validation completed for this slice:
+	- Maze debug run enters run-focus during playback, shows disabled controls, then restores layout and controls afterward
+	- Bubble Sort celebration replay enters run-focus during playback, highlights the compare block mid-run, then restores layout and controls afterward
+
+### Follow-up layout refinement
+
+- Bubble Sort no longer floats the workspace beside the number-list summary card.
+- The shared run-focus controller now supports workspace-only docking without forcing every puzzle to relocate its results region.
+- Bubble Sort now hosts its run-focus stage in the Check Your Thinking card, so the floated workspace sits to the left of the live feedback/success area where the sorted-number animation appears.
+- The shared run-focus CSS selector now uses a neutral host marker rather than assuming the target area is always a summary card.
+- Shared status-card simplification applied across activity pages:
+	- remove the separate Status chip
+	- keep Current activity plus Progress chips
+	- show a compact Completed pill with the activity key-piece icon inside Current activity when that challenge has been solved

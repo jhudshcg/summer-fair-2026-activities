@@ -1,5 +1,5 @@
 <!doctype html>
-<!-- Placeholder shell for the hidden challenge page. -->
+<!-- Hidden bonus challenge page with the Snake finale. -->
 <html lang="en" data-theme="light">
   <head>
     <meta charset="utf-8">
@@ -7,13 +7,15 @@
     <meta name="color-scheme" content="light">
     <meta name="theme-color" content="#f7fff9">
     <title>Hidden Reef Challenge | Summer Fair 2026</title>
-    <link rel="stylesheet" href="css/style.css?v=20260620g">
-    <link rel="stylesheet" href="css/layout.css">
-    <link rel="stylesheet" href="css/puzzles.css?v=20260620k">
+    <link rel="stylesheet" href="css/style.css?v=20260620k">
+    <link rel="stylesheet" href="css/layout.css?v=20260620d">
+    <link rel="stylesheet" href="css/puzzles.css?v=20260620v">
+    <link rel="stylesheet" href="css/snake.css?v=20260620a">
     <script src="js/mobile-layout.js?v=20260620a" defer></script>
-    <script src="js/app.js?v=20260620f" defer></script>
+    <script src="js/app.js?v=20260620k" defer></script>
+    <script src="js/snake.js?v=20260620a" defer></script>
   </head>
-  <body data-page="hidden-challenge">
+  <body data-page="hidden-challenge" data-hidden-challenge-page>
     <main class="container site-shell">
       <section class="hero page-hero">
         <div class="page-nav">
@@ -30,24 +32,94 @@
         </article>
         <section class="status-bar" data-status-bar aria-label="Current progress"></section>
       </section>
-      <article class="placeholder-art">
-        <p>The final reef mystery will appear here once the four main challenges are complete.</p>
-      </article>
-      <article class="locked-note" data-hidden-lock>
-        This challenge is still locked. Complete the four main activities first.
-      </article>
-      <article class="info-block">
-        <h2>Planned interaction</h2>
-        <ul>
-          <li>Combine ideas from the earlier activities into one final puzzle.</li>
-          <li>Keep the challenge slightly harder while still solvable within about 6 minutes.</li>
-          <li>End with a celebratory message and a course recommendation link.</li>
-        </ul>
-      </article>
-      <article class="hint">
-        <strong>Slice note:</strong>
-        <span data-page-hint></span>
-      </article>
+      <section class="hidden-challenge-layout" data-hidden-game-root>
+        <article class="placeholder-art hidden-challenge-intro">
+          <p data-hidden-preview>The bonus reef challenge will appear here once the live challenges are complete.</p>
+        </article>
+
+        <section class="hidden-challenge-game" data-hidden-game hidden>
+          <article class="info-block hidden-challenge-mission">
+            <div class="tag-row">
+              <div class="tag">Goal: collect 8 reef fruits</div>
+              <div class="tag" data-snake-speed>Speed: lagoon warm-up</div>
+            </div>
+            <p class="lede">Steer the Snake with the arrow pad, your keyboard arrows, or a swipe across the board.</p>
+          </article>
+
+          <div class="hidden-challenge-grid">
+            <article class="snake-panel snake-panel--board">
+              <div class="snake-scoreboard" aria-label="Snake progress">
+                <section class="snake-scorecard">
+                  <strong data-snake-score>0</strong>
+                  <span>Fruit collected</span>
+                </section>
+                <section class="snake-scorecard">
+                  <strong data-snake-best>0</strong>
+                  <span>Best score</span>
+                </section>
+                <section class="snake-scorecard">
+                  <strong data-snake-target>8</strong>
+                  <span>Fruit to win</span>
+                </section>
+              </div>
+
+              <div class="snake-board-shell">
+                <div class="snake-board" data-snake-board role="grid" aria-label="Snake board"></div>
+              </div>
+
+              <p class="snake-caption" data-snake-caption>Press Start run to begin the reef route.</p>
+            </article>
+
+            <article class="snake-panel snake-panel--controls">
+              <div class="control-row hidden-challenge-actions">
+                <button type="button" data-snake-start>Start run</button>
+                <button type="button" class="secondary" data-snake-restart>Restart</button>
+              </div>
+
+              <div class="snake-dpad" aria-label="Snake controls">
+                <span class="snake-dpad__spacer" aria-hidden="true"></span>
+                <button type="button" class="snake-dpad__button" data-direction="up">Up</button>
+                <span class="snake-dpad__spacer" aria-hidden="true"></span>
+                <button type="button" class="snake-dpad__button" data-direction="left">Left</button>
+                <span class="snake-dpad__core" aria-hidden="true">Reef</span>
+                <button type="button" class="snake-dpad__button" data-direction="right">Right</button>
+                <span class="snake-dpad__spacer" aria-hidden="true"></span>
+                <button type="button" class="snake-dpad__button" data-direction="down">Down</button>
+                <span class="snake-dpad__spacer" aria-hidden="true"></span>
+              </div>
+
+              <article class="feedback-box snake-feedback" data-snake-feedback aria-live="polite">
+                Collect 8 reef fruits without crashing into the walls or your own tail.
+              </article>
+            </article>
+          </div>
+
+          <article class="success-panel" data-snake-success hidden>
+            <div class="success-burst" aria-hidden="true">
+              <span class="success-burst__item success-burst__item--flower"></span>
+              <span class="success-burst__item success-burst__item--parrot"></span>
+              <span class="success-burst__item success-burst__item--leaf"></span>
+              <span class="success-burst__item success-burst__item--shell"></span>
+            </div>
+            <div class="success-panel__content">
+              <span class="tag success-badge">Treasure unlocked</span>
+              <h3>Reef mastered</h3>
+              <p data-snake-success-copy>You guided the reef Snake safely home.</p>
+              <p>Fancy building games and software for real? Explore the <a href="https://shcg.ac.uk/courses/level-3-t-level-in-digital-software-development/" target="_blank" rel="noreferrer">SHCG Digital Software Development T-Level</a>.</p>
+            </div>
+          </article>
+        </section>
+
+        <article class="locked-note" data-hidden-lock>
+          <span data-hidden-lock-copy>This challenge is still locked.</span>
+        </article>
+
+        <article class="hint">
+          <strong>Snake tip:</strong>
+          <span data-page-hint></span>
+        </article>
+      </section>
+      <footer class="site-footer" data-site-footer></footer>
     </main>
   </body>
 </html>

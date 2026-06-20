@@ -7,14 +7,14 @@
     <meta name="color-scheme" content="light">
     <meta name="theme-color" content="#f7fff9">
     <title>Bubble Sort Beach | Summer Fair 2026</title>
-    <link rel="stylesheet" href="css/style.css?v=20260620g">
-    <link rel="stylesheet" href="css/layout.css">
-    <link rel="stylesheet" href="css/puzzles.css?v=20260620k">
+    <link rel="stylesheet" href="css/style.css?v=20260620k">
+    <link rel="stylesheet" href="css/layout.css?v=20260620d">
+    <link rel="stylesheet" href="css/puzzles.css?v=20260620v">
     <script src="js/mobile-layout.js?v=20260620a" defer></script>
-    <script src="js/app.js?v=20260620f" defer></script>
+    <script src="js/app.js?v=20260620k" defer></script>
     <script src="js/vendor/Sortable.min.js" defer></script>
     <script src="js/assembly.js?v=20260620f" defer></script>
-    <script src="js/bubble-sort.js?v=20260620e" defer></script>
+    <script src="js/bubble-sort.js?v=20260620j" defer></script>
   </head>
   <body data-page="bubble-sort">
     <main class="container site-shell" data-bubble-sort-page>
@@ -66,15 +66,17 @@
         </div>
       </article>
       <article class="info-block tips-block" data-tips-block>
-        <button
-          class="secondary outline tips-toggle"
-          type="button"
-          data-tips-toggle
-          aria-controls="bubble-tips-panel"
-          aria-expanded="false"
-          aria-label="Reveal or hide bubble sort tips"
-        >Reveal +</button>
-        <h2 id="tips-section" data-heading-icon="coconut">Tips for New Programmers</h2>
+        <div class="tips-block__header">
+          <button
+            class="secondary outline tips-toggle"
+            type="button"
+            data-tips-toggle
+            aria-controls="bubble-tips-panel"
+            aria-expanded="false"
+            aria-label="Reveal or hide bubble sort tips"
+          >Reveal +</button>
+          <h2 id="tips-section" data-heading-icon="coconut">Tips for New Programmers</h2>
+        </div>
         <p>If you're new to these coding archipelagos, give these tips a go to help you on your way.</p>
         <div class="tips-panel" id="bubble-tips-panel" data-tips-panel aria-hidden="true">
           <ul class="tips-list">
@@ -90,7 +92,7 @@
           </ul>
         </div>
       </article>
-          <article class="info-block">
+          <article class="info-block" data-bubble-summary>
         <h2>Your Number List</h2>
         <p class="mini-note">Build the program for this six-number list.</p>
         <div class="number-list-stack">
@@ -109,7 +111,7 @@
         </div>
       </article>
       <section class="page-grid">
-        <article class="info-block">
+        <article class="info-block" data-bubble-build data-run-focus-build>
           <h2 data-heading-icon="turtle">Build The Program</h2>
           <p class="mini-note">
             Drag pieces from the palette into the workspace to build your program. Wrong-but-possible structures are allowed, so you'll need to think through want you want to happen.
@@ -135,49 +137,55 @@
               <h3>Palette</h3>
               <div class="assembly-palette" data-assembly-palette></div>
             </div>
-            <div class="assembly-column">
+            <div class="assembly-column" data-assembly-workspace-column>
               <h3>Workspace</h3>
               <div class="assembly-workspace" data-assembly-workspace></div>
             </div>
           </div>
         </article>
-        <article class="info-block">
+        <article class="info-block" data-bubble-test data-run-focus-host>
           <h2 data-heading-icon="turtle">Check Your Thinking</h2>
           <div class="control-row">
             <button type="button" data-check-order>Check program</button>
             <button class="secondary outline" type="button" data-reset-order>Reset</button>
             <button class="secondary outline" type="button" data-show-hint>Hint</button>
           </div>
-          <section class="results-region" data-bubble-results>
-            <div class="feedback-stack">
-              <div class="feedback-box" data-bubble-feedback aria-live="polite">
-                Arrange the pieces, then check whether your structure matches the bubble sort program.
-              </div>
-              <div class="hint-box" data-bubble-hint>
-                Hints will nudge you without revealing the full answer.
-              </div>
+          <div class="bubble-run-focus-stage" data-bubble-run-stage data-run-focus-stage>
+            <div data-bubble-workspace-dock data-run-focus-workspace-dock></div>
+            <div data-bubble-results-home data-run-focus-results-home>
+              <section class="results-region" data-bubble-results>
+                <div class="feedback-stack">
+                  <div class="feedback-box" data-bubble-feedback aria-live="polite">
+                    Arrange the pieces, then check whether your structure matches the bubble sort program.
+                  </div>
+                  <div class="hint-box" data-bubble-hint>
+                    Hints will nudge you without revealing the full answer.
+                  </div>
+                </div>
+                <section class="success-panel" data-bubble-success hidden>
+                  <div class="success-burst" aria-hidden="true">
+                    <span class="success-burst__item success-burst__item--flower" draggable="false" role="presentation"></span>
+                    <span class="success-burst__item success-burst__item--parrot" draggable="false" role="presentation"></span>
+                    <span class="success-burst__item success-burst__item--leaf" draggable="false" role="presentation"></span>
+                    <span class="success-burst__item success-burst__item--shell" draggable="false" role="presentation"></span>
+                  </div>
+                  <div class="success-panel__content">
+                    <div class="success-badge">Correct solution</div>
+                    <h3 class="gate-heading" data-gate-name="Palm">Palm Gate Opened</h3>
+                    <p>
+                      You built a working bubble sort shape and earned the key part
+                      <strong data-bubble-key-part-repeat></strong>.
+                    </p>
+                    <div class="number-row" data-success-row aria-label="Sorted number animation"></div>
+                    <button class="secondary outline" type="button" data-success-replay>Replay celebration</button>
+                  </div>
+                </section>
+              </section>
             </div>
-            <section class="success-panel" data-bubble-success hidden>
-              <div class="success-burst" aria-hidden="true">
-                <span class="success-burst__item success-burst__item--flower" draggable="false" role="presentation"></span>
-                <span class="success-burst__item success-burst__item--parrot" draggable="false" role="presentation"></span>
-                <span class="success-burst__item success-burst__item--leaf" draggable="false" role="presentation"></span>
-                <span class="success-burst__item success-burst__item--shell" draggable="false" role="presentation"></span>
-              </div>
-              <div class="success-panel__content">
-                <div class="success-badge">Correct solution</div>
-                <h3 class="gate-heading" data-gate-name="Palm">Palm Gate Opened</h3>
-                <p>
-                  You built a working bubble sort shape and earned the key part
-                  <strong data-bubble-key-part-repeat></strong>.
-                </p>
-                <div class="number-row" data-success-row aria-label="Sorted number animation"></div>
-                <button class="secondary outline" type="button" data-success-replay>Replay celebration</button>
-              </div>
-            </section>
-          </section>
+          </div>
         </article>
       </section>
+      <footer class="site-footer" data-site-footer></footer>
     </main>
   </body>
 </html>

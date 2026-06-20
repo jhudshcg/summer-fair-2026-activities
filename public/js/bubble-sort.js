@@ -24,6 +24,20 @@
     compare: "cubic-bezier(0.22, 1, 0.36, 1)",
     swap: "cubic-bezier(0.16, 0.84, 0.32, 1)",
   };
+  const RUN_FOCUS_SCROLL_DELAY = 180;
+  const RUN_FOCUS_RESTORE_DELAY = 4000;
+  const RUN_FOCUS_VIEWPORT_MARGIN = 28;
+  const RUN_FOCUS_MAX_SCALE = 0.75;
+  const RUN_FOCUS_MIN_SCALE = 0.24;
+  const RUN_FOCUS_MAX_WIDTH_RATIO = 0.56;
+  const RUN_FOCUS_MAX_WIDTH_PX = 390;
+  const RUN_FOCUS_MIN_WIDTH_PX = 118;
+
+  function wait(ms) {
+    return new Promise((resolve) => {
+      window.setTimeout(resolve, ms);
+    });
+  }
 
   function uniqueNumbers(count, min, max) {
     const values = new Set();
@@ -44,24 +58,26 @@
 
   function buildFrames(numbers) {
     const values = [...numbers];
-    const frames = [{ numbers: [...values], active: [], swapped: false, complete: false, completeIndices: [], phase: "settle" }];
+    const loopCheckPieces = ["outer-loop", "outer-condition", "inner-loop", "inner-condition"];
+    const compareCheckPieces = [...loopCheckPieces, "compare-choice", "compare-condition"];
+    const frames = [{ numbers: [...values], active: [], swapped: false, complete: false, completeIndices: [], phase: "settle", activePieces: ["init"] }];
 
     let completeIndices = [];
 
     for (let pass = 2; pass <= values.length; pass += 1) {
       for (let index = 0; index <= values.length - pass; index += 1) {
-        frames.push({ numbers: [...values], active: [index, index + 1], swapped: false, complete: false, completeIndices: [...completeIndices], phase: "compare" });
+        frames.push({ numbers: [...values], active: [index, index + 1], swapped: false, complete: false, completeIndices: [...completeIndices], phase: "compare", activePieces: [...compareCheckPieces] });
         if (values[index] > values[index + 1]) {
           [values[index], values[index + 1]] = [values[index + 1], values[index]];
-          frames.push({ numbers: [...values], active: [index, index + 1], swapped: true, complete: false, completeIndices: [...completeIndices], phase: "swap" });
+          frames.push({ numbers: [...values], active: [index, index + 1], swapped: true, complete: false, completeIndices: [...completeIndices], phase: "swap", activePieces: [...compareCheckPieces, "swap-step"] });
         }
       }
 
       completeIndices = Array.from({ length: pass - 1 }, (_, offset) => values.length - 1 - offset).reverse();
-      frames.push({ numbers: [...values], active: [], swapped: false, complete: false, completeIndices: [...completeIndices], phase: "settle" });
+      frames.push({ numbers: [...values], active: [], swapped: false, complete: false, completeIndices: [...completeIndices], phase: "settle", activePieces: ["outer-loop", "outer-condition"] });
     }
 
-    frames.push({ numbers: [...values], active: [], swapped: false, complete: true, completeIndices: values.map((_, index) => index), phase: "complete" });
+    frames.push({ numbers: [...values], active: [], swapped: false, complete: true, completeIndices: values.map((_, index) => index), phase: "complete", activePieces: [] });
     return frames;
   }
 
@@ -162,23 +178,23 @@
     animateChipReorder(row, frame);
   }
 
-  function animateFrames(row, frames) {
+  async function animateFrames(row, frames, hooks = {}) {
     const token = String(Number(row.dataset.animationToken || "0") + 1);
     row.dataset.animationToken = token;
 
-    let elapsed = 0;
+    for (const frame of frames) {
+      if (row.dataset.animationToken !== token) {
+        hooks.onFrameStart?.(null);
+        return false;
+      }
 
-    frames.forEach((frame) => {
-      window.setTimeout(() => {
-        if (row.dataset.animationToken !== token) {
-          return;
-        }
+      hooks.onFrameStart?.(frame);
+      renderNumberRow(row, frame);
+      await wait(ANIMATION_TIMINGS[frame.phase] || ANIMATION_TIMINGS.compare);
+    }
 
-        renderNumberRow(row, frame);
-      }, elapsed);
-
-      elapsed += ANIMATION_TIMINGS[frame.phase] || ANIMATION_TIMINGS.compare;
-    });
+    hooks.onFrameStart?.(null);
+    return row.dataset.animationToken === token;
   }
 
   function createPieces(numbers, vocabulary) {
@@ -435,6 +451,11 @@
     const puzzleRow = page.querySelector("[data-puzzle-row]");
     const demoRow = page.querySelector("[data-demo-row]");
     const successRow = page.querySelector("[data-success-row]");
+    const runFocusHost = page.querySelector("[data-run-focus-host]");
+    const assemblyLayout = page.querySelector(".assembly-layout");
+    const workspaceColumn = page.querySelector("[data-assembly-workspace-column]");
+    const runStage = page.querySelector("[data-run-focus-stage]");
+    const workspaceDock = page.querySelector("[data-run-focus-workspace-dock]");
     const resultsRegion = page.querySelector("[data-bubble-results]");
     const feedback = page.querySelector("[data-bubble-feedback]");
     const hint = page.querySelector("[data-bubble-hint]");
@@ -448,9 +469,23 @@
     const demoReplay = page.querySelector("[data-demo-replay]");
     const successReplay = page.querySelector("[data-success-replay]");
     const compactOverviewQuery = window.matchMedia("(max-width: 63.99rem)");
+    const runFocus = window.summerFairApp.createRunFocusController({
+      page,
+      runStage,
+      assemblyLayout,
+      workspaceColumn,
+      workspaceDock,
+      viewportMargin: RUN_FOCUS_VIEWPORT_MARGIN,
+      maxScale: RUN_FOCUS_MAX_SCALE,
+      minScale: RUN_FOCUS_MIN_SCALE,
+      maxWidthRatio: RUN_FOCUS_MAX_WIDTH_RATIO,
+      maxWidthPx: RUN_FOCUS_MAX_WIDTH_PX,
+      minWidthPx: RUN_FOCUS_MIN_WIDTH_PX,
+    });
 
     let failedAttempts = 0;
     let hasSolvedThisAttempt = false;
+    let isRunning = false;
     let overviewEnabled = compactOverviewQuery.matches;
 
     keyPartMounts.forEach((node) => {
@@ -479,6 +514,11 @@
           window.summerFairApp.refreshPageChrome();
         }
 
+        if (["place", "reset"].includes(event.type)) {
+          clearRunHighlight();
+          runFocus.setEnabled(false);
+        }
+
         window.summerFairApp.setActivityState(ACTIVITY_ID, {
           puzzleNumbers: [...puzzleNumbers],
           assemblySnapshot: engine.getSnapshot(),
@@ -503,6 +543,47 @@
 
     function setHint(message) {
       hint.textContent = message;
+    }
+
+    function setBusy(isBusy) {
+      isRunning = isBusy;
+      [checkButton, resetButton, hintButton, demoReplay, successReplay, overviewToggle].forEach((button) => {
+        if (button) {
+          button.disabled = isBusy || (button === overviewToggle && !compactOverviewQuery.matches);
+        }
+      });
+    }
+
+    function clearRunHighlight() {
+      page.querySelectorAll(".assembly-piece.is-running").forEach((piece) => {
+        piece.classList.remove("is-running");
+      });
+    }
+
+    function setRunHighlight(pieceIds) {
+      clearRunHighlight();
+      if (!pieceIds || pieceIds.length === 0) {
+        return;
+      }
+
+      pieceIds.forEach((pieceId) => {
+        page.querySelectorAll(`[data-piece-id="${pieceId}"]`).forEach((piece) => {
+          piece.classList.add("is-running");
+        });
+      });
+    }
+
+    function scrollRunStageIntoView() {
+      const target = runFocusHost || resultsRegion || feedback || puzzleRow;
+      if (!(target instanceof HTMLElement)) {
+        return;
+      }
+
+      const top = Math.max(0, window.scrollY + target.getBoundingClientRect().top - 12);
+      window.scrollTo({
+        top,
+        behavior: "auto",
+      });
     }
 
     function refreshHint() {
@@ -533,6 +614,8 @@
       hasSolvedThisAttempt = false;
       successPanel.hidden = true;
       successPanel.classList.remove("is-celebrating");
+      clearRunHighlight();
+      runFocus.setEnabled(false);
       renderNumberRow(successRow, { numbers: puzzleNumbers, active: [], swapped: false, complete: false });
       setFeedback("Arrange the pieces, then check whether your structure matches the bubble sort program.", null);
       setHint("Hints will nudge you without revealing the full answer.");
@@ -555,8 +638,21 @@
       compactOverviewQuery.addListener(handleOverviewMediaChange);
     }
 
+    const handleRunFocusViewportChange = () => {
+      if (!runFocus.isEnabled()) {
+        return;
+      }
+
+      runFocus.updateMetrics();
+    };
+
+    window.addEventListener("resize", handleRunFocusViewportChange);
+    if (window.visualViewport && typeof window.visualViewport.addEventListener === "function") {
+      window.visualViewport.addEventListener("resize", handleRunFocusViewportChange);
+    }
+
     overviewToggle?.addEventListener("click", () => {
-      if (!compactOverviewQuery.matches) {
+      if (!compactOverviewQuery.matches || isRunning) {
         return;
       }
 
@@ -564,7 +660,32 @@
       renderOverviewToggle();
     });
 
-    checkButton.addEventListener("click", () => {
+    async function playSolutionAnimation() {
+      setBusy(true);
+      runFocus.setEnabled(true);
+      scrollRunStageIntoView();
+      await wait(RUN_FOCUS_SCROLL_DELAY);
+
+      try {
+        await animateFrames(successRow, successFrames, {
+          onFrameStart(frame) {
+            setRunHighlight(frame?.activePieces || []);
+          },
+        });
+        await wait(RUN_FOCUS_RESTORE_DELAY);
+      } finally {
+        clearRunHighlight();
+        runFocus.setEnabled(false);
+        setBusy(false);
+        renderOverviewToggle();
+      }
+    }
+
+    checkButton.addEventListener("click", async () => {
+      if (isRunning) {
+        return;
+      }
+
       const snapshot = engine.getSnapshot();
 
       if (validate(snapshot)) {
@@ -575,8 +696,8 @@
         stateTag.textContent = "Completed";
         window.summerFairApp.setCompleted(ACTIVITY_ID, true);
         window.summerFairApp.refreshPageChrome();
-        animateFrames(successRow, successFrames);
         window.summerFairApp.scrollToFeedback(resultsRegion || feedback);
+        await playSolutionAnimation();
         return;
       }
 
@@ -588,6 +709,10 @@
     });
 
     resetButton.addEventListener("click", () => {
+      if (isRunning) {
+        return;
+      }
+
       engine.reset();
       window.summerFairApp.setCompleted(ACTIVITY_ID, false);
       window.summerFairApp.refreshPageChrome();
@@ -595,16 +720,28 @@
     });
 
     hintButton.addEventListener("click", () => {
+      if (isRunning) {
+        return;
+      }
+
       refreshHint();
     });
 
     demoReplay.addEventListener("click", () => {
+      if (isRunning) {
+        return;
+      }
+
       animateFrames(demoRow, demoFrames);
     });
 
-    successReplay.addEventListener("click", () => {
+    successReplay.addEventListener("click", async () => {
+      if (isRunning) {
+        return;
+      }
+
       playCelebration();
-      animateFrames(successRow, successFrames);
+      await playSolutionAnimation();
     });
   }
 

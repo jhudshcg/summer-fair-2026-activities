@@ -42,6 +42,13 @@
     pause: 140,
   };
   const RUN_FOCUS_SCROLL_DELAY = 180;
+  const RUN_FOCUS_RESTORE_DELAY = 4000;
+  const RUN_FOCUS_VIEWPORT_MARGIN = 28;
+  const RUN_FOCUS_MAX_SCALE = 0.55;
+  const RUN_FOCUS_MIN_SCALE = 0.24;
+  const RUN_FOCUS_MAX_WIDTH_RATIO = 0.39;
+  const RUN_FOCUS_MAX_WIDTH_PX = 276;
+  const RUN_FOCUS_MIN_WIDTH_PX = 118;
 
   const DEMO_MAZE = {
     cols: 4,
@@ -971,11 +978,14 @@
     const savedActivityState = window.summerFairApp.getActivityState(ACTIVITY_ID);
     const puzzleBoard = page.querySelector("[data-puzzle-board]");
     const demoBoard = page.querySelector("[data-demo-board]");
-    const summaryCard = page.querySelector("[data-maze-summary]");
-    const buildCard = page.querySelector("[data-maze-build]");
+    const summaryCard = page.querySelector("[data-run-focus-host]");
     const testCard = page.querySelector("[data-maze-test]");
-    const resultsDock = page.querySelector("[data-maze-results-dock]");
-    const resultsHome = page.querySelector("[data-maze-results-home]");
+    const assemblyLayout = page.querySelector(".assembly-layout");
+    const workspaceColumn = page.querySelector("[data-assembly-workspace-column]");
+    const runStage = page.querySelector("[data-run-focus-stage]");
+    const workspaceDock = page.querySelector("[data-run-focus-workspace-dock]");
+    const resultsDock = page.querySelector("[data-run-focus-results-dock]");
+    const resultsHome = page.querySelector("[data-run-focus-results-home]");
     const resultsRegion = page.querySelector("[data-maze-results]");
     const feedback = page.querySelector("[data-maze-feedback]");
     const hint = page.querySelector("[data-maze-hint]");
@@ -994,6 +1004,22 @@
 
     const puzzleExplorer = renderMazeBoard(puzzleBoard, PUZZLE_MAZE);
     const demoExplorer = renderMazeBoard(demoBoard, DEMO_MAZE);
+    const runFocus = window.summerFairApp.createRunFocusController({
+      page,
+      runStage,
+      assemblyLayout,
+      workspaceColumn,
+      workspaceDock,
+      resultsRegion,
+      resultsDock,
+      resultsHome,
+      viewportMargin: RUN_FOCUS_VIEWPORT_MARGIN,
+      maxScale: RUN_FOCUS_MAX_SCALE,
+      minScale: RUN_FOCUS_MIN_SCALE,
+      maxWidthRatio: RUN_FOCUS_MAX_WIDTH_RATIO,
+      maxWidthPx: RUN_FOCUS_MAX_WIDTH_PX,
+      minWidthPx: RUN_FOCUS_MIN_WIDTH_PX,
+    });
 
     let failedAttempts = 0;
     let hasSolvedThisAttempt = false;
@@ -1017,7 +1043,7 @@
 
         if (["place", "value", "reset"].includes(event.type)) {
           clearRunHighlight();
-          setRunFocus(false);
+          runFocus.setEnabled(false);
         }
 
         if (["place", "value", "reset"].includes(event.type) && hasSolvedThisAttempt) {
@@ -1070,26 +1096,6 @@
           button.disabled = isBusy || (button === overviewToggle && !compactOverviewQuery.matches);
         }
       });
-    }
-
-    function setRunFocus(enabled) {
-      const isEnabled = enabled && Boolean(summaryCard && buildCard && testCard && resultsDock && resultsHome && resultsRegion);
-      page.classList.toggle("is-run-focus", isEnabled);
-
-      if (!resultsRegion || !resultsDock || !resultsHome) {
-        return;
-      }
-
-      if (isEnabled) {
-        if (resultsRegion.parentElement !== resultsDock) {
-          resultsDock.append(resultsRegion);
-        }
-        return;
-      }
-
-      if (resultsRegion.parentElement !== resultsHome) {
-        resultsHome.append(resultsRegion);
-      }
     }
 
     function clearRunHighlight() {
@@ -1166,7 +1172,7 @@
       successPanel.hidden = true;
       successPanel.classList.remove("is-celebrating");
       clearRunHighlight();
-      setRunFocus(false);
+      runFocus.setEnabled(false);
       setFeedback("Build the route, then check the solution to see where the explorer goes.", null);
       setHint("Hints can steer you toward a working solution, and then toward a shorter one.");
       stateTag.textContent = window.summerFairApp.getProgress().completed[ACTIVITY_ID]
@@ -1178,72 +1184,88 @@
     async function runSnapshot(snapshot, checkMode) {
       const result = simulate(snapshot, PUZZLE_MAZE, adjacency);
       const analysis = analyzeSolution(snapshot, result);
-      setRunFocus(true);
+      setBusy(true);
+      runFocus.setEnabled(true);
       scrollMazeIntoView();
       await wait(RUN_FOCUS_SCROLL_DELAY);
       resetPuzzleExplorer();
-      setBusy(true);
-      await playFrames(puzzleExplorer, PUZZLE_MAZE, result.frames, {
-        position: result.finalPosition,
-        state: result.failure ? result.failure.state : "finished",
-      }, {
-        onFrameStart(frame) {
-          setRunHighlight(frame?.action || null);
-        },
-      });
-      setBusy(false);
-      renderOverviewToggle();
+      try {
+        await playFrames(puzzleExplorer, PUZZLE_MAZE, result.frames, {
+          position: result.finalPosition,
+          state: result.failure ? result.failure.state : "finished",
+        }, {
+          onFrameStart(frame) {
+            setRunHighlight(frame?.action || null);
+          },
+        });
 
-      if (!checkMode) {
+        if (!checkMode) {
+          if (analysis.works) {
+            setFeedback(
+              analysis.isShortest
+                ? "The explorer reached the finish with the shortest code route."
+                : "The explorer reached the finish. This route works.",
+              "success"
+            );
+            stateTag.textContent = analysis.isShortest ? "Shortest route" : "Route runs";
+          } else {
+            setFeedback(result.failure?.message || "The explorer reached the end of the program without solving the maze.", "error");
+            stateTag.textContent = "Route tested";
+          }
+
+          await wait(RUN_FOCUS_RESTORE_DELAY);
+          return analysis.works;
+        }
+
         if (analysis.works) {
-          setFeedback(
-            analysis.isShortest
-              ? "The explorer reached the finish with the shortest code route."
-              : "The explorer reached the finish. This route works.",
-            "success"
-          );
-          stateTag.textContent = analysis.isShortest ? "Shortest route" : "Route runs";
-        } else {
-          setFeedback(result.failure?.message || "The explorer reached the end of the program without solving the maze.", "error");
-          stateTag.textContent = "Route tested";
+          hasSolvedThisAttempt = true;
+          playCelebration();
+          if (analysis.isShortest) {
+            setFeedback("Correct. Your program reaches the finish, and it is the shortest code solution.", "success");
+            setHint("You found the shortest route. Nice use of repeat-until-finish with left and right checks.");
+            stateTag.textContent = "Shortest solution";
+          } else {
+            setFeedback("Correct. Your program reaches the finish. Now see if you can find a shorter one.", "success");
+            setHint("That works. There is also a shorter solution that keeps moving until the finish and reacts to left or right paths.");
+            stateTag.textContent = "Completed";
+          }
+
+          window.summerFairApp.setCompleted(ACTIVITY_ID, true);
+          window.summerFairApp.refreshPageChrome();
+          scrollMazeIntoView();
+          await wait(RUN_FOCUS_RESTORE_DELAY);
+          return true;
         }
 
-        return analysis.works;
-      }
-
-      if (analysis.works) {
-        hasSolvedThisAttempt = true;
-        playCelebration();
-        if (analysis.isShortest) {
-          setFeedback("Correct. Your program reaches the finish, and it is the shortest code solution.", "success");
-          setHint("You found the shortest route. Nice use of repeat-until-finish with left and right checks.");
-          stateTag.textContent = "Shortest solution";
-        } else {
-          setFeedback("Correct. Your program reaches the finish. Now see if you can find a shorter one.", "success");
-          setHint("That works. There is also a shorter solution that keeps moving until the finish and reacts to left or right paths.");
-          stateTag.textContent = "Completed";
-        }
-
-        window.summerFairApp.setCompleted(ACTIVITY_ID, true);
-        window.summerFairApp.refreshPageChrome();
+        failedAttempts += 1;
+        setFeedback(
+          result.failure?.message || "That program moved the explorer, but it did not solve the maze.",
+          "error"
+        );
+        setHint(getHint(snapshot, failedAttempts));
+        stateTag.textContent = "Try again";
         scrollMazeIntoView();
-        return true;
+        await wait(RUN_FOCUS_RESTORE_DELAY);
+        return false;
+      } finally {
+        clearRunHighlight();
+        runFocus.setEnabled(false);
+        setBusy(false);
+        renderOverviewToggle();
       }
-
-      failedAttempts += 1;
-      setFeedback(
-        result.failure?.message || "That program moved the explorer, but it did not solve the maze.",
-        "error"
-      );
-      setHint(getHint(snapshot, failedAttempts));
-      stateTag.textContent = "Try again";
-      scrollMazeIntoView();
-      return false;
     }
 
     applyBaseState();
     renderOverviewToggle();
     replayDemo(demoExplorer, demoCommands);
+
+    const handleRunFocusViewportChange = () => {
+      if (!runFocus.isEnabled()) {
+        return;
+      }
+
+      runFocus.updateMetrics();
+    };
 
     const handleOverviewMediaChange = (event) => {
       overviewEnabled = event.matches;
@@ -1254,6 +1276,11 @@
       compactOverviewQuery.addEventListener("change", handleOverviewMediaChange);
     } else if (typeof compactOverviewQuery.addListener === "function") {
       compactOverviewQuery.addListener(handleOverviewMediaChange);
+    }
+
+    window.addEventListener("resize", handleRunFocusViewportChange);
+    if (window.visualViewport && typeof window.visualViewport.addEventListener === "function") {
+      window.visualViewport.addEventListener("resize", handleRunFocusViewportChange);
     }
 
     overviewToggle?.addEventListener("click", () => {

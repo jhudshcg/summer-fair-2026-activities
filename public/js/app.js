@@ -1,10 +1,10 @@
 /*
  * Summer Fair 2026 shared client-side logic.
  * Slice 1 centralises page metadata, progress state and shared rendering helpers.
- * Version: 2026-06-20.1
+ * Version: 2026-06-20.2
  */
 
-const APP_VERSION = "2026-06-20.1";
+const APP_VERSION = "2026-06-20.2";
 
 const STORAGE_KEY = "summer-fair-2026-progress";
 
@@ -40,6 +40,7 @@ const ACTIVITIES = [
     duration: "3-6 min",
     description: "Read the pseudocode and predict what it will output.",
     keyPart: "Shell",
+    available: false,
     hidden: false,
   },
   {
@@ -51,6 +52,7 @@ const ACTIVITIES = [
     duration: "3-6 min",
     description: "Spot the errors and repair the logic so the program behaves properly.",
     keyPart: "Sun",
+    available: false,
     hidden: false,
   },
   {
@@ -96,6 +98,40 @@ function setProgress(progress) {
   window.localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
 }
 
+function isActivityAvailable(activity) {
+  return activity?.available !== false;
+}
+
+function getUnlockActivities() {
+  return ACTIVITIES.filter((activity) => !activity.hidden && isActivityAvailable(activity));
+}
+
+function formatActivityTitleList(activities) {
+  const titles = activities.map((activity) => activity.title);
+
+  if (titles.length <= 1) {
+    return titles[0] || "the live challenges";
+  }
+
+  if (titles.length === 2) {
+    return `${titles[0]} and ${titles[1]}`;
+  }
+
+  return `${titles.slice(0, -1).join(", ")}, and ${titles[titles.length - 1]}`;
+}
+
+function getUnlockRequirementLabel() {
+  return formatActivityTitleList(getUnlockActivities());
+}
+
+function getUnlockRequirementVerb() {
+  return getUnlockActivities().length === 1 ? "is" : "are";
+}
+
+function getUnlockTargetCount() {
+  return getUnlockActivities().length;
+}
+
 /**
  * Persist progress after an activity is completed or reset.
  */
@@ -125,7 +161,7 @@ function clearActivityState(activityId) {
  * Hidden challenge unlocks only when all main activities are complete.
  */
 function isHiddenUnlocked(progress = getProgress()) {
-  return ACTIVITIES.filter((activity) => !activity.hidden).every(
+  return getUnlockActivities().every(
     (activity) => progress.completed[activity.id]
   );
 }
@@ -134,8 +170,25 @@ function getActivityById(activityId) {
   return ACTIVITIES.find((activity) => activity.id === activityId);
 }
 
+function getGateIcon(keyPart) {
+  switch (keyPart) {
+    case "Palm":
+      return "🌴";
+    case "Coral":
+      return "🪸";
+    case "Shell":
+      return "🐚";
+    case "Sun":
+      return "☀️";
+    case "Treasure":
+      return "💎";
+    default:
+      return "🗝️";
+  }
+}
+
 function getCompletedCount(progress = getProgress()) {
-  return ACTIVITIES.filter((activity) => !activity.hidden && progress.completed[activity.id]).length;
+  return getUnlockActivities().filter((activity) => progress.completed[activity.id]).length;
 }
 
 function getPageContext() {
@@ -152,11 +205,13 @@ function createStatusChip(icon, title, detail, iconClassName = "status-icon", ic
   chip.className = "status-chip";
   const gateNameAttribute = iconOptions.gateName ? ` data-gate-name="${iconOptions.gateName}"` : "";
   const iconContent = iconOptions.gateName ? "" : icon;
+  const bodySupplement = iconOptions.bodySupplement || "";
 
   chip.innerHTML = `
     <div class="status-chip__body">
       <strong>${title}</strong>
       <span class="status-chip__detail">${detail}</span>
+      ${bodySupplement}
     </div>
     <div class="${iconClassName}"${gateNameAttribute} aria-hidden="true">${iconContent}</div>
   `;
@@ -166,18 +221,17 @@ function createStatusChip(icon, title, detail, iconClassName = "status-icon", ic
 
 function createIndexProgressChip(progress) {
   const chip = document.createElement("section");
-  const completedActivities = ACTIVITIES.filter(
-    (activity) => !activity.hidden && progress.completed[activity.id]
-  );
+  const unlockActivities = getUnlockActivities();
+  const completedActivities = unlockActivities.filter((activity) => progress.completed[activity.id]);
   const clusterCount = Math.min(4, completedActivities.length);
   const unlocked = isHiddenUnlocked(progress);
-  const progressSatisfied = completedActivities.length === ACTIVITIES.filter((activity) => !activity.hidden).length;
+  const progressSatisfied = completedActivities.length === unlockActivities.length;
 
   chip.className = "status-chip status-chip--progress";
   chip.innerHTML = `
     <div class="status-chip__body">
       <strong>Progress</strong>
-      <span class="status-chip__detail">${completedActivities.length} of 4 main activities complete</span>
+      <span class="status-chip__detail">${completedActivities.length} of ${unlockActivities.length} live challenges complete</span>
     </div>
     <div class="status-chip__visuals" aria-hidden="true">
       <div class="status-chip__summary-icons">
@@ -212,42 +266,41 @@ function renderStatusBar() {
   const completedCount = getCompletedCount(progress);
   const unlocked = isHiddenUnlocked(progress);
   const isCompleted = Boolean(progress.completed[activity.id]);
+  const available = isActivityAvailable(activity);
   const progressSatisfied = isCompleted;
   const progressIcon = progressSatisfied ? "☑" : "☐";
   const progressIconClassName = progressSatisfied ? "status-icon status-icon--complete" : "status-icon status-icon--pending";
   const activityLabel = `Activity ${activity.order} of ${ACTIVITIES.length}`;
-  const currentState = activity
-    ? isCompleted
-      ? "Completed"
-      : activity.hidden && !unlocked
-        ? "Locked"
-        : "Not completed yet"
-    : `${completedCount} of 4 main activities complete`;
-  const statusIcon = isCompleted
-    ? ""
+  const activitySupplement = isCompleted
+    ? `<span class="status-chip__meta status-chip__meta--completion"><span class="status-chip__meta-icon" aria-hidden="true">${getGateIcon(activity.keyPart)}</span><span>Completed</span></span>`
+    : !available
+      ? '<span class="status-chip__meta status-chip__meta--soon">Coming soon</span>'
     : activity.hidden && !unlocked
-      ? "🔒"
-      : "☐";
-  const statusIconClassName = isCompleted
-    ? "status-icon status-icon--gate"
-    : "status-icon status-icon--pending";
-  const statusIconOptions = isCompleted ? { gateName: activity.keyPart } : {};
+      ? '<span class="status-chip__meta status-chip__meta--locked">Locked</span>'
+      : "";
 
   mount.innerHTML = "";
   mount.append(
-    createStatusChip(activity ? activity.icon : "🌺", "Current activity", activityLabel),
-    createStatusChip(progressIcon, "Progress", `${completedCount} of 4 main activities complete`, progressIconClassName),
-    createStatusChip(statusIcon, "Status", currentState, statusIconClassName, statusIconOptions)
+    createStatusChip(activity ? activity.icon : "🌺", "Current activity", activityLabel, "status-icon", {
+      bodySupplement: activitySupplement,
+    }),
+    createStatusChip(progressIcon, "Progress", `${completedCount} of ${getUnlockTargetCount()} live challenges complete`, progressIconClassName)
   );
 }
 
 function createActivityCard(activity, unlocked) {
-  const card = document.createElement(activity.hidden && !unlocked ? "article" : "a");
+  const comingSoon = !activity.hidden && !isActivityAvailable(activity);
   const locked = activity.hidden && !unlocked;
-  card.className = `activity-card${locked ? " locked" : ""}`;
+  const inactive = locked || comingSoon;
+  const card = document.createElement(inactive ? "article" : "a");
+  card.className = `activity-card${locked ? " locked" : ""}${comingSoon ? " activity-card--soon" : ""}`;
 
-  if (!locked) {
+  if (!inactive) {
     card.href = activity.page;
+  }
+
+  if (inactive) {
+    card.setAttribute("aria-disabled", "true");
   }
 
   card.innerHTML = `
@@ -256,14 +309,16 @@ function createActivityCard(activity, unlocked) {
     <p>${activity.description}</p>
     <div class="activity-meta">
       <span class="tag">Key part: ${activity.keyPart}</span>
-      <span class="tag">${locked ? "Locked" : "Open"}</span>
+      <span class="tag">${comingSoon ? "Coming soon" : locked ? "Locked" : "Open"}</span>
     </div>
   `;
 
-  if (locked) {
+  if (locked || comingSoon) {
     const note = document.createElement("p");
     note.className = "locked-note";
-    note.textContent = "Finish the four main activities to unlock this page.";
+    note.textContent = comingSoon
+      ? "This challenge is not open yet."
+      : `Finish ${getUnlockRequirementLabel()} to unlock this page.`;
     card.append(note);
   }
 
@@ -303,25 +358,46 @@ function renderPageCopy() {
     return;
   }
 
-  const unlocked = !activity.hidden || isHiddenUnlocked(progress);
+  const available = isActivityAvailable(activity);
+  const unlockRequirementLabel = getUnlockRequirementLabel();
+  const unlockRequirementVerb = getUnlockRequirementVerb();
+  const unlocked = available && (!activity.hidden || isHiddenUnlocked(progress));
   const completed = Boolean(progress.completed[activity.id]);
   titleMount.textContent = activity.title;
   textMount.textContent = activity.description;
   keyMount.textContent = activity.hidden
-    ? "Final reward: tropical finale"
+    ? "Bonus reward: tropical finale"
     : `Key part reward: ${activity.keyPart}`;
 
   if (hintMount) {
-    hintMount.textContent = unlocked
-      ? ""
-      : "This challenge stays locked until the four main activities are completed.";
+    hintMount.textContent = !available
+      ? "This challenge is coming soon and is not open yet."
+      : unlocked
+        ? ""
+        : `This challenge stays locked until ${unlockRequirementLabel} ${unlockRequirementVerb} completed.`;
   }
 
   stateMount.textContent = completed
     ? "Completed"
-    : unlocked
-      ? "Ready to solve"
-      : "Locked until the main challenges are complete";
+    : !available
+      ? "Coming soon"
+      : unlocked
+        ? "Ready to solve"
+        : "Locked until the live challenges are complete";
+
+  const hiddenPreview = document.querySelector("[data-hidden-preview]");
+  if (hiddenPreview && activity.hidden) {
+    hiddenPreview.textContent = unlocked
+      ? "The bonus reef challenge is unlocked and ready for its final build."
+      : `The bonus reef challenge will appear here once ${unlockRequirementLabel} ${unlockRequirementVerb} completed.`;
+  }
+
+  const hiddenLockCopy = document.querySelector("[data-hidden-lock-copy]");
+  if (hiddenLockCopy && activity.hidden) {
+    hiddenLockCopy.textContent = unlocked
+      ? ""
+      : `This challenge is still locked. Complete ${unlockRequirementLabel} first.`;
+  }
 
   const unlockBlock = document.querySelector("[data-hidden-lock]");
   if (unlockBlock) {
@@ -342,6 +418,145 @@ function scrollToFeedback(target) {
     block: "start",
     inline: "nearest",
   });
+}
+
+/**
+ * Move the assembly workspace beside a live puzzle area and scale it to fit the viewport.
+ */
+function createRunFocusController({
+  page,
+  runStage,
+  assemblyLayout,
+  workspaceColumn,
+  workspaceDock,
+  resultsRegion,
+  resultsDock,
+  resultsHome,
+  viewportMargin = 28,
+  maxScale = 0.55,
+  minScale = 0.24,
+  maxWidthRatio = 0.39,
+  maxWidthPx = 276,
+  minWidthPx = 118,
+} = {}) {
+  let workspaceMetrics = null;
+  const canRelocateResults = resultsRegion instanceof HTMLElement
+    && resultsDock instanceof HTMLElement
+    && resultsHome instanceof HTMLElement;
+  const propertyNames = [
+    "--run-focus-workspace-scale",
+    "--run-focus-workspace-width",
+    "--run-focus-workspace-height",
+    "--run-focus-workspace-natural-width",
+  ];
+
+  function hasRequiredElements() {
+    return page instanceof HTMLElement
+      && runStage instanceof HTMLElement
+      && assemblyLayout instanceof HTMLElement
+      && workspaceColumn instanceof HTMLElement
+      && workspaceDock instanceof HTMLElement;
+  }
+
+  function captureWorkspaceMetrics() {
+    if (!(workspaceColumn instanceof HTMLElement)) {
+      return null;
+    }
+
+    const rect = workspaceColumn.getBoundingClientRect();
+    return {
+      width: Math.max(workspaceColumn.offsetWidth, Math.round(rect.width)),
+      height: Math.max(workspaceColumn.offsetHeight, Math.round(rect.height)),
+    };
+  }
+
+  function clearWorkspaceMetrics() {
+    workspaceMetrics = null;
+    if (!(page instanceof HTMLElement)) {
+      return;
+    }
+
+    propertyNames.forEach((propertyName) => {
+      page.style.removeProperty(propertyName);
+    });
+  }
+
+  function updateMetrics() {
+    if (!hasRequiredElements() || !page.classList.contains("is-run-focus") || !workspaceMetrics) {
+      return;
+    }
+
+    const viewportHeight = window.visualViewport?.height || window.innerHeight;
+    const viewportWidth = window.visualViewport?.width || window.innerWidth;
+    const availableHeight = Math.max(160, viewportHeight - viewportMargin);
+    const widthCap = Math.min(
+      maxWidthPx,
+      Math.max(minWidthPx, viewportWidth * maxWidthRatio)
+    );
+    const scale = Math.max(
+      minScale,
+      Math.min(
+        maxScale,
+        availableHeight / workspaceMetrics.height,
+        widthCap / workspaceMetrics.width
+      )
+    );
+    const scaledWidth = Math.max(minWidthPx, Math.round(workspaceMetrics.width * scale));
+    const scaledHeight = Math.max(120, Math.round(workspaceMetrics.height * scale));
+
+    page.style.setProperty("--run-focus-workspace-scale", scale.toFixed(4));
+    page.style.setProperty("--run-focus-workspace-width", `${scaledWidth}px`);
+    page.style.setProperty("--run-focus-workspace-height", `${scaledHeight}px`);
+    page.style.setProperty("--run-focus-workspace-natural-width", `${workspaceMetrics.width}px`);
+  }
+
+  function setEnabled(enabled) {
+    const canEnable = Boolean(enabled) && hasRequiredElements();
+
+    if (page instanceof HTMLElement) {
+      page.classList.toggle("is-run-focus", canEnable);
+    }
+
+    if (!hasRequiredElements()) {
+      return false;
+    }
+
+    if (canEnable) {
+      workspaceMetrics = captureWorkspaceMetrics();
+
+      if (workspaceColumn.parentElement !== workspaceDock) {
+        workspaceDock.append(workspaceColumn);
+      }
+
+      if (canRelocateResults && resultsRegion.parentElement !== resultsDock) {
+        resultsDock.append(resultsRegion);
+      }
+
+      updateMetrics();
+      return true;
+    }
+
+    clearWorkspaceMetrics();
+
+    if (workspaceColumn.parentElement !== assemblyLayout) {
+      assemblyLayout.append(workspaceColumn);
+    }
+
+    if (canRelocateResults && resultsRegion.parentElement !== resultsHome) {
+      resultsHome.append(resultsRegion);
+    }
+
+    return false;
+  }
+
+  return {
+    setEnabled,
+    updateMetrics,
+    clearWorkspaceMetrics,
+    isEnabled() {
+      return page instanceof HTMLElement && page.classList.contains("is-run-focus");
+    },
+  };
 }
 
 /**
@@ -393,11 +608,22 @@ function renderYear() {
   });
 }
 
+function renderFooter() {
+  document.querySelectorAll("[data-site-footer]").forEach((mount) => {
+    mount.innerHTML = `
+      <p class="footer-note">
+        Digital/Computing learning activities for Southampton College Summer Fair <span data-year></span>. Created by Joe Hudson.
+      </p>
+    `;
+  });
+}
+
 function init() {
   if (window.summerFairMobileLayout && typeof window.summerFairMobileLayout.init === "function") {
     window.summerFairMobileLayout.init();
   }
 
+  renderFooter();
   renderYear();
   refreshPageChrome();
   renderActivityList();
@@ -406,6 +632,7 @@ function init() {
 window.summerFairApp = {
   version: APP_VERSION,
   ACTIVITIES,
+  createRunFocusController,
   getProgress,
   getActivityById,
   getActivityState,

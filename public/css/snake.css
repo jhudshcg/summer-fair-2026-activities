@@ -1,0 +1,335 @@
+/* Hidden challenge Snake-specific styles. */
+
+.hidden-challenge-layout,.hidden-challenge-game,.hidden-challenge-grid,.snake-panel,.snake-scoreboard { display: grid; gap: var(--space-2); }
+.hidden-challenge-layout { align-items: start; }
+.hidden-challenge-intro { min-height: 10rem; }
+.hidden-challenge-intro p { max-width: 26rem; }
+.hidden-challenge-mission { gap: var(--space-2); }
+.hidden-challenge-game { align-items: start; }
+.snake-panel {
+  padding: clamp(0.9rem, 2.8vw, 1.15rem);
+  border: 1px solid rgba(23, 50, 51, 0.12);
+  border-radius: var(--radius-large);
+  background: rgba(255, 255, 255, 0.78);
+  box-shadow: var(--shadow-soft);
+}
+.snake-panel--board { align-content: start; }
+.snake-scoreboard { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.snake-scorecard {
+  display: grid;
+  gap: 0.18rem;
+  padding: 0.75rem 0.65rem;
+  border-radius: var(--radius-medium);
+  background: linear-gradient(180deg, rgba(214, 249, 221, 0.86), rgba(255, 247, 223, 0.96));
+  text-align: center;
+}
+.snake-scorecard strong {
+  color: var(--color-leaf-deep);
+  font-size: clamp(1.35rem, 4vw, 1.8rem);
+  line-height: 1;
+}
+.snake-scorecard span {
+  color: var(--color-muted);
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+.snake-board-shell {
+  position: relative;
+  padding: clamp(0.55rem, 2vw, 0.8rem);
+  border-radius: calc(var(--radius-large) + 0.2rem);
+  background: radial-gradient(circle at 20% 15%, rgba(255, 179, 71, 0.38), transparent 18%), linear-gradient(165deg, rgba(27, 127, 90, 0.96), rgba(60, 185, 201, 0.9));
+  box-shadow: 0 18px 34px rgba(15, 90, 66, 0.22);
+}
+.snake-board-shell::after {
+  content: "";
+  position: absolute;
+  inset: clamp(0.45rem, 1.8vw, 0.7rem);
+  border-radius: calc(var(--radius-large) - 0.15rem);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  pointer-events: none;
+}
+.snake-board {
+  --snake-grid-size: 14;
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(var(--snake-grid-size), minmax(0, 1fr));
+  gap: 0.16rem;
+  width: 100%;
+  aspect-ratio: 1;
+  padding: 0.2rem;
+  border-radius: calc(var(--radius-large) - 0.25rem);
+  background: linear-gradient(180deg, rgba(8, 84, 80, 0.92), rgba(10, 120, 101, 0.98));
+  overflow: hidden;
+  touch-action: none;
+  user-select: none;
+}
+.snake-cell {
+  border-radius: 0.35rem;
+  background: rgba(255, 255, 255, 0.06);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.03);
+  transition: background-color 120ms ease, transform 120ms ease, box-shadow 120ms ease;
+}
+.snake-cell--snake {
+  background: linear-gradient(180deg, rgba(214, 249, 221, 0.96), rgba(127, 221, 168, 0.96));
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18);
+}
+.snake-cell--head {
+  background: linear-gradient(180deg, rgba(255, 223, 153, 0.98), rgba(255, 179, 71, 0.96));
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.24), 0 0 0 0.16rem rgba(255, 179, 71, 0.2);
+  transform: scale(1.05);
+}
+.snake-cell--fruit {
+  background: radial-gradient(circle at 35% 35%, rgba(255, 255, 255, 0.82), rgba(255, 255, 255, 0) 26%), linear-gradient(180deg, rgba(255, 144, 131, 0.98), rgba(255, 111, 97, 0.94));
+  animation: snake-fruit-pulse 900ms ease-in-out infinite alternate;
+}
+.snake-caption {
+  margin: 0;
+  color: var(--color-leaf-deep);
+  font-weight: 700;
+}
+.hidden-challenge-actions { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.snake-dpad {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.5rem;
+  width: min(100%, 18rem);
+  margin-inline: auto;
+}
+.snake-dpad__button,
+.snake-dpad__core,
+.snake-dpad__spacer {
+  min-height: 3.35rem;
+  border-radius: 1rem;
+}
+.snake-dpad__button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  margin: 0;
+  padding: 0.7rem;
+  font-weight: 800;
+}
+.snake-dpad__core {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(247, 255, 249, 0.94);
+  font: 800 0.86rem/1 var(--font-display);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  background: linear-gradient(180deg, rgba(27, 127, 90, 0.98), rgba(15, 90, 66, 0.96));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14);
+}
+.snake-dpad__spacer { background: transparent; }
+.snake-feedback {
+  min-height: 4.8rem;
+  align-content: center;
+  margin: 0;
+}
+.success-panel[data-snake-success] a { font-weight: 700; }
+@keyframes snake-fruit-pulse {
+  0% { transform: scale(0.92); box-shadow: 0 0 0 0 rgba(255, 111, 97, 0.12); }
+  100% { transform: scale(1); box-shadow: 0 0 0 0.16rem rgba(255, 111, 97, 0.14); }
+}
+@media (width <= 640px) {
+  .snake-scoreboard { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.5rem; }
+  .snake-scorecard { padding-inline: 0.4rem; }
+  .hidden-challenge-actions { grid-template-columns: minmax(0, 1fr); }
+}
+@media (width <= 480px) {
+  .snake-panel { padding: 0.85rem; }
+  .snake-dpad { gap: 0.4rem; }
+  .snake-dpad__button,.snake-dpad__core,.snake-dpad__spacer { min-height: 3rem; border-radius: 0.85rem; }
+  .snake-feedback { min-height: 5.4rem; }
+}
+@media (width >= 672px) {
+  .hidden-challenge-grid { grid-template-columns: minmax(0, 1.1fr) minmax(17rem, 0.9fr); align-items: start; }
+}
+/* Hidden Reef Challenge Snake-specific styling. */
+
+.hidden-challenge-layout,
+.hidden-challenge-game,
+.hidden-challenge-grid,
+.snake-panel,
+.snake-scoreboard {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.hidden-challenge-layout { align-items: start; }
+.hidden-challenge-intro { min-height: 10rem; }
+.hidden-challenge-intro p { max-width: 26rem; }
+.hidden-challenge-mission { gap: var(--space-2); }
+.hidden-challenge-game { align-items: start; }
+
+.snake-panel {
+  padding: clamp(0.9rem, 2.8vw, 1.15rem);
+  border: 1px solid rgba(23, 50, 51, 0.12);
+  border-radius: var(--radius-large);
+  background: rgba(255, 255, 255, 0.78);
+  box-shadow: var(--shadow-soft);
+}
+
+.snake-panel--board { align-content: start; }
+.snake-scoreboard { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+
+.snake-scorecard {
+  display: grid;
+  gap: 0.18rem;
+  padding: 0.75rem 0.65rem;
+  border-radius: var(--radius-medium);
+  background: linear-gradient(180deg, rgba(214, 249, 221, 0.86), rgba(255, 247, 223, 0.96));
+  text-align: center;
+}
+
+.snake-scorecard strong {
+  color: var(--color-leaf-deep);
+  font-size: clamp(1.35rem, 4vw, 1.8rem);
+  line-height: 1;
+}
+
+.snake-scorecard span {
+  color: var(--color-muted);
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.snake-board-shell {
+  position: relative;
+  padding: clamp(0.55rem, 2vw, 0.8rem);
+  border-radius: calc(var(--radius-large) + 0.2rem);
+  background: radial-gradient(circle at 20% 15%, rgba(255, 179, 71, 0.38), transparent 18%), linear-gradient(165deg, rgba(27, 127, 90, 0.96), rgba(60, 185, 201, 0.9));
+  box-shadow: 0 18px 34px rgba(15, 90, 66, 0.22);
+}
+
+.snake-board-shell::after {
+  content: "";
+  position: absolute;
+  inset: clamp(0.45rem, 1.8vw, 0.7rem);
+  border-radius: calc(var(--radius-large) - 0.15rem);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  pointer-events: none;
+}
+
+.snake-board {
+  --snake-grid-size: 14;
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(var(--snake-grid-size), minmax(0, 1fr));
+  gap: 0.16rem;
+  width: 100%;
+  aspect-ratio: 1;
+  padding: 0.2rem;
+  border-radius: calc(var(--radius-large) - 0.25rem);
+  background: linear-gradient(180deg, rgba(8, 84, 80, 0.92), rgba(10, 120, 101, 0.98));
+  overflow: hidden;
+  touch-action: none;
+  user-select: none;
+}
+
+.snake-cell {
+  border-radius: 0.35rem;
+  background: rgba(255, 255, 255, 0.06);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.03);
+  transition: background-color 120ms ease, transform 120ms ease, box-shadow 120ms ease;
+}
+
+.snake-cell--snake {
+  background: linear-gradient(180deg, rgba(214, 249, 221, 0.96), rgba(127, 221, 168, 0.96));
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18);
+}
+
+.snake-cell--head {
+  background: linear-gradient(180deg, rgba(255, 223, 153, 0.98), rgba(255, 179, 71, 0.96));
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.24), 0 0 0 0.16rem rgba(255, 179, 71, 0.2);
+  transform: scale(1.05);
+}
+
+.snake-cell--fruit {
+  background: radial-gradient(circle at 35% 35%, rgba(255, 255, 255, 0.82), rgba(255, 255, 255, 0) 26%), linear-gradient(180deg, rgba(255, 144, 131, 0.98), rgba(255, 111, 97, 0.94));
+  animation: snake-fruit-pulse 900ms ease-in-out infinite alternate;
+}
+
+.snake-caption {
+  margin: 0;
+  color: var(--color-leaf-deep);
+  font-weight: 700;
+}
+
+.hidden-challenge-actions { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+
+.snake-dpad {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.5rem;
+  width: min(100%, 18rem);
+  margin-inline: auto;
+}
+
+.snake-dpad__button,
+.snake-dpad__core,
+.snake-dpad__spacer {
+  min-height: 3.35rem;
+  border-radius: 1rem;
+}
+
+.snake-dpad__button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  margin: 0;
+  padding: 0.7rem;
+  font-weight: 800;
+}
+
+.snake-dpad__core {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(247, 255, 249, 0.94);
+  font: 800 0.86rem/1 var(--font-display);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  background: linear-gradient(180deg, rgba(27, 127, 90, 0.98), rgba(15, 90, 66, 0.96));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14);
+}
+
+.snake-dpad__spacer { background: transparent; }
+
+.snake-feedback {
+  min-height: 4.8rem;
+  align-content: center;
+  margin: 0;
+}
+
+.success-panel[data-snake-success] a { font-weight: 700; }
+
+@keyframes snake-fruit-pulse {
+  0% { transform: scale(0.92); box-shadow: 0 0 0 0 rgba(255, 111, 97, 0.12); }
+  100% { transform: scale(1); box-shadow: 0 0 0 0.16rem rgba(255, 111, 97, 0.14); }
+}
+
+@media (width <= 640px) {
+  .snake-scoreboard { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.5rem; }
+  .snake-scorecard { padding-inline: 0.4rem; }
+  .hidden-challenge-actions { grid-template-columns: minmax(0, 1fr); }
+}
+
+@media (width <= 480px) {
+  .snake-panel { padding: 0.85rem; }
+  .snake-dpad { gap: 0.4rem; }
+  .snake-dpad__button,
+  .snake-dpad__core,
+  .snake-dpad__spacer { min-height: 3rem; border-radius: 0.85rem; }
+  .snake-feedback { min-height: 5.4rem; }
+}
+
+@media (width >= 672px) {
+  .hidden-challenge-grid { grid-template-columns: minmax(0, 1.1fr) minmax(17rem, 0.9fr); align-items: start; }
+}
