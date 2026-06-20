@@ -145,6 +145,78 @@
       return cloneState(this.state);
     }
 
+    buildRestoredState(snapshot) {
+      const nextState = this.buildEmptyState();
+      if (!snapshot || typeof snapshot !== "object") {
+        return nextState;
+      }
+
+      Object.keys(nextState.values).forEach((pieceId) => {
+        const savedValue = snapshot.values?.[pieceId];
+        if (savedValue === undefined || savedValue === null) {
+          return;
+        }
+
+        nextState.values[pieceId] = String(savedValue);
+      });
+
+      const placedPieceIds = new Set();
+      const restorePiece = (pieceId) => {
+        if (!this.piecesById.has(pieceId) || placedPieceIds.has(pieceId)) {
+          return null;
+        }
+
+        placedPieceIds.add(pieceId);
+        const piece = this.getPiece(pieceId);
+        if (!piece?.sockets) {
+          return pieceId;
+        }
+
+        const savedSockets = snapshot.sockets?.[pieceId] || {};
+        piece.sockets.forEach((socket) => {
+          if (socket.mode === "single") {
+            nextState.sockets[pieceId][socket.key] = restorePiece(savedSockets[socket.key]) || null;
+            return;
+          }
+
+          const savedSequence = Array.isArray(savedSockets[socket.key]) ? savedSockets[socket.key] : [];
+          nextState.sockets[pieceId][socket.key] = savedSequence
+            .map((childId) => restorePiece(childId))
+            .filter(Boolean);
+        });
+
+        return pieceId;
+      };
+
+      const savedRoot = Array.isArray(snapshot.root) ? snapshot.root : [];
+      nextState.root = savedRoot.map((pieceId) => restorePiece(pieceId)).filter(Boolean);
+
+      const savedPalette = Array.isArray(snapshot.palette) ? snapshot.palette : [];
+      nextState.palette = savedPalette.map((pieceId) => restorePiece(pieceId)).filter(Boolean);
+
+      this.allPieceIds.forEach((pieceId) => {
+        if (!placedPieceIds.has(pieceId)) {
+          nextState.palette.push(pieceId);
+        }
+      });
+
+      return nextState;
+    }
+
+    restoreSnapshot(snapshot, emit = false) {
+      this.state = this.buildRestoredState(snapshot);
+      this.selectedPieceId = null;
+      this.lastPointerPoint = null;
+      this.lastDragRect = null;
+      this.activeResolvedTarget = null;
+      this.stopDragTracking();
+      this.render();
+
+      if (emit) {
+        this.onChange({ type: "restore" });
+      }
+    }
+
     getPiece(pieceId) {
       return this.piecesById.get(pieceId);
     }

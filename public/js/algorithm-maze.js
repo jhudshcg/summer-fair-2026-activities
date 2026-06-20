@@ -42,6 +42,7 @@
     pause: 140,
   };
   const RUN_FOCUS_SCROLL_DELAY = 180;
+
   const DEMO_MAZE = {
     cols: 4,
     rows: 4,
@@ -355,7 +356,7 @@
         min: "1",
         max: "4",
         step: "1",
-        placeholder: "2",
+        placeholder: "1",
         defaultValue: "",
         maxLength: 6,
         ariaLabel: "Repeat count",
@@ -964,7 +965,10 @@
       return;
     }
 
+    window.summerFairApp.initTipsToggle(page);
+
     const activity = window.summerFairApp.getActivityById(ACTIVITY_ID);
+    const savedActivityState = window.summerFairApp.getActivityState(ACTIVITY_ID);
     const puzzleBoard = page.querySelector("[data-puzzle-board]");
     const demoBoard = page.querySelector("[data-demo-board]");
     const summaryCard = page.querySelector("[data-maze-summary]");
@@ -1024,8 +1028,16 @@
           window.summerFairApp.setCompleted(ACTIVITY_ID, false);
           window.summerFairApp.refreshPageChrome();
         }
+
+        window.summerFairApp.setActivityState(ACTIVITY_ID, {
+          assemblySnapshot: engine.getSnapshot(),
+        });
       },
     });
+
+    if (savedActivityState?.assemblySnapshot) {
+      engine.restoreSnapshot(savedActivityState.assemblySnapshot);
+    }
 
     if (window.location.hash === "#debug") {
       window.__summerFairMazeDebug = {
@@ -1036,8 +1048,7 @@
           return engine.getSnapshot();
         },
         applySnapshot(snapshot) {
-          engine.state = JSON.parse(JSON.stringify(snapshot));
-          engine.render();
+          engine.restoreSnapshot(snapshot);
         },
         simulate(snapshot = engine.getSnapshot()) {
           const result = simulate(snapshot, PUZZLE_MAZE, adjacency);

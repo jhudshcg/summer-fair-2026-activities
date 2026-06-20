@@ -1,10 +1,10 @@
 /*
  * Summer Fair 2026 shared client-side logic.
  * Slice 1 centralises page metadata, progress state and shared rendering helpers.
- * Version: 2026-06-17.1
+ * Version: 2026-06-20.1
  */
 
-const APP_VERSION = "2026-06-17.1";
+const APP_VERSION = "2026-06-20.1";
 
 const STORAGE_KEY = "summer-fair-2026-progress";
 
@@ -70,7 +70,7 @@ const ACTIVITIES = [
  * Read progress from localStorage and normalise missing fields.
  */
 function getProgress() {
-  const fallback = { completed: {} };
+  const fallback = { completed: {}, activityState: {} };
 
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY);
@@ -85,10 +85,15 @@ function getProgress() {
 
     return {
       completed: typeof parsed.completed === "object" && parsed.completed ? parsed.completed : {},
+      activityState: typeof parsed.activityState === "object" && parsed.activityState ? parsed.activityState : {},
     };
   } catch {
     return fallback;
   }
+}
+
+function setProgress(progress) {
+  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
 }
 
 /**
@@ -97,7 +102,23 @@ function getProgress() {
 function setCompleted(activityId, complete) {
   const progress = getProgress();
   progress.completed[activityId] = Boolean(complete);
-  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
+  setProgress(progress);
+}
+
+function getActivityState(activityId) {
+  return getProgress().activityState?.[activityId] ?? null;
+}
+
+function setActivityState(activityId, state) {
+  const progress = getProgress();
+  progress.activityState[activityId] = state;
+  setProgress(progress);
+}
+
+function clearActivityState(activityId) {
+  const progress = getProgress();
+  delete progress.activityState[activityId];
+  setProgress(progress);
 }
 
 /**
@@ -126,16 +147,46 @@ function getPageContext() {
   };
 }
 
-function createStatusChip(icon, title, detail, iconClassName = "status-icon") {
+function createStatusChip(icon, title, detail, iconClassName = "status-icon", iconOptions = {}) {
   const chip = document.createElement("section");
   chip.className = "status-chip";
+  const gateNameAttribute = iconOptions.gateName ? ` data-gate-name="${iconOptions.gateName}"` : "";
+  const iconContent = iconOptions.gateName ? "" : icon;
 
   chip.innerHTML = `
     <div class="status-chip__body">
       <strong>${title}</strong>
       <span class="status-chip__detail">${detail}</span>
     </div>
-    <div class="${iconClassName}" aria-hidden="true">${icon}</div>
+    <div class="${iconClassName}"${gateNameAttribute} aria-hidden="true">${iconContent}</div>
+  `;
+
+  return chip;
+}
+
+function createIndexProgressChip(progress) {
+  const chip = document.createElement("section");
+  const completedActivities = ACTIVITIES.filter(
+    (activity) => !activity.hidden && progress.completed[activity.id]
+  );
+  const clusterCount = Math.min(4, completedActivities.length);
+  const unlocked = isHiddenUnlocked(progress);
+  const progressSatisfied = completedActivities.length === ACTIVITIES.filter((activity) => !activity.hidden).length;
+
+  chip.className = "status-chip status-chip--progress";
+  chip.innerHTML = `
+    <div class="status-chip__body">
+      <strong>Progress</strong>
+      <span class="status-chip__detail">${completedActivities.length} of 4 main activities complete</span>
+    </div>
+    <div class="status-chip__visuals" aria-hidden="true">
+      <div class="status-chip__summary-icons">
+        <div class="status-icon status-icon--progress-collection status-icon--progress-count-${clusterCount} ${progressSatisfied ? "status-icon--complete" : "status-icon--pending"}">
+          ${completedActivities.map((activity) => `<span class="status-cluster-token" data-gate-name="${activity.keyPart}" title="${activity.keyPart}"></span>`).join("")}
+        </div>
+        <div class="status-icon status-icon--lock ${unlocked ? "status-icon--complete" : "status-icon--pending"}">${unlocked ? "🔓" : "🔒"}</div>
+      </div>
+    </div>
   `;
 
   return chip;
@@ -151,13 +202,20 @@ function renderStatusBar() {
   }
 
   const { activity, progress } = getPageContext();
+
+  if (!activity) {
+    mount.innerHTML = "";
+    mount.append(createIndexProgressChip(progress));
+    return;
+  }
+
   const completedCount = getCompletedCount(progress);
   const unlocked = isHiddenUnlocked(progress);
-  const isCompleted = activity ? Boolean(progress.completed[activity.id]) : false;
-  const progressSatisfied = activity ? isCompleted : completedCount === ACTIVITIES.filter((entry) => !entry.hidden).length;
+  const isCompleted = Boolean(progress.completed[activity.id]);
+  const progressSatisfied = isCompleted;
   const progressIcon = progressSatisfied ? "☑" : "☐";
   const progressIconClassName = progressSatisfied ? "status-icon status-icon--complete" : "status-icon status-icon--pending";
-  const activityLabel = activity ? `Activity ${activity.order} of ${ACTIVITIES.length}` : "Choose a challenge";
+  const activityLabel = `Activity ${activity.order} of ${ACTIVITIES.length}`;
   const currentState = activity
     ? isCompleted
       ? "Completed"
@@ -165,26 +223,21 @@ function renderStatusBar() {
         ? "Locked"
         : "Not completed yet"
     : `${completedCount} of 4 main activities complete`;
-  const statusIcon = activity
-    ? isCompleted
-      ? activity.keyPart
-      : activity.hidden && !unlocked
-        ? "🔒"
-        : "☐"
-    : unlocked
-      ? "🔓"
-      : "🔒";
-  const statusIconClassName = activity
-    ? isCompleted
-      ? "status-icon status-icon--key-part"
-      : "status-icon status-icon--pending"
-    : "status-icon";
+  const statusIcon = isCompleted
+    ? ""
+    : activity.hidden && !unlocked
+      ? "🔒"
+      : "☐";
+  const statusIconClassName = isCompleted
+    ? "status-icon status-icon--gate"
+    : "status-icon status-icon--pending";
+  const statusIconOptions = isCompleted ? { gateName: activity.keyPart } : {};
 
   mount.innerHTML = "";
   mount.append(
     createStatusChip(activity ? activity.icon : "🌺", "Current activity", activityLabel),
     createStatusChip(progressIcon, "Progress", `${completedCount} of 4 main activities complete`, progressIconClassName),
-    createStatusChip(statusIcon, "Status", currentState, statusIconClassName)
+    createStatusChip(statusIcon, "Status", currentState, statusIconClassName, statusIconOptions)
   );
 }
 
@@ -299,6 +352,41 @@ function refreshPageChrome() {
   renderPageCopy();
 }
 
+/**
+ * Wire up the shared reveal/hide tips block pattern used by activity pages.
+ */
+function initTipsToggle(page) {
+  const tipsBlock = page?.querySelector("[data-tips-block]");
+  const toggle = page?.querySelector("[data-tips-toggle]");
+  const panel = page?.querySelector("[data-tips-panel]");
+  const tipLinks = page?.querySelectorAll('a[href="#tips-section"]');
+
+  if (!tipsBlock || !toggle || !panel) {
+    return;
+  }
+
+  function setTipsOpen(isOpen) {
+    tipsBlock.classList.toggle("is-open", isOpen);
+    toggle.setAttribute("aria-expanded", String(isOpen));
+    panel.setAttribute("aria-hidden", String(!isOpen));
+    toggle.textContent = isOpen ? "Hide -" : "Reveal +";
+  }
+
+  toggle.addEventListener("click", () => {
+    setTipsOpen(!tipsBlock.classList.contains("is-open"));
+  });
+
+  tipLinks?.forEach((link) => {
+    link.addEventListener("click", () => {
+      setTipsOpen(true);
+    });
+  });
+
+  if (window.location.hash === "#tips-section") {
+    setTipsOpen(true);
+  }
+}
+
 function renderYear() {
   document.querySelectorAll("[data-year]").forEach((node) => {
     node.textContent = new Date().getFullYear();
@@ -320,8 +408,12 @@ window.summerFairApp = {
   ACTIVITIES,
   getProgress,
   getActivityById,
+  getActivityState,
   setCompleted,
+  setActivityState,
+  clearActivityState,
   isHiddenUnlocked,
+  initTipsToggle,
   refreshPageChrome,
   scrollToFeedback,
 };

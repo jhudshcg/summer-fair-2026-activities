@@ -7,14 +7,14 @@
     <meta name="color-scheme" content="light">
     <meta name="theme-color" content="#f7fff9">
     <title>Algorithm Lagoon Maze | Summer Fair 2026</title>
-    <link rel="stylesheet" href="css/style.css?v=20260620a">
+    <link rel="stylesheet" href="css/style.css?v=20260620g">
     <link rel="stylesheet" href="css/layout.css">
-    <link rel="stylesheet" href="css/puzzles.css?v=20260619m">
+    <link rel="stylesheet" href="css/puzzles.css?v=20260620k">
     <script src="js/mobile-layout.js?v=20260620a" defer></script>
-    <script src="js/app.js" defer></script>
+    <script src="js/app.js?v=20260620f" defer></script>
     <script src="js/vendor/Sortable.min.js" defer></script>
-    <script src="js/assembly.js?v=20260619e" defer></script>
-    <script src="js/algorithm-maze.js?v=20260619e" defer></script>
+    <script src="js/assembly.js?v=20260620f" defer></script>
+    <script src="js/algorithm-maze.js?v=20260620k" defer></script>
   </head>
   <body data-page="algorithm-maze">
     <main class="container site-shell" data-algorithm-maze-page>
@@ -63,11 +63,35 @@
         </div>
         <div data-maze-results-dock></div>
       </article>
+      <article class="info-block tips-block" data-tips-block>
+        <button
+          class="secondary outline tips-toggle"
+          type="button"
+          data-tips-toggle
+          aria-controls="maze-tips-panel"
+          aria-expanded="false"
+          aria-label="Reveal or hide algorithm maze tips"
+        >Reveal +</button>
+        <h2 id="tips-section" data-heading-icon="coconut">Tips for New Programmers</h2>
+        <p>If you're new to these coding archipelagos, give these tips a go to help you on your way.</p>
+        <div class="tips-panel" id="maze-tips-panel" data-tips-panel aria-hidden="true">
+          <ul class="tips-list">
+            <li><strong>Programs</strong> run in order, one <strong>instruction</strong> or step (represented by a <em>block</em>) at a time.</li>
+            <li>Each <strong>move forward</strong> block sends the explorer one space along the trail, so the number of forward moves matters.</li>
+            <li>Use the <strong>repeat blocks</strong> when a pattern happens more than once. In this maze that might mean repeating a short route for a set count, or repeating until the explorer reaches the finish.</li>
+            <li>Use the <strong>choice blocks</strong> to react to the maze. Here they can be used to check whether there is a path on the left or right before deciding to turn.</li>
+            <li>The turn blocks change which direction the explorer is facing, so the same next move can lead somewhere different after a <strong>turn left</strong> or <strong>turn right</strong>.</li>
+            <li>For a program to work as intended blocks may need to be placed <em>inside</em> other blocks, for example a choice block inside a repeat block.</li>
+            <li>There can be <strong>multiple working solutions</strong>, and some good solutions may not need every block from the palette.</li>
+            <li>Check your thinking by clicking "Check solution" to see whether your program guides the explorer all the way to the finish.</li>
+          </ul>
+        </div>
+      </article>
       <section class="page-grid">
         <article class="info-block" data-maze-build>
-          <h2>Build The Program</h2>
+          <h2 data-heading-icon="turtle">Build The Program</h2>
           <p class="mini-note">Drag the blocks into a program. Wrong-but-possible structures are still allowed.</p>
-          <p class="mini-note assembly-tools__prompt">Try a counted-loop idea first, or see whether one repeat-until-finish loop can solve the maze in fewer blocks.</p>
+          <p class="mini-note assembly-tools__prompt">Try a counted-loop idea first, or see whether one repeat-until-finish loop can solve the maze in fewer blocks. See <a href="#tips-section">here</a> for more tips.</p>
           <div class="assembly-tools">
             <button
               class="secondary outline assembly-overview-toggle"
@@ -93,7 +117,7 @@
           </div>
         </article>
         <article class="info-block" data-maze-test>
-          <h2>Test The Route</h2>
+          <h2 data-heading-icon="turtle">Test The Route</h2>
           <div class="control-row">
             <button type="button" data-check-solution>Check solution</button>
             <button class="secondary outline" type="button" data-reset-program>Reset</button>
@@ -118,7 +142,7 @@
                 </div>
                 <div class="success-panel__content">
                   <div class="success-badge">Trail completed</div>
-                  <h3>Coral Gate Opened</h3>
+                  <h3 class="gate-heading" data-gate-name="Coral">Coral Gate Opened</h3>
                   <p>
                     You guided the explorer to the finish and earned the key part
                     <strong data-maze-key-part-repeat></strong>.

@@ -25,38 +25,6 @@
     swap: "cubic-bezier(0.16, 0.84, 0.32, 1)",
   };
 
-  function initTipsToggle(page) {
-    const tipsBlock = page.querySelector("[data-tips-block]");
-    const toggle = page.querySelector("[data-tips-toggle]");
-    const panel = page.querySelector("[data-tips-panel]");
-    const tipLinks = page.querySelectorAll('a[href="#tips-section"]');
-
-    if (!tipsBlock || !toggle || !panel) {
-      return;
-    }
-
-    function setTipsOpen(isOpen) {
-      tipsBlock.classList.toggle("is-open", isOpen);
-      toggle.setAttribute("aria-expanded", String(isOpen));
-      panel.setAttribute("aria-hidden", String(!isOpen));
-      toggle.textContent = isOpen ? "Hide -" : "Reveal +";
-    }
-
-    toggle.addEventListener("click", () => {
-      setTipsOpen(!tipsBlock.classList.contains("is-open"));
-    });
-
-    tipLinks.forEach((link) => {
-      link.addEventListener("click", () => {
-        setTipsOpen(true);
-      });
-    });
-
-    if (window.location.hash === "#tips-section") {
-      setTipsOpen(true);
-    }
-  }
-
   function uniqueNumbers(count, min, max) {
     const values = new Set();
 
@@ -65,6 +33,13 @@
     }
 
     return [...values];
+  }
+
+  function isValidPuzzleNumbers(value) {
+    return Array.isArray(value)
+      && value.length === 6
+      && value.every((entry) => Number.isInteger(entry))
+      && new Set(value).size === value.length;
   }
 
   function buildFrames(numbers) {
@@ -447,10 +422,13 @@
       return;
     }
 
-    initTipsToggle(page);
+    window.summerFairApp.initTipsToggle(page);
 
     const activity = window.summerFairApp.getActivityById(ACTIVITY_ID);
-    const puzzleNumbers = uniqueNumbers(6, 1, 25);
+    const savedActivityState = window.summerFairApp.getActivityState(ACTIVITY_ID);
+    const puzzleNumbers = isValidPuzzleNumbers(savedActivityState?.puzzleNumbers)
+      ? [...savedActivityState.puzzleNumbers]
+      : uniqueNumbers(6, 1, 25);
     const successFrames = buildFrames(puzzleNumbers);
     const demoFrames = buildFrames(DEMO_NUMBERS);
 
@@ -500,8 +478,17 @@
           window.summerFairApp.setCompleted(ACTIVITY_ID, false);
           window.summerFairApp.refreshPageChrome();
         }
+
+        window.summerFairApp.setActivityState(ACTIVITY_ID, {
+          puzzleNumbers: [...puzzleNumbers],
+          assemblySnapshot: engine.getSnapshot(),
+        });
       },
     });
+
+    if (savedActivityState?.assemblySnapshot) {
+      engine.restoreSnapshot(savedActivityState.assemblySnapshot);
+    }
 
     function setFeedback(message, tone) {
       feedback.textContent = message;
