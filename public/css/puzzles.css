@@ -120,11 +120,24 @@
   display: grid;
   gap: 0.7rem;
   overflow: hidden;
+  list-style: none;
   padding-right: 0.6rem;
-  padding-left: calc(1.35rem + 0.6rem);
+  padding-left: 0.6rem;
 }
 
-.tips-list li::marker { content: "🥥  "; }
+.tips-list li {
+  display: block;
+  position: relative;
+  padding-left: 1.35rem;
+}
+
+.tips-list li::before {
+  content: "🥥";
+  position: absolute;
+  top: 0;
+  left: 0;
+  line-height: 1;
+}
 
 .tips-block.is-open .tips-panel {
   grid-template-rows: 1fr;
