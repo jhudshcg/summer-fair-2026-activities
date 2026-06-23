@@ -2,6 +2,36 @@
 
 ## Dev log
 
+### 2026-06-23
+
+- Refactor prep focus has widened from general CSS simplification to a shared-layer performance pass, driven by user feedback that iOS initial loads take multiple seconds even on this small static site.
+- Current assessment: this still does not look primarily like a raw payload-size problem.
+  - shared homepage-like baseline is modest once compressed:
+    - `public/index.html` about 1.0 KB gz
+    - `public/css/vendor/pico.min.css` about 11.7 KB gz
+    - `public/css/style.css` about 4.7 KB gz
+    - `public/css/layout.css` about 0.4 KB gz
+    - `public/js/mobile-layout.js` about 1.7 KB gz
+    - `public/js/app.js` about 5.2 KB gz
+  - there are also no remote webfont requests in the shared baseline, which lowers the chance of font-loading being the dominant cause.
+- Corrected ranking of likely causes:
+  - most likely primary factor is cold-cache shared asset discovery/fetch/caching behaviour on iOS, because the reported pattern is "first load is slow, same-page reload is near instant".
+  - the current CSS `@import` chain length is only one step: `style.css` -> `vendor/pico.min.css`.
+  - that `@import` is still worth removing because it serialises stylesheet discovery, but by itself it is not a credible explanation for multi-second first paint on GitHub Pages.
+  - shared visual/render cost is a secondary suspect, not the lead suspect:
+    - large fixed `body::before` inline SVG background
+    - multiple radial/linear gradients on the page background and hero
+    - `backdrop-filter: blur(8px)` on every `article.info-block`
+    - fixed decorative ornament wrappers with `filter: drop-shadow(...)`
+    - multiple always-on ornament animations
+  - shared JS startup is another secondary suspect:
+    - `public/js/mobile-layout.js` runs on every page, injects ornament DOM, performs `visualViewport` measurement, binds viewport listeners, and still writes browser metrics to `console.log`
+  - some non-puzzle/support pages still load `public/css/puzzles.css` even though they do not need the full puzzle interaction presentation layer.
+- Working conclusion:
+  - do not over-claim that gradients, one inline SVG, or one stylesheet `@import` are enough on their own to explain the reported multi-second cold load.
+  - the repo still has low-risk shared-layer cleanup worth doing, but the next slice should begin with real cold-load profiling on iOS so network/discovery cost can be separated from render and JS startup cost.
+  - style-guide-aligned simplification still applies: keep shared layers simple and flow-based first, and treat decorative cost as optional enhancement rather than baseline page work.
+
 ### 2026-06-19
 
 - Keep the CSS/layout refactor stable while the shared assembly fix is implemented.
@@ -42,6 +72,12 @@
 - Tune the iOS Safari fallback offsets in `public/css/style.css` only as much as device testing requires, while keeping the generic geometry path intact for other browsers.
 - Keep mobile layout fixes inside `public/js/mobile-layout.js` unless they clearly belong to puzzle-specific code.
 - Revisit further CSS line-count trimming after more puzzle slices are live, so reductions do not fight still-moving UI requirements.
+- New shared performance follow-up, aligned with `style_guide.md`:
+  - remove CSS `@import` chaining for Pico and prefer explicit page-level stylesheet loading order
+  - audit decorative cost in the shared layer before touching puzzle-specific code
+  - move expensive effects behind progressive enhancement or reduce them outright where they are not essential
+  - stop loading puzzle CSS on non-puzzle pages unless a specific shared rule is still genuinely needed there
+  - remove temporary shared browser-metrics logging once the current ornament/path issues no longer need it
 
 ## Agreed file structure
 
@@ -136,6 +172,47 @@
 6. First recover the shared shell and all non-puzzle pages with a leaner common/layout system.
 7. Then move Bubble Sort and assembly-specific styling into `puzzles.css` with as few overrides as possible.
 8. Validate that pages still load and that no JS-dependent class hooks are broken.
+
+## Next refactor prep: shared performance slice
+
+### Goal
+
+- Improve cold-load behaviour on iOS by reducing shared first-paint cost and shared asset coupling without changing the overall visual direction.
+
+### Proposed order
+
+1. Profile a true cold load on iOS before wider simplification.
+  - Capture a network waterfall and main-thread timeline for the home page and one puzzle page.
+  - Use that to separate network/discovery delay from CSS/paint/JS startup delay.
+
+2. Remove the CSS `@import` path for Pico.
+  - Load Pico explicitly before `style.css` in page HTML so the browser can fetch stylesheets in parallel rather than through the shared stylesheet chain.
+
+3. Trim non-essential shared visual cost.
+  - Reassess `backdrop-filter` on shared `article.info-block` surfaces.
+  - Reassess fixed `body::before` decorative SVG cost.
+  - Reassess ornament drop-shadow filters and always-on animation defaults.
+  - Prefer simpler shared surfaces first, in line with the style guide.
+
+4. Reduce shared work on pages that do not need puzzle presentation.
+  - Stop loading `public/css/puzzles.css` on support/placeholder pages that are not using puzzle-specific presentation rules.
+  - Keep puzzle-layer CSS scoped to actual puzzle pages wherever possible.
+
+5. Clean up shared mobile-layout startup cost.
+  - Remove temporary `console.log` diagnostics.
+  - Re-check whether all current viewport listeners are still necessary at page startup.
+  - Keep the browser-chrome compensation path centralised, but lighter.
+
+6. Validate before widening back out.
+  - Compare cold-load feel on iOS after the shared-layer reductions before moving on to broader styling work.
+  - Confirm that the simplification does not reintroduce layout regressions on Android or desktop.
+
+### Guardrails for this slice
+
+- Start with shared layers, not puzzle-specific CSS.
+- Prefer deletion and simplification over substitution with new effects.
+- Keep decorative and browser-specific rules isolated from core layout.
+- Use the style guide's ownership rules strictly: shared chrome in `style.css`, layout in `layout.css`, puzzle-only presentation in `puzzles.css`.
 
 ## Guardrails during implementation
 

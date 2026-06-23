@@ -73,9 +73,13 @@ const ACTIVITIES = [
  */
 function getProgress() {
   const fallback = { completed: {}, activityState: {} };
+  const perf = window.summerFairTesting?.getPerfProbe?.() || null;
+  const startedAt = perf ? performance.now() : 0;
 
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY);
+    perf?.increment("app.getProgress.calls");
+    perf?.setValue("app.localStorageBytes", raw ? raw.length : 0);
     if (!raw) {
       return fallback;
     }
@@ -91,11 +95,21 @@ function getProgress() {
     };
   } catch {
     return fallback;
+  } finally {
+    if (perf) {
+      perf.addDuration("app.getProgress", performance.now() - startedAt);
+    }
   }
 }
 
 function setProgress(progress) {
-  window.localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
+  return (window.summerFairTesting?.measure?.("app.setProgress", () => {
+    const serialised = JSON.stringify(progress);
+    window.summerFairTesting?.getPerfProbe?.()?.setValue("app.localStorageWriteBytes", serialised.length);
+    window.localStorage.setItem(STORAGE_KEY, serialised);
+  })) ?? (() => {
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
+  })();
 }
 
 function isActivityAvailable(activity) {
@@ -619,14 +633,30 @@ function renderFooter() {
 }
 
 function init() {
+  const perf = window.summerFairTesting?.getPerfProbe?.() || null;
+  perf?.mark("app.init.start");
+
   if (window.summerFairMobileLayout && typeof window.summerFairMobileLayout.init === "function") {
-    window.summerFairMobileLayout.init();
+    window.summerFairTesting?.measure?.("app.mobileLayoutInit", () => {
+      window.summerFairMobileLayout.init();
+    }) ?? window.summerFairMobileLayout.init();
   }
 
-  renderFooter();
-  renderYear();
-  refreshPageChrome();
-  renderActivityList();
+  window.summerFairTesting?.measure?.("app.renderFooter", () => {
+    renderFooter();
+  }) ?? renderFooter();
+  window.summerFairTesting?.measure?.("app.renderYear", () => {
+    renderYear();
+  }) ?? renderYear();
+  window.summerFairTesting?.measure?.("app.refreshPageChrome", () => {
+    refreshPageChrome();
+  }) ?? refreshPageChrome();
+  window.summerFairTesting?.measure?.("app.renderActivityList", () => {
+    renderActivityList();
+  }) ?? renderActivityList();
+
+  perf?.mark("app.init.end");
+  perf?.render();
 }
 
 window.summerFairApp = {

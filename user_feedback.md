@@ -30,3 +30,7 @@ The learning hut should provide much simpler challenges that build up basic unde
 - a filtering system for the block palette could be helpful, e.g. a row of small icons at the top of the palette that can be tapped to filter the palette to show only blocks of a certain type, e.g. variables, loops, selection, etc. This would make it easier to find the right block when there are many blocks in the palette.
 
 - a bounded float on a shorter (because fildered) palette column could be used to keep the palette in view while scrolling through larger workspace area programs. so a palette container within the palette column would be effectively static vertical centre aligned, but limited to stay within the palette column, which matches the height of the workspace area. This would allow the user to scroll through a larger workspace area while still having access to the palette, without having to scroll back up to the top of the palette column.
+
+## Performance
+
+On iOS, the initial page loads take multiple seconds and appear to hang near the beginning of the load. This is true for all initial loads, not just the home page. Once a page has been recently loaded, the subsequent reloads are much faster. This is a small static site, so the initial load should be well under a second. What could be causing this?

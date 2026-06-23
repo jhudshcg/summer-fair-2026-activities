@@ -5,6 +5,7 @@
 (() => {
   let lastBrowserChromeLogKey = "";
   let browserChromeOffsetsBound = false;
+  const perf = window.summerFairTesting?.getPerfProbe?.() || null;
   const ORNAMENTS = [
     { wrapClass: "page-ornament-wrap page-ornament-wrap--leaves", ornamentClass: "page-ornament page-ornament--leaves" },
     { wrapClass: "page-ornament-wrap page-ornament-wrap--palm", ornamentClass: "page-ornament page-ornament--palm" },
@@ -59,6 +60,7 @@
   }
 
   function logBrowserChromeMetrics(metrics) {
+    perf?.increment("mobileLayout.browserChromeLogCalls");
     const logKey = JSON.stringify(metrics);
     if (logKey === lastBrowserChromeLogKey) {
       return;
@@ -69,18 +71,52 @@
   }
 
   function updateBrowserChromeOffsets() {
-    const root = document.documentElement;
-    const viewport = window.visualViewport;
-    const useIosSafariFallback = usesIosSafariOrnamentFallback();
-    const useApplePlatformAdjustment = usesApplePlatformOrnamentAdjustment();
+    const runUpdate = () => {
+      const root = document.documentElement;
+      const viewport = window.visualViewport;
+      const useIosSafariFallback = usesIosSafariOrnamentFallback();
+      const useApplePlatformAdjustment = usesApplePlatformOrnamentAdjustment();
 
-    root.classList.toggle("ios-safari-ornaments-fallback", useIosSafariFallback);
-    root.classList.toggle("apple-platform-ornaments", useApplePlatformAdjustment);
+      perf?.increment("mobileLayout.updateBrowserChromeOffsets.calls");
+      perf?.setValue("mobileLayout.visualViewportPresent", viewport ? "yes" : "no");
+      perf?.setValue("mobileLayout.iosSafariFallback", useIosSafariFallback ? "yes" : "no");
+      perf?.setValue("mobileLayout.applePlatformAdjustment", useApplePlatformAdjustment ? "yes" : "no");
 
-    if (!viewport) {
-      root.style.setProperty("--browser-top-offset", "0px");
-      root.style.setProperty("--browser-bottom-offset", "0px");
-      root.style.setProperty("--browser-right-offset", "0px");
+      root.classList.toggle("ios-safari-ornaments-fallback", useIosSafariFallback);
+      root.classList.toggle("apple-platform-ornaments", useApplePlatformAdjustment);
+
+      if (!viewport) {
+        root.style.setProperty("--browser-top-offset", "0px");
+        root.style.setProperty("--browser-bottom-offset", "0px");
+        root.style.setProperty("--browser-right-offset", "0px");
+
+        logBrowserChromeMetrics({
+          iosSafariFallback: useIosSafariFallback,
+          innerWidth: window.innerWidth,
+          innerHeight: window.innerHeight,
+          clientWidth: document.documentElement.clientWidth,
+          clientHeight: document.documentElement.clientHeight,
+          visualViewport: null,
+          computedOffsets: { top: 0, right: 0, bottom: 0 },
+        });
+
+        return;
+      }
+
+      const layoutWidth = Math.max(window.innerWidth, document.documentElement.clientWidth);
+      const layoutHeight = Math.max(window.innerHeight, document.documentElement.clientHeight);
+      const topInset = Math.max(0, viewport.offsetTop);
+      const rightInset = Math.max(0, layoutWidth - (viewport.width + viewport.offsetLeft));
+      const bottomInset = Math.max(0, layoutHeight - (viewport.height + viewport.offsetTop));
+
+      // Ignore sub-pixel noise so ornaments do not drift on browsers without visible overlay chrome.
+      const topOffset = topInset > 2 ? topInset : 0;
+      const rightOffset = rightInset > 2 ? rightInset : 0;
+      const bottomOffset = bottomInset > 2 ? bottomInset : 0;
+
+      root.style.setProperty("--browser-top-offset", `${Math.round(topOffset)}px`);
+      root.style.setProperty("--browser-right-offset", `${Math.round(rightOffset)}px`);
+      root.style.setProperty("--browser-bottom-offset", `${Math.round(bottomOffset)}px`);
 
       logBrowserChromeMetrics({
         iosSafariFallback: useIosSafariFallback,
@@ -88,48 +124,33 @@
         innerHeight: window.innerHeight,
         clientWidth: document.documentElement.clientWidth,
         clientHeight: document.documentElement.clientHeight,
-        visualViewport: null,
-        computedOffsets: { top: 0, right: 0, bottom: 0 },
+        visualViewport: {
+          width: Math.round(viewport.width),
+          height: Math.round(viewport.height),
+          offsetTop: Math.round(viewport.offsetTop),
+          offsetLeft: Math.round(viewport.offsetLeft),
+          pageTop: Math.round(viewport.pageTop),
+          pageLeft: Math.round(viewport.pageLeft),
+        },
+        computedOffsets: {
+          top: Math.round(topOffset),
+          right: Math.round(rightOffset),
+          bottom: Math.round(bottomOffset),
+        },
       });
+    };
 
-      return;
-    }
+    return window.summerFairTesting?.measure?.("mobileLayout.updateBrowserChromeOffsets", runUpdate) ?? runUpdate();
+  }
 
-    const layoutWidth = Math.max(window.innerWidth, document.documentElement.clientWidth);
-    const layoutHeight = Math.max(window.innerHeight, document.documentElement.clientHeight);
-    const topInset = Math.max(0, viewport.offsetTop);
-    const rightInset = Math.max(0, layoutWidth - (viewport.width + viewport.offsetLeft));
-    const bottomInset = Math.max(0, layoutHeight - (viewport.height + viewport.offsetTop));
+  function handleVisualViewportResize() {
+    perf?.increment("mobileLayout.visualViewport.resizeEvents");
+    updateBrowserChromeOffsets();
+  }
 
-    // Ignore sub-pixel noise so ornaments do not drift on browsers without visible overlay chrome.
-    const topOffset = topInset > 2 ? topInset : 0;
-    const rightOffset = rightInset > 2 ? rightInset : 0;
-    const bottomOffset = bottomInset > 2 ? bottomInset : 0;
-
-    root.style.setProperty("--browser-top-offset", `${Math.round(topOffset)}px`);
-    root.style.setProperty("--browser-right-offset", `${Math.round(rightOffset)}px`);
-    root.style.setProperty("--browser-bottom-offset", `${Math.round(bottomOffset)}px`);
-
-    logBrowserChromeMetrics({
-      iosSafariFallback: useIosSafariFallback,
-      innerWidth: window.innerWidth,
-      innerHeight: window.innerHeight,
-      clientWidth: document.documentElement.clientWidth,
-      clientHeight: document.documentElement.clientHeight,
-      visualViewport: {
-        width: Math.round(viewport.width),
-        height: Math.round(viewport.height),
-        offsetTop: Math.round(viewport.offsetTop),
-        offsetLeft: Math.round(viewport.offsetLeft),
-        pageTop: Math.round(viewport.pageTop),
-        pageLeft: Math.round(viewport.pageLeft),
-      },
-      computedOffsets: {
-        top: Math.round(topOffset),
-        right: Math.round(rightOffset),
-        bottom: Math.round(bottomOffset),
-      },
-    });
+  function handleVisualViewportScroll() {
+    perf?.increment("mobileLayout.visualViewport.scrollEvents");
+    updateBrowserChromeOffsets();
   }
 
   function bindBrowserChromeOffsets() {
@@ -143,8 +164,8 @@
 
     const viewport = window.visualViewport;
     if (viewport) {
-      viewport.addEventListener("resize", updateBrowserChromeOffsets);
-      viewport.addEventListener("scroll", updateBrowserChromeOffsets);
+      viewport.addEventListener("resize", handleVisualViewportResize);
+      viewport.addEventListener("scroll", handleVisualViewportScroll);
     }
 
     window.addEventListener("resize", updateBrowserChromeOffsets);
@@ -152,8 +173,18 @@
   }
 
   function init() {
-    renderPageOrnaments();
-    bindBrowserChromeOffsets();
+    const runInit = () => {
+      perf?.mark("mobileLayout.init.start");
+      window.summerFairTesting?.measure?.("mobileLayout.renderPageOrnaments", () => {
+        renderPageOrnaments();
+      }) ?? renderPageOrnaments();
+      window.summerFairTesting?.measure?.("mobileLayout.bindBrowserChromeOffsets", () => {
+        bindBrowserChromeOffsets();
+      }) ?? bindBrowserChromeOffsets();
+      perf?.mark("mobileLayout.init.end");
+    };
+
+    return window.summerFairTesting?.measure?.("mobileLayout.init", runInit) ?? runInit();
   }
 
   window.summerFairMobileLayout = {
