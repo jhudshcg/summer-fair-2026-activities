@@ -3,9 +3,16 @@
  */
 
 (() => {
-  let lastBrowserChromeLogKey = "";
   let browserChromeOffsetsBound = false;
+  let browserChromeUpdateQueued = false;
   const perf = window.summerFairTesting?.getPerfProbe?.() || null;
+  const appliedBrowserChromeState = {
+    iosSafariFallback: null,
+    applePlatformAdjustment: null,
+    topOffset: null,
+    rightOffset: null,
+    bottomOffset: null,
+  };
   const ORNAMENTS = [
     { wrapClass: "page-ornament-wrap page-ornament-wrap--leaves", ornamentClass: "page-ornament page-ornament--leaves" },
     { wrapClass: "page-ornament-wrap page-ornament-wrap--palm", ornamentClass: "page-ornament page-ornament--palm" },
@@ -59,17 +66,6 @@
     return /Mac|iPhone|iPad|iPod/i.test(platform) || /Macintosh|iPhone|iPad|iPod/i.test(ua);
   }
 
-  function logBrowserChromeMetrics(metrics) {
-    perf?.increment("mobileLayout.browserChromeLogCalls");
-    const logKey = JSON.stringify(metrics);
-    if (logKey === lastBrowserChromeLogKey) {
-      return;
-    }
-
-    lastBrowserChromeLogKey = logKey;
-    console.log("[summer-fair] browser chrome metrics", metrics);
-  }
-
   function updateBrowserChromeOffsets() {
     const runUpdate = () => {
       const root = document.documentElement;
@@ -82,23 +78,28 @@
       perf?.setValue("mobileLayout.iosSafariFallback", useIosSafariFallback ? "yes" : "no");
       perf?.setValue("mobileLayout.applePlatformAdjustment", useApplePlatformAdjustment ? "yes" : "no");
 
-      root.classList.toggle("ios-safari-ornaments-fallback", useIosSafariFallback);
-      root.classList.toggle("apple-platform-ornaments", useApplePlatformAdjustment);
+      if (appliedBrowserChromeState.iosSafariFallback !== useIosSafariFallback) {
+        root.classList.toggle("ios-safari-ornaments-fallback", useIosSafariFallback);
+        appliedBrowserChromeState.iosSafariFallback = useIosSafariFallback;
+      }
+      if (appliedBrowserChromeState.applePlatformAdjustment !== useApplePlatformAdjustment) {
+        root.classList.toggle("apple-platform-ornaments", useApplePlatformAdjustment);
+        appliedBrowserChromeState.applePlatformAdjustment = useApplePlatformAdjustment;
+      }
 
       if (!viewport) {
-        root.style.setProperty("--browser-top-offset", "0px");
-        root.style.setProperty("--browser-bottom-offset", "0px");
-        root.style.setProperty("--browser-right-offset", "0px");
-
-        logBrowserChromeMetrics({
-          iosSafariFallback: useIosSafariFallback,
-          innerWidth: window.innerWidth,
-          innerHeight: window.innerHeight,
-          clientWidth: document.documentElement.clientWidth,
-          clientHeight: document.documentElement.clientHeight,
-          visualViewport: null,
-          computedOffsets: { top: 0, right: 0, bottom: 0 },
-        });
+        if (appliedBrowserChromeState.topOffset !== 0) {
+          root.style.setProperty("--browser-top-offset", "0px");
+          appliedBrowserChromeState.topOffset = 0;
+        }
+        if (appliedBrowserChromeState.bottomOffset !== 0) {
+          root.style.setProperty("--browser-bottom-offset", "0px");
+          appliedBrowserChromeState.bottomOffset = 0;
+        }
+        if (appliedBrowserChromeState.rightOffset !== 0) {
+          root.style.setProperty("--browser-right-offset", "0px");
+          appliedBrowserChromeState.rightOffset = 0;
+        }
 
         return;
       }
@@ -114,43 +115,43 @@
       const rightOffset = rightInset > 2 ? rightInset : 0;
       const bottomOffset = bottomInset > 2 ? bottomInset : 0;
 
-      root.style.setProperty("--browser-top-offset", `${Math.round(topOffset)}px`);
-      root.style.setProperty("--browser-right-offset", `${Math.round(rightOffset)}px`);
-      root.style.setProperty("--browser-bottom-offset", `${Math.round(bottomOffset)}px`);
-
-      logBrowserChromeMetrics({
-        iosSafariFallback: useIosSafariFallback,
-        innerWidth: window.innerWidth,
-        innerHeight: window.innerHeight,
-        clientWidth: document.documentElement.clientWidth,
-        clientHeight: document.documentElement.clientHeight,
-        visualViewport: {
-          width: Math.round(viewport.width),
-          height: Math.round(viewport.height),
-          offsetTop: Math.round(viewport.offsetTop),
-          offsetLeft: Math.round(viewport.offsetLeft),
-          pageTop: Math.round(viewport.pageTop),
-          pageLeft: Math.round(viewport.pageLeft),
-        },
-        computedOffsets: {
-          top: Math.round(topOffset),
-          right: Math.round(rightOffset),
-          bottom: Math.round(bottomOffset),
-        },
-      });
+      if (appliedBrowserChromeState.topOffset !== topOffset) {
+        root.style.setProperty("--browser-top-offset", `${Math.round(topOffset)}px`);
+        appliedBrowserChromeState.topOffset = topOffset;
+      }
+      if (appliedBrowserChromeState.rightOffset !== rightOffset) {
+        root.style.setProperty("--browser-right-offset", `${Math.round(rightOffset)}px`);
+        appliedBrowserChromeState.rightOffset = rightOffset;
+      }
+      if (appliedBrowserChromeState.bottomOffset !== bottomOffset) {
+        root.style.setProperty("--browser-bottom-offset", `${Math.round(bottomOffset)}px`);
+        appliedBrowserChromeState.bottomOffset = bottomOffset;
+      }
     };
 
     return window.summerFairTesting?.measure?.("mobileLayout.updateBrowserChromeOffsets", runUpdate) ?? runUpdate();
   }
 
+  function scheduleBrowserChromeOffsetsUpdate() {
+    if (browserChromeUpdateQueued) {
+      return;
+    }
+
+    browserChromeUpdateQueued = true;
+    window.requestAnimationFrame(() => {
+      browserChromeUpdateQueued = false;
+      updateBrowserChromeOffsets();
+    });
+  }
+
   function handleVisualViewportResize() {
     perf?.increment("mobileLayout.visualViewport.resizeEvents");
-    updateBrowserChromeOffsets();
+    scheduleBrowserChromeOffsetsUpdate();
   }
 
   function handleVisualViewportScroll() {
     perf?.increment("mobileLayout.visualViewport.scrollEvents");
-    updateBrowserChromeOffsets();
+    scheduleBrowserChromeOffsetsUpdate();
   }
 
   function bindBrowserChromeOffsets() {
@@ -164,12 +165,12 @@
 
     const viewport = window.visualViewport;
     if (viewport) {
-      viewport.addEventListener("resize", handleVisualViewportResize);
-      viewport.addEventListener("scroll", handleVisualViewportScroll);
+      viewport.addEventListener("resize", handleVisualViewportResize, { passive: true });
+      viewport.addEventListener("scroll", handleVisualViewportScroll, { passive: true });
     }
 
-    window.addEventListener("resize", updateBrowserChromeOffsets);
-    window.addEventListener("orientationchange", updateBrowserChromeOffsets);
+    window.addEventListener("resize", scheduleBrowserChromeOffsetsUpdate, { passive: true });
+    window.addEventListener("orientationchange", scheduleBrowserChromeOffsetsUpdate, { passive: true });
   }
 
   function init() {
