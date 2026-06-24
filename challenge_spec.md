@@ -115,9 +115,26 @@ The block assembly feature is shared across multiple puzzles. The following beha
     - choice block condition socket label: `If`
     - choice block true-path socket label: `Is true`
     - choice block else-path socket label: `Otherwise`
+- container-block visual shell target currently agreed:
+    - repeat and choice blocks should read as one continuous outer shell
+    - the shell should have a closed top section
+    - the shell should have a continuous left wall
+    - the shell should have a closed bottom section
+    - the shell middle should be open on the right side
+    - the condition/header socket sits inside the closed top chamber of that outer shell, not in a separate nested card that visually becomes its own outer box
+    - the growable sequence body sits inside the open middle of the same shell
 - visual trace mode for assembled program, so the user can see which operation is currently executing, by that block being highlighted. visual trace should happen automatically when the user clicks the 'test solution' (or similar) button, and should be animated with a short delay between each step. the trace should stop if the program hits an error or reaches the end of the program.
 - visual trace should be implemented in a way that allows the user to see the code being stepped through and the puzzle being solved at the same time.
 - visual trace should not stop the program simulator from running the program immediately to instantly evaluate the correctness or incorrectness of the solution.
+
+### Shared assembly visual-shell workflow
+
+- When a shared assembly block shape is still being agreed visually, do not keep iterating directly inside the live assembly renderer.
+- First build or update a standalone scratch prototype page and CSS that isolates the block shell markup and geometry.
+- Only after the prototype is explicitly approved should that exact approved structure be ported back into `public/js/assembly.js` and `public/css/puzzles.css`.
+- Current scratch prototype path for the repeat/choice shell work:
+    - `public/assembly-shell-prototype.html`
+    - `public/css/assembly-shell-prototype.css`
 
 #### Tap to place method
 

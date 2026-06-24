@@ -381,18 +381,42 @@
       handle.setAttribute("aria-hidden", "true");
       element.append(handle);
 
+      const isContainerPiece = piece.kind === "container";
+      const containerTop = isContainerPiece ? document.createElement("div") : null;
+      const containerTopSockets = isContainerPiece ? document.createElement("div") : null;
+      const containerBody = isContainerPiece ? document.createElement("div") : null;
+      const containerFooter = isContainerPiece ? document.createElement("div") : null;
+      const deferredSequenceSockets = [];
+
+      if (containerTop) {
+        containerTop.className = "assembly-container__top";
+      }
+
+      if (containerTopSockets) {
+        containerTopSockets.className = "assembly-container__top-sockets";
+      }
+
+      if (containerBody) {
+        containerBody.className = "assembly-container__body";
+      }
+
+      if (containerFooter) {
+        containerFooter.className = "assembly-container__footer";
+        containerFooter.setAttribute("aria-hidden", "true");
+      }
+
       if (piece.kicker) {
         const kicker = document.createElement("p");
         kicker.className = "assembly-piece__kicker";
         kicker.textContent = piece.kicker;
-        element.append(kicker);
+        (containerTop || element).append(kicker);
       }
 
       if (piece.label) {
         const label = document.createElement("p");
         label.className = "assembly-piece__label";
         label.textContent = piece.label;
-        element.append(label);
+        (containerTop || element).append(label);
       }
 
       if (piece.input) {
@@ -434,6 +458,8 @@
         piece.sockets.forEach((socket) => {
           const socketWrap = document.createElement("section");
           socketWrap.className = `assembly-container__socket assembly-container__socket--${socket.mode}`;
+          socketWrap.dataset.socketKey = socket.key;
+          socketWrap.dataset.socketMode = socket.mode;
 
           if (socket.label) {
             const socketLabel = document.createElement("p");
@@ -462,9 +488,36 @@
             });
           }
 
-          socketWrap.append(container);
-          element.append(socketWrap);
+          if (socket.mode === "sequence") {
+            socketWrap.append(container);
+            deferredSequenceSockets.push(socketWrap);
+          } else {
+            socketWrap.append(container);
+            if (containerTopSockets) {
+              containerTopSockets.append(socketWrap);
+            } else {
+              element.append(socketWrap);
+            }
+          }
         });
+
+        if (containerTop && containerTopSockets?.childNodes.length) {
+          containerTop.append(containerTopSockets);
+        }
+
+        if (containerTop) {
+          element.append(containerTop);
+        }
+
+        if (containerBody && deferredSequenceSockets.length) {
+          deferredSequenceSockets.forEach((socketWrap) => {
+            containerBody.append(socketWrap);
+          });
+          element.append(containerBody);
+          if (containerFooter) {
+            element.append(containerFooter);
+          }
+        }
       }
 
       return element;

@@ -1,0 +1,89 @@
+<!doctype html>
+<!-- Scratch prototype for validating C-shaped repeat and choice block shells in isolation. -->
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light">
+    <meta name="theme-color" content="#f7fff9">
+    <title>Assembly Shell Prototype | Summer Fair 2026</title>
+    <link rel="stylesheet" href="css/vendor/pico.min.css">
+    <link rel="stylesheet" href="css/style.css?v=20260624a">
+    <link rel="stylesheet" href="css/layout.css?v=20260620d">
+    <link rel="stylesheet" href="css/assembly-shell-prototype.css?v=20260624a">
+  </head>
+  <body data-page="assembly-shell-prototype">
+    <main class="container site-shell prototype-shell">
+      <section class="hero page-hero">
+        <div class="page-nav">
+          <span class="eyebrow">SHCG Southampton College</span>
+          <a class="back-link" href="bubble-sort.html">← Back to Bubble Sort</a>
+        </div>
+        <article class="info-block">
+          <h1 class="page-title">Assembly Shell Prototype</h1>
+          <p class="lede">Scratch-only markup for validating the open-right container shape before porting it back into the live assembly renderer.</p>
+        </article>
+      </section>
+
+      <article class="info-block prototype-notes">
+        <h2>Prototype Intent</h2>
+        <p>The outer repeat and choice shells below are standalone markup. They are meant to answer one question only: does the container itself read as a boxy letter C with a closed top, open-right middle, and closed bottom?</p>
+      </article>
+
+      <section class="prototype-stage" aria-label="Assembly shell scratch prototype">
+        <article class="proto-block proto-block--repeat">
+          <div class="proto-block__header">
+            <p class="proto-block__kicker">Repeat</p>
+          </div>
+          <div class="proto-block__condition-row">
+            <article class="proto-chip proto-chip--condition">
+              <p class="proto-chip__kicker">Condition</p>
+              <p class="proto-chip__label">index from 0 to length(numbers) - pass:</p>
+            </article>
+          </div>
+          <div class="proto-block__body">
+            <p class="proto-block__socket-label">Inside this loop</p>
+
+            <article class="proto-block proto-block--repeat">
+              <div class="proto-block__header">
+                <p class="proto-block__kicker">Repeat</p>
+              </div>
+              <div class="proto-block__condition-row">
+                <article class="proto-chip proto-chip--condition">
+                  <p class="proto-chip__kicker">Condition</p>
+                  <p class="proto-chip__label">pass from 2 to length(numbers):</p>
+                </article>
+              </div>
+              <div class="proto-block__body">
+                <p class="proto-block__socket-label">Inside this loop</p>
+
+                <article class="proto-block proto-block--choice">
+                  <div class="proto-block__header">
+                    <p class="proto-block__kicker">Choice</p>
+                  </div>
+                  <div class="proto-block__condition-row proto-block__condition-row--choice">
+                    <p class="proto-block__socket-label proto-block__socket-label--inline">If</p>
+                    <article class="proto-chip proto-chip--condition">
+                      <p class="proto-chip__kicker">Condition</p>
+                      <p class="proto-chip__label">numbers[index] &gt; numbers[index + 1]</p>
+                    </article>
+                  </div>
+                  <div class="proto-block__body">
+                    <p class="proto-block__socket-label">Is true</p>
+                    <article class="proto-chip proto-chip--step">
+                      <p class="proto-chip__kicker">Step</p>
+                      <p class="proto-chip__label">swap(numbers, index, index + 1)</p>
+                    </article>
+                  </div>
+                  <div class="proto-block__footer" aria-hidden="true"></div>
+                </article>
+              </div>
+              <div class="proto-block__footer" aria-hidden="true"></div>
+            </article>
+          </div>
+          <div class="proto-block__footer" aria-hidden="true"></div>
+        </article>
+      </section>
+    </main>
+  </body>
+</html>

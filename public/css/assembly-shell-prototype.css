@@ -1,0 +1,151 @@
+/* Scratch-only CSS for validating C-shaped assembly container shells. */
+
+.prototype-shell {
+  max-width: min(100%, 44rem);
+}
+
+.prototype-stage {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.prototype-notes {
+  max-width: 42rem;
+}
+
+.proto-block {
+  --proto-stroke: rgba(27, 127, 90, 0.26);
+  --proto-gap: 0.8rem;
+  --proto-left-rail: 0.9rem;
+  --proto-right-open: 1.25rem;
+  --proto-top-pad: 0.9rem;
+  --proto-inline-pad: 0.95rem;
+  --proto-bottom-pad: 0.9rem;
+  display: grid;
+  gap: 0;
+  min-width: 0;
+}
+
+.proto-block__header,
+.proto-block__condition-row,
+.proto-block__body,
+.proto-block__footer {
+  min-width: 0;
+}
+
+.proto-block__header,
+.proto-block__condition-row {
+  padding-left: calc(var(--proto-left-rail) + var(--proto-inline-pad));
+  padding-right: calc(var(--proto-right-open) + 0.15rem);
+  border-left: 3px solid var(--proto-stroke);
+  border-right: 3px solid var(--proto-stroke);
+  background: linear-gradient(180deg, rgba(214, 249, 221, 0.7), rgba(255, 255, 255, 0.94));
+}
+
+.proto-block__header {
+  padding-top: var(--proto-top-pad);
+  padding-bottom: 0.3rem;
+  border-top: 3px solid var(--proto-stroke);
+  border-top-left-radius: 1.75rem;
+  border-top-right-radius: 1.75rem;
+}
+
+.proto-block__condition-row {
+  padding-top: 0.18rem;
+  padding-bottom: 0.85rem;
+}
+
+.proto-block__body {
+  display: grid;
+  gap: var(--proto-gap);
+  padding: 0.35rem 0 0.2rem calc(var(--proto-left-rail) + 0.2rem);
+  border-left: 3px solid var(--proto-stroke);
+}
+
+.proto-block__footer {
+  height: 1rem;
+  margin-right: var(--proto-right-open);
+  border-left: 3px solid var(--proto-stroke);
+  border-bottom: 3px solid var(--proto-stroke);
+  border-bottom-left-radius: 1.75rem;
+  border-bottom-right-radius: 1.75rem;
+}
+
+.proto-block__kicker,
+.proto-block__socket-label,
+.proto-chip__kicker,
+.proto-chip__label {
+  margin: 0;
+}
+
+.proto-block__kicker,
+.proto-chip__kicker,
+.proto-block__socket-label {
+  color: var(--color-leaf-deep);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.proto-block__socket-label {
+  padding-left: 0.34rem;
+}
+
+.proto-block__socket-label--inline {
+  padding-left: 0;
+}
+
+.proto-chip {
+  display: grid;
+  gap: 0.45rem;
+  padding: 1rem 1.15rem;
+  border: 2px solid rgba(224, 185, 165, 0.6);
+  border-radius: 2rem;
+  background: linear-gradient(180deg, rgba(255, 244, 213, 0.98), rgba(255, 236, 205, 0.98));
+  box-shadow: var(--shadow-soft);
+}
+
+.proto-chip--step {
+  background: rgba(255, 255, 255, 0.98);
+  border-color: rgba(23, 50, 51, 0.08);
+}
+
+.proto-chip__label {
+  font-size: clamp(1rem, 4vw, 1.55rem);
+  font-weight: 700;
+  line-height: 1.18;
+  color: var(--color-night);
+}
+
+.proto-block--choice .proto-block__condition-row {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.proto-block--choice .proto-block__body {
+  padding-top: 0.2rem;
+}
+
+.proto-block .proto-block {
+  margin-right: 0.2rem;
+}
+
+@media (width <= 480px) {
+  .prototype-shell {
+    padding-inline: 0.35rem;
+  }
+
+  .proto-block {
+    --proto-left-rail: 0.72rem;
+    --proto-right-open: 1rem;
+    --proto-inline-pad: 0.74rem;
+    --proto-gap: 0.65rem;
+  }
+
+  .proto-chip {
+    padding: 0.85rem 0.95rem;
+    border-radius: 1.6rem;
+  }
+}

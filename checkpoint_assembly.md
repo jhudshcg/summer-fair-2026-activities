@@ -4,6 +4,81 @@ read the challenge_spec sections on shared assembly functionality and document i
 
 ## Dev log
 
+### 2026-06-24
+
+- Agreed next shared assembly UX slice: reduce workspace bulging by redesigning the visual treatment of container blocks and growable sequence sockets.
+- Current diagnosis:
+    - the present container/socket treatment spends too much width on right-side framing, nested padding, and closed-box visuals that do not add much learning value
+    - this cost is most obvious on loop bodies and if/else paths, where the real requirement is a readable growable lane, not a fully boxed card inside another fully boxed card
+- Agreed direction:
+    - keep single sockets compact and framed
+    - redesign growable sequence sockets as more open lanes with less right-side enclosure
+    - allow the sequence/body area to read as a three-part structure:
+        - top
+        - growable middle with open right side
+        - bottom
+    - keep the shared assembly state model and placement logic unchanged for this slice; solve the issue with markup shaping plus CSS first
+
+### Planned implementation approach
+
+1. Shared renderer change in `public/js/assembly.js`
+    - add clearer markup for sequence sockets only
+    - keep the existing sortable sequence container as the actual drop surface
+    - wrap that sequence container in a small visual shell that exposes top, middle, and bottom sections
+    - add socket data attributes or classes so CSS can distinguish single sockets from sequence sockets without puzzle-specific JS branching
+
+2. Shared puzzle CSS change in `public/css/puzzles.css`
+    - reduce horizontal padding on container pieces
+    - keep the header/condition area visually closed enough to read as a block start
+    - style sequence sockets as open lanes rather than closed padded boxes
+    - preserve insertion marker visibility and drop-target highlighting inside the growable middle lane
+
+3. Guardrails
+    - do not alter compatibility rules, resolver logic, or snapshot/state shape in this slice unless a blocker is discovered
+    - keep the change shared across Bubble Sort and Algorithm Maze rather than page-local
+    - keep ownership aligned with the style guide: shared assembly visuals stay in `puzzles.css`, not `style.css`
+    - prefer a small DOM reshaping pass over pseudo-element tricks if explicit markup is more reliable cross-device
+
+### First validation target for this slice
+
+- `node --check public/js/assembly.js`
+- then editor validation for `public/css/puzzles.css`
+- then a browser pass focused on:
+    - reduced right-side bulging on container blocks
+    - readable nesting of loop and branch bodies
+    - unchanged drop-target and insertion-marker behaviour
+
+### Sequence socket first-pass outcome
+
+- `public/js/assembly.js` now gives sequence sockets a small visual shell with explicit top, middle, and bottom sections, while keeping single sockets unchanged.
+- `public/css/puzzles.css` now styles sequence sockets as more open left-railed lanes with reduced right-side enclosure and slightly tighter container padding.
+- Shared assembly state shape, snapshot format, and placement logic were intentionally left unchanged in this pass.
+- Initial validation completed:
+    - `node --check public/js/assembly.js`
+    - editor validation clean for `public/js/assembly.js` and `public/css/puzzles.css`
+- Remaining validation still needed:
+    - hands-on browser check of nested loop and branch readability
+    - verify that insertion markers and drag highlights still feel obvious inside the new open lane treatment
+
+### Scratch prototype branch
+
+- Added a standalone shape prototype at `public/assembly-shell-prototype.html` with supporting CSS in `public/css/assembly-shell-prototype.css`.
+- Purpose:
+    - validate the intended closed-top, open-right, closed-bottom outer shell shape in isolation
+    - stop thrashing the live assembly renderer while the visual geometry is still being agreed
+    - provide a simpler surface for future refinement before any final port back into shared assembly markup/CSS
+- Current agreed workflow change:
+    - continue shell-shape iteration on the standalone prototype first
+    - do not treat the current live `public/js/assembly.js` / `public/css/puzzles.css` container-shell experiments as final or approved
+    - only port the shell structure back into the live shared assembly system once the prototype geometry is explicitly approved
+- Current design target clarified from user sketch/markup:
+    - the repeat/choice block itself must be the boxy `C`
+    - top closed
+    - left side continuous
+    - bottom closed
+    - middle open on the right
+    - condition/header socket belongs inside the top chamber of that same outer shell rather than reading as its own separate outer box
+
 ### 2026-06-19
 
 - Agreed implementation plan for the current shared assembly fix:
