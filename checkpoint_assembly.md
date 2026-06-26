@@ -4,6 +4,16 @@ read the challenge_spec sections on shared assembly functionality and document i
 
 ## Dev log
 
+### 2026-06-26
+
+- Added `blockly_migration_plan.md` as the staged migration plan for evaluating Blockly using the current Summer Fair activities as a test ground.
+- The plan deliberately separates:
+    - lesson shell responsibilities
+    - editor mode responsibilities
+    - runtime / simulator responsibilities
+    - exploratory versus rearrangement mode outcomes
+- It also records useful supporting libraries for runtime and visual world work, including JavaScript, Python, SVG, and canvas options.
+
 ### 2026-06-24
 
 - Agreed next shared assembly UX slice: reduce workspace bulging by redesigning the visual treatment of container blocks and growable sequence sockets.
