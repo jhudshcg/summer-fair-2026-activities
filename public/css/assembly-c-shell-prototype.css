@@ -1,0 +1,213 @@
+/* Shape-only scratch prototype for validating the C-shaped assembly container shell. */
+
+.c-shell-page {
+  max-width: min(100%, 52rem);
+}
+
+.shape-stage {
+  display: grid;
+  gap: clamp(1.2rem, 3vw, 1.8rem);
+}
+
+.prototype-notes {
+  max-width: 44rem;
+}
+
+.c-shell-system {
+  --backbone-w: 24px;
+  --stroke: 3px;
+  --outer-radius: 28px;
+  --inner-radius: 18px;
+  --outline-color: rgba(27, 127, 90, 0.62);
+  --shell-fill: rgba(214, 249, 221, 1);
+  --body-fill: rgba(247, 255, 249, 1);
+  --shell-opacity: 0.6;
+  --header-pad-top: 0.95rem;
+  --header-pad-inline: 1.1rem;
+  --header-pad-bottom: 0.85rem;
+  --mouth-gap: 0.9rem;
+  --mouth-pad-top: 0.22rem;
+  --mouth-pad-right: 0;
+  --mouth-pad-bottom: 0.24rem;
+  --mouth-pad-left: 0.12rem;
+  --footer-height: 28px;
+  position: relative;
+  display: inline-grid;
+  justify-self: start;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto auto var(--footer-height);
+  min-width: min(100%, 46rem);
+}
+
+.c-shell-system > .c-shell-visual-skin,
+.c-shell-system > .c-shell-content-overlay {
+  grid-column: 1;
+  grid-row: 1 / -1;
+  display: grid;
+  grid-template-columns: subgrid;
+  grid-template-rows: subgrid;
+}
+
+.c-shell-visual-skin {
+  position: relative;
+  z-index: 1;
+  opacity: var(--shell-opacity);
+  transform: translateZ(0);
+}
+
+.c-shell-content-overlay {
+  position: relative;
+  z-index: 2;
+}
+
+.skin-header-row,
+.skin-mouth-row,
+.skin-footer-row {
+  min-width: 0;
+}
+
+.skin-header-row {
+  grid-row: 1;
+  min-height: 100%;
+  background: var(--shell-fill);
+  border: var(--stroke) solid var(--outline-color);
+  border-bottom: none;
+  border-top-left-radius: var(--outer-radius);
+  border-top-right-radius: var(--outer-radius);
+}
+
+.skin-mouth-row {
+  grid-row: 2;
+  position: relative;
+  min-height: 100%;
+  width: var(--backbone-w);
+  background: var(--shell-fill);
+  border-left: var(--stroke) solid var(--outline-color);
+  border-right: var(--stroke) solid var(--outline-color);
+}
+
+.skin-mouth-row::before,
+.skin-mouth-row::after {
+  content: "";
+  position: absolute;
+  left: calc(var(--backbone-w) - var(--stroke));
+  width: var(--inner-radius);
+  height: var(--inner-radius);
+  border-left: var(--stroke) solid var(--outline-color);
+  background: var(--shell-fill);
+}
+
+.skin-mouth-row::before {
+  top: 0;
+  border-top: var(--stroke) solid var(--outline-color);
+  border-top-left-radius: var(--inner-radius);
+  box-shadow: calc(var(--stroke) * -1) calc(var(--stroke) * -1) 0 0 var(--shell-fill);
+}
+
+.skin-mouth-row::after {
+  bottom: 0;
+  border-bottom: var(--stroke) solid var(--outline-color);
+  border-bottom-left-radius: var(--inner-radius);
+  box-shadow: calc(var(--stroke) * -1) var(--stroke) 0 0 var(--shell-fill);
+}
+
+.skin-footer-row {
+  grid-row: 3;
+  height: var(--footer-height);
+  width: calc(100% - 1.25rem);
+  background: var(--shell-fill);
+  border-left: var(--stroke) solid var(--outline-color);
+  border-bottom: var(--stroke) solid var(--outline-color);
+  border-bottom-left-radius: var(--outer-radius);
+  border-bottom-right-radius: var(--outer-radius);
+}
+
+.c-shell-header-content,
+.c-shell-mouth-content,
+.c-shell-footer-content {
+  min-width: 0;
+}
+
+.c-shell-header-content {
+  grid-row: 1;
+  display: grid;
+  gap: 0.55rem;
+  align-content: start;
+  padding: var(--header-pad-top) var(--header-pad-inline) var(--header-pad-bottom) calc(var(--backbone-w) + 0.72rem);
+}
+
+.c-shell-mouth-content {
+  grid-row: 2;
+  display: grid;
+  gap: var(--mouth-gap);
+  justify-items: start;
+  padding: var(--mouth-pad-top) var(--mouth-pad-right) var(--mouth-pad-bottom) calc(var(--backbone-w) - var(--stroke));
+}
+
+.c-shell-footer-content {
+  grid-row: 3;
+}
+
+.c-shell-label {
+  margin: 0;
+  color: var(--color-leaf-deep);
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.c-shell-condition-pill,
+.c-shell-sequence-block {
+  border-radius: 999px;
+  box-shadow: var(--shadow-soft);
+}
+
+.c-shell-condition-pill {
+  min-height: 88px;
+  width: min(100%, 43rem);
+  border: 2px solid rgba(224, 185, 165, 0.72);
+  background: linear-gradient(180deg, rgba(255, 244, 213, 0.98), rgba(255, 236, 205, 0.98));
+}
+
+.c-shell-condition-pill--narrow {
+  width: min(100%, 37rem);
+}
+
+.c-shell-sequence-block {
+  min-height: 72px;
+  width: min(100%, 40rem);
+  border: 1px solid rgba(23, 50, 51, 0.08);
+  background: rgba(255, 255, 255, 0.98);
+}
+
+.c-shell-sequence-block--short {
+  width: min(100%, 31rem);
+}
+
+.c-shell-system--choice {
+  --backbone-w: 22px;
+  --inner-radius: 16px;
+  --footer-height: 26px;
+}
+
+@media (width <= 480px) {
+  .c-shell-system {
+    --backbone-w: 20px;
+    --stroke: 3px;
+    --outer-radius: 24px;
+    --inner-radius: 15px;
+    --header-pad-inline: 0.85rem;
+    --mouth-gap: 0.7rem;
+    --footer-height: 24px;
+  }
+
+  .c-shell-condition-pill {
+    min-height: 72px;
+  }
+
+  .c-shell-sequence-block {
+    min-height: 58px;
+  }
+}

@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Scratch C-Block - Stage 1 (Base Box Layout)</title>
+  <style>
+    :root {
+      --backbone-w: 24px;       /* Width of the left vertical spine row */
+      --orange-fill: #ffb74d;   /* Solid orange placeholder color */
+    }
+
+    body {
+      background-color: #0f172a; /* Dark app canvas background */
+      padding: 50px;
+      font-family: system-ui, -apple-system, sans-serif;
+      font-weight: bold;
+      font-size: 13px;
+    }
+
+    /* ==========================================================================
+       THE MAIN COMPONENT CONTAINER
+       Uses Flexbox column flow to keep the rows stacked vertically.
+       ========================================================================== */
+    .scratch-container {
+      display: inline-flex;
+      flex-direction: column;
+      min-width: 240px;
+      max-width: 340px; /* Constrained to force mobile text wrapping instantly */
+    }
+
+    /* ==========================================================================
+       STRUCTURAL ROW BLOCKS
+       ========================================================================== */
+
+    /* 1. The Header: Flexbox wrap allows content to grow vertically automatically */
+    .block-header {
+      background-color: var(--orange-fill);
+      min-height: 40px;
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap; 
+      padding: 8px 12px;
+      gap: 8px;
+      box-sizing: border-box;
+    }
+
+    /* 2. The Middle Spine: Locks its width to create the left vertical line */
+    .block-mouth-spine {
+      background-color: var(--orange-fill);
+      width: var(--backbone-w);
+      position: relative;
+    }
+
+    /* 3. The Footer: Simple fixed closing bar */
+    .block-footer {
+      background-color: var(--orange-fill);
+      height: 24px;
+    }
+
+    /* ==========================================================================
+       INNER CODE TEXT AND BLOCKS
+       ========================================================================== */
+    .condition-pill {
+      background-color: #2cb7e0;
+      padding: 4px 10px;
+      border-radius: 6px;
+      color: white;
+    }
+
+    /* Important: These blocks sit inside the mouth spine DOM row, but they 
+       use a margin to push themselves out into the open, unconstrained */
+    .nested-blocks {
+      position: relative;
+      margin-left: calc(var(--backbone-w) + 12px);
+      padding: 8px 0;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      width: max-content;
+    }
+
+    .command-block {
+      background-color: #4caf50;
+      padding: 6px 12px;
+      border-radius: 4px;
+      color: white;
+      white-space: nowrap;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Stage 1 Structural Component Wrapper -->
+  <div class="scratch-container">
+    
+    <!-- Row 1: Header -->
+    <div class="block-header">
+      <span class="label">repeat until</span>
+      <div class="condition-pill">touching [obstacle] OR player health &lt; 50</div>
+    </div>
+    
+    <!-- Row 2: Mouth and Left Spine -->
+    <div class="block-mouth-spine">
+      <div class="nested-blocks">
+        <div class="command-block">move 10 steps</div>
+        <div class="command-block">turn 15 degrees</div>
+      </div>
+    </div>
+    
+    <!-- Row 3: Footer -->
+    <div class="block-footer"></div>
+    
+  </div>
+
+</body>
+</html>

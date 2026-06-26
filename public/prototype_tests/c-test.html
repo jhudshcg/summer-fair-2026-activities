@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Corrected Pure CSS Scratch C-Block</title>
+  <style>
+    :root {
+      --backbone-w: 24px;         /* Thickness of the left vertical spine */
+      --stroke: 2px;              /* Crisp border outline thickness */
+      --border-radius: 8px;       /* Curve radius for the outer corners */
+      --inner-radius: 12px;       /* ENLARGED: Visible inner mouth corners */
+      
+      --outline-color: #ff9800;   /* Scratch Orange Outline */
+      --internal-color: #ffb74d;  /* Lighter Orange Block Fill */
+    }
+
+    body {
+      background-color: #0f172a;  /* Dark layout canvas matches your screenshot */
+      padding: 50px;
+      font-family: system-ui, -apple-system, sans-serif;
+    }
+
+    /* ==========================================================================
+       THE GRID SYSTEM ENGINE (FIXED)
+       Changed 1fr to auto so the background skeleton shrinks cleanly to match text.
+       ========================================================================== */
+    .scratch-block-system {
+      display: inline-grid;
+      grid-template-rows: auto auto auto; /* FIXED: Strict auto-hug wrapping */
+      min-width: 220px;
+      max-width: 340px; 
+    }
+
+    /* ==========================================================================
+       LAYER 1: VISUAL SKIN (Handles borders, background color, and frame opacity)
+       ========================================================================== */
+    .scratch-visual-skin {
+      grid-area: 1 / 1 / -1 / -1; 
+      display: flex;
+      flex-direction: column;
+      opacity: 0.65;               
+      transform: translateZ(0);   
+    }
+
+    .skin-header-row {
+      grid-row: 1;
+      background-color: var(--internal-color);
+      border: var(--stroke) solid var(--outline-color);
+      border-bottom: none;       
+      border-top-left-radius: var(--border-radius);
+      border-top-right-radius: var(--border-radius);
+      height: 100%;
+    }
+
+    /* --- THE BACKBONE WITH FIXED CORNER OVERLAYS --- */
+    .skin-mouth-row {
+      grid-row: 2;
+      position: relative;         
+      width: var(--backbone-w);
+      background-color: var(--internal-color);
+      border-left: var(--stroke) solid var(--outline-color);
+      /* Remove the right border on the spine; the inner corner strokes will replace it */
+      border-right: none; 
+      height: 100%;
+    }
+
+    /* FIXED TOP INNER CORNER */
+    .skin-mouth-row::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      /* Align the left edge of the circle precisely with the right edge of the spine */
+      left: var(--backbone-w); 
+      width: var(--inner-radius);
+      height: var(--inner-radius);
+      
+      /* Carve an upward inward-arc border slice */
+      border-top-left-radius: calc(var(--inner-radius) + var(--stroke));
+      border-left: var(--stroke) solid var(--outline-color);
+      border-top: var(--stroke) solid var(--outline-color);
+      
+      /* Large flat shadow matches the orange component filling layer */
+      box-shadow: -15px -15px 0 10px var(--internal-color);
+    }
+
+    /* FIXED BOTTOM INNER CORNER */
+    .skin-mouth-row::after {
+      content: "";
+      position: absolute;
+      bottom: 0;
+      left: var(--backbone-w); 
+      width: var(--inner-radius);
+      height: var(--inner-radius);
+      
+      /* Carve a downward inward-arc border slice */
+      border-bottom-left-radius: calc(var(--inner-radius) + var(--stroke));
+      border-left: var(--stroke) solid var(--outline-color);
+      border-bottom: var(--stroke) solid var(--outline-color);
+      
+      box-shadow: -15px 15px 0 10px var(--internal-color);
+    }
+
+    .skin-footer-row {
+      grid-row: 3;
+      background-color: var(--internal-color);
+      border: var(--stroke) solid var(--outline-color);
+      border-top: none;          
+      border-bottom-left-radius: var(--border-radius);
+      border-bottom-right-radius: var(--border-radius);
+      height: 100%;
+    }
+
+    /* ==========================================================================
+       LAYER 2: OPAQUE CONTENT OVERLAY
+       ========================================================================== */
+    .scratch-content-overlay {
+      grid-area: 1 / 1 / -1 / -1;
+      display: flex;
+      flex-direction: column;
+      z-index: 2; 
+      color: white;
+      font-weight: bold;
+      font-size: 13px;
+      user-select: none;
+    }
+
+    .scratch-header-content {
+      grid-row: 1;
+      min-height: 42px;
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;            
+      padding: 8px 12px;
+      gap: 8px;
+      box-sizing: border-box;
+    }
+
+    .scratch-condition-pill {
+      background-color: #2cb7e0;
+      border: 2px solid #1ba5cd;
+      padding: 4px 10px;
+      border-radius: 6px;
+      word-break: break-word;     
+    }
+
+    .scratch-mouth-content {
+      grid-row: 2;
+      /* Compensate for backbone thickness + stroke weight + the new enlarged curve depth */
+      margin-left: calc(var(--backbone-w) + var(--inner-radius) + var(--stroke)); 
+      padding: 12px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px; 
+    }
+
+    .scratch-command-block {
+      background-color: #4caf50;
+      border: 2px solid #388e3c;
+      padding: 6px 12px;
+      border-radius: 4px;
+      width: fit-content;         
+      min-width: 110px;
+    }
+
+    .scratch-footer-content {
+      grid-row: 3;
+      height: 24px;               
+    }
+  </style>
+</head>
+<body>
+
+  <div class="scratch-block-system">
+
+    <!-- LAYER 1: Background Layout Frame Skins -->
+    <div class="scratch-visual-skin" aria-hidden="true">
+      <div class="skin-header-row"></div>
+      <div class="skin-mouth-row"></div>
+      <div class="skin-footer-row"></div>
+    </div>
+
+    <!-- LAYER 2: Text / Dropzone Interaction Nodes -->
+    <div class="scratch-content-overlay">
+      
+      <div class="scratch-header-content">
+        <span class="scratch-label">repeat until</span>
+        <div class="scratch-condition-pill">
+          touching [obstacle] OR player health &lt; 50
+        </div>
+      </div>
+      
+      <div class="scratch-mouth-content">
+        <div class="scratch-command-block">move 10 steps</div>
+        <div class="scratch-command-block">turn 15 degrees</div>
+      </div>
+      
+      <div class="scratch-footer-content"></div>
+      
+    </div>
+
+  </div>
+
+</body>
+</html>

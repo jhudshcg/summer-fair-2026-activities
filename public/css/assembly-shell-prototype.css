@@ -1,7 +1,7 @@
-/* Scratch-only CSS for validating C-shaped assembly container shells. */
+/* Scratch-only CSS for validating a CSS-only two-layer C-shaped shell. */
 
 .prototype-shell {
-  max-width: min(100%, 44rem);
+  max-width: min(100%, 46rem);
 }
 
 .prototype-stage {
@@ -13,138 +13,249 @@
   max-width: 42rem;
 }
 
-.proto-block {
-  --proto-stroke: rgba(27, 127, 90, 0.26);
-  --proto-gap: 0.8rem;
-  --proto-left-rail: 0.9rem;
-  --proto-right-open: 1.25rem;
-  --proto-top-pad: 0.9rem;
-  --proto-inline-pad: 0.95rem;
-  --proto-bottom-pad: 0.9rem;
+.scratch-block-system {
+  --scratch-stroke: 3px;
+  --scratch-stroke-color: rgba(27, 127, 90, 0.34);
+  --scratch-fill: rgba(214, 249, 221, 0.7);
+  --scratch-body-fill: rgba(247, 255, 249, 0.94);
+  --scratch-top-radius: 1.9rem;
+  --scratch-inner-radius: 1.25rem;
+  --scratch-backbone-w: 1.18rem;
+  --scratch-right-open: 0.85rem;
+  position: relative;
+  display: inline-grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto auto auto;
+  min-width: 0;
+  justify-self: start;
+}
+
+.scratch-block-system > .scratch-visual-skin,
+.scratch-block-system > .scratch-content-overlay {
+  grid-column: 1;
+  grid-row: 1 / -1;
   display: grid;
-  gap: 0;
+  grid-template-columns: subgrid;
+  grid-template-rows: subgrid;
+}
+
+.scratch-visual-skin {
+  position: relative;
+  z-index: 1;
+  opacity: 0.6;
+  transform: translateZ(0);
+}
+
+.scratch-content-overlay {
+  position: relative;
+  z-index: 2;
+}
+
+.skin-header-row,
+.skin-mouth-row,
+.skin-footer-row {
   min-width: 0;
 }
 
-.proto-block__header,
-.proto-block__condition-row,
-.proto-block__body,
-.proto-block__footer {
-  min-width: 0;
+.skin-header-row {
+  grid-row: 1;
+  min-height: 100%;
+  background: var(--scratch-fill);
+  border-top: var(--scratch-stroke) solid var(--scratch-stroke-color);
+  border-left: var(--scratch-stroke) solid var(--scratch-stroke-color);
+  border-right: var(--scratch-stroke) solid var(--scratch-stroke-color);
+  border-top-left-radius: var(--scratch-top-radius);
+  border-top-right-radius: var(--scratch-top-radius);
 }
 
-.proto-block__header,
-.proto-block__condition-row {
-  padding-left: calc(var(--proto-left-rail) + var(--proto-inline-pad));
-  padding-right: calc(var(--proto-right-open) + 0.15rem);
-  border-left: 3px solid var(--proto-stroke);
-  border-right: 3px solid var(--proto-stroke);
-  background: linear-gradient(180deg, rgba(214, 249, 221, 0.7), rgba(255, 255, 255, 0.94));
+.skin-mouth-row {
+  grid-row: 2;
+  position: relative;
+  min-height: 100%;
+  background: transparent;
+  margin-right: var(--scratch-right-open);
 }
 
-.proto-block__header {
-  padding-top: var(--proto-top-pad);
-  padding-bottom: 0.3rem;
-  border-top: 3px solid var(--proto-stroke);
-  border-top-left-radius: 1.75rem;
-  border-top-right-radius: 1.75rem;
+.skin-spine,
+.skin-mouth-top,
+.skin-mouth-bottom {
+  position: absolute;
+  pointer-events: none;
 }
 
-.proto-block__condition-row {
-  padding-top: 0.18rem;
-  padding-bottom: 0.85rem;
+.skin-spine {
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: var(--scratch-backbone-w);
+  background: transparent;
+  border-left: var(--scratch-stroke) solid var(--scratch-stroke-color);
+  border-right: var(--scratch-stroke) solid var(--scratch-stroke-color);
 }
 
-.proto-block__body {
-  display: grid;
-  gap: var(--proto-gap);
-  padding: 0.35rem 0 0.2rem calc(var(--proto-left-rail) + 0.2rem);
-  border-left: 3px solid var(--proto-stroke);
+.skin-mouth-top,
+.skin-mouth-bottom {
+  left: calc(var(--scratch-backbone-w) - var(--scratch-stroke));
+  right: calc(var(--scratch-right-open) * -1);
+  height: var(--scratch-inner-radius);
+  border-left: 0;
 }
 
-.proto-block__footer {
+.skin-mouth-top {
+  top: 0;
+  border-top: var(--scratch-stroke) solid var(--scratch-stroke-color);
+  background: linear-gradient(180deg, var(--scratch-fill), var(--scratch-body-fill));
+}
+
+.skin-mouth-top::before,
+.skin-mouth-bottom::before {
+  content: "";
+  position: absolute;
+  left: calc(var(--scratch-inner-radius) * -1);
+  width: var(--scratch-inner-radius);
+  height: var(--scratch-inner-radius);
+  pointer-events: none;
+}
+
+.skin-mouth-top::before {
+  top: calc(var(--scratch-stroke) * -1);
+  border-top: var(--scratch-stroke) solid var(--scratch-stroke-color);
+  border-left: var(--scratch-stroke) solid var(--scratch-stroke-color);
+  border-top-left-radius: var(--scratch-inner-radius);
+  box-shadow: calc(var(--scratch-stroke) * -1) calc(var(--scratch-stroke) * -1) 0 0 var(--scratch-fill);
+}
+
+.skin-mouth-bottom {
+  bottom: 0;
+  border-bottom: var(--scratch-stroke) solid var(--scratch-stroke-color);
+  background: linear-gradient(180deg, var(--scratch-body-fill), rgba(214, 249, 221, 0.55));
+}
+
+.skin-mouth-bottom::before {
+  bottom: calc(var(--scratch-stroke) * -1);
+  border-bottom: var(--scratch-stroke) solid var(--scratch-stroke-color);
+  border-left: var(--scratch-stroke) solid var(--scratch-stroke-color);
+  border-bottom-left-radius: var(--scratch-inner-radius);
+  box-shadow: calc(var(--scratch-stroke) * -1) var(--scratch-stroke) 0 0 var(--scratch-body-fill);
+}
+
+.skin-footer-row {
+  grid-row: 3;
   height: 1rem;
-  margin-right: var(--proto-right-open);
-  border-left: 3px solid var(--proto-stroke);
-  border-bottom: 3px solid var(--proto-stroke);
-  border-bottom-left-radius: 1.75rem;
-  border-bottom-right-radius: 1.75rem;
+  margin-right: var(--scratch-right-open);
+  background: var(--scratch-fill);
+  border-left: var(--scratch-stroke) solid var(--scratch-stroke-color);
+  border-bottom: var(--scratch-stroke) solid var(--scratch-stroke-color);
+  border-bottom-left-radius: var(--scratch-top-radius);
+  border-bottom-right-radius: var(--scratch-top-radius);
 }
 
-.proto-block__kicker,
-.proto-block__socket-label,
-.proto-chip__kicker,
-.proto-chip__label {
+.scratch-header-content,
+.scratch-mouth-content,
+.scratch-footer-content {
+  min-width: 0;
+}
+
+.scratch-header-content {
+  grid-row: 1;
+  display: grid;
+  gap: 0.5rem;
+  align-content: start;
+  padding: 0.95rem calc(var(--scratch-right-open) + 0.12rem) 0.52rem calc(var(--scratch-backbone-w) + 0.4rem);
+}
+
+.scratch-header-content--choice {
+  gap: 0.4rem;
+}
+
+.scratch-mouth-content {
+  grid-row: 2;
+  display: grid;
+  gap: 0.18rem;
+  padding: 0 0 0.12rem calc(var(--scratch-backbone-w) - var(--scratch-stroke));
+  justify-items: start;
+}
+
+.scratch-footer-content {
+  grid-row: 3;
+}
+
+.scratch-label,
+.scratch-inline-label,
+.scratch-condition-pill__kicker,
+.scratch-command-block__kicker {
   margin: 0;
-}
-
-.proto-block__kicker,
-.proto-chip__kicker,
-.proto-block__socket-label {
   color: var(--color-leaf-deep);
-  font-size: 0.78rem;
+  font-size: 0.8rem;
   font-weight: 800;
   letter-spacing: 0.05em;
   line-height: 1;
   text-transform: uppercase;
 }
 
-.proto-block__socket-label {
-  padding-left: 0.34rem;
+.scratch-inline-label {
+  color: rgba(23, 50, 51, 0.72);
+  font-size: 0.74rem;
 }
 
-.proto-block__socket-label--inline {
-  padding-left: 0;
-}
-
-.proto-chip {
+.scratch-condition-pill,
+.scratch-command-block {
   display: grid;
   gap: 0.45rem;
   padding: 1rem 1.15rem;
-  border: 2px solid rgba(224, 185, 165, 0.6);
   border-radius: 2rem;
-  background: linear-gradient(180deg, rgba(255, 244, 213, 0.98), rgba(255, 236, 205, 0.98));
   box-shadow: var(--shadow-soft);
+  width: max-content;
+  max-width: min(100%, 42rem);
 }
 
-.proto-chip--step {
+.scratch-condition-pill {
+  border: 2px solid rgba(224, 185, 165, 0.6);
+  background: linear-gradient(180deg, rgba(255, 244, 213, 0.98), rgba(255, 236, 205, 0.98));
+}
+
+.scratch-command-block {
+  border: 1px solid rgba(23, 50, 51, 0.08);
   background: rgba(255, 255, 255, 0.98);
-  border-color: rgba(23, 50, 51, 0.08);
 }
 
-.proto-chip__label {
+.scratch-condition-pill__label,
+.scratch-command-block__label {
+  margin: 0;
+  color: var(--color-night);
   font-size: clamp(1rem, 4vw, 1.55rem);
   font-weight: 700;
   line-height: 1.18;
-  color: var(--color-night);
 }
 
-.proto-block--choice .proto-block__condition-row {
-  display: grid;
-  gap: 0.45rem;
-}
-
-.proto-block--choice .proto-block__body {
-  padding-top: 0.2rem;
-}
-
-.proto-block .proto-block {
-  margin-right: 0.2rem;
+.scratch-block-system--choice {
+  --scratch-right-open: 0.7rem;
 }
 
 @media (width <= 480px) {
   .prototype-shell {
-    padding-inline: 0.35rem;
+    padding-inline: 0.3rem;
   }
 
-  .proto-block {
-    --proto-left-rail: 0.72rem;
-    --proto-right-open: 1rem;
-    --proto-inline-pad: 0.74rem;
-    --proto-gap: 0.65rem;
+  .scratch-block-system {
+    --scratch-right-open: 0.72rem;
+    --scratch-backbone-w: 0.98rem;
+    --scratch-top-radius: 1.55rem;
+    --scratch-inner-radius: 1rem;
   }
 
-  .proto-chip {
+  .scratch-header-content {
+    padding-left: calc(var(--scratch-backbone-w) + 0.36rem);
+    padding-right: calc(var(--scratch-right-open) + 0.12rem);
+  }
+
+  .scratch-mouth-content {
+    padding-left: calc(var(--scratch-backbone-w) - var(--scratch-stroke));
+    gap: 0.24rem;
+  }
+
+  .scratch-condition-pill,
+  .scratch-command-block {
     padding: 0.85rem 0.95rem;
     border-radius: 1.6rem;
   }

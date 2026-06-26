@@ -96,9 +96,11 @@
 
 The block assembly feature is shared across multiple puzzles. The following behaviour and features are required for all assembly-based activities and must be implemented in one place and those functions and libraries referenced and used where needed. It's vital that the implementation makes maximal use of SortableJS and avoids duplicating or reinventing functionality, even as new features are added which do require additional code. Always look for how to build on or compose with the existing SortableJS wrapper first, before creating new feature code.
 
+For the more detailed editor UX and UI contract, including the refined behaviours already proven in the current custom editor and the migration guardrails for possible Blockly-backed modes, see `blocks_UX_spec.md`.
+
 ### Required behaviour
 
-- quicker drag detection (less need for hold before drag on mobile)
+- quick drag detection (less need for hold before drag on mobile)
 - nearest target detection on drop, when cursor/contact point is over the workspace column. dragged block should snap to the nearest compatible target, if any, when dropped.
 - nearest-target matching for drag/drop should be based on the dragged block bounding box against all compatible target bounding boxes in the relevant column, not just the pointer/contact point.
 - 2 supported block movement methods: drag-and-drop and tap-to-place. the user should be able to choose which method to use at any time.

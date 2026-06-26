@@ -1,0 +1,134 @@
+<!doctype html>
+<!-- Scratch prototype for validating C-shaped repeat and choice block shells in isolation. -->
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light">
+    <meta name="theme-color" content="#f7fff9">
+    <title>Assembly Shell Prototype | Summer Fair 2026</title>
+    <link rel="stylesheet" href="../css/vendor/pico.min.css">
+    <link rel="stylesheet" href="../css/style.css?v=20260624a">
+    <link rel="stylesheet" href="../css/layout.css?v=20260620d">
+    <link rel="stylesheet" href="../css/assembly-shell-prototype.css?v=20260624a">
+  </head>
+  <body data-page="assembly-shell-prototype">
+    <main class="container site-shell prototype-shell">
+      <section class="hero page-hero">
+        <div class="page-nav">
+          <span class="eyebrow">SHCG Southampton College</span>
+          <a class="back-link" href="../bubble-sort.html">← Back to Bubble Sort</a>
+        </div>
+        <article class="info-block">
+          <h1 class="page-title">Assembly Shell Prototype</h1>
+          <p class="lede">Scratch-only markup for validating the open-right container shape before porting it back into the live assembly renderer.</p>
+        </article>
+      </section>
+
+      <article class="info-block prototype-notes">
+        <h2>Prototype Intent</h2>
+        <p>The outer repeat and choice shells below are standalone markup. They are meant to answer one question only: does the container itself read as a boxy letter C with a closed top, open-right middle, and closed bottom?</p>
+      </article>
+
+      <section class="prototype-stage" aria-label="Assembly shell scratch prototype">
+        <article class="scratch-block-system scratch-block-system--repeat" aria-label="Repeat block prototype">
+          <div class="scratch-visual-skin" aria-hidden="true">
+            <div class="skin-header-row"></div>
+            <div class="skin-mouth-row">
+              <div class="skin-spine"></div>
+              <div class="skin-mouth-top"></div>
+              <div class="skin-mouth-bottom"></div>
+            </div>
+            <div class="skin-footer-row"></div>
+          </div>
+
+          <div class="scratch-content-overlay">
+            <div class="scratch-header-content">
+              <span class="scratch-label">Repeat</span>
+              <div class="scratch-condition-pill">
+                <span class="scratch-condition-pill__kicker">Condition</span>
+                <span class="scratch-condition-pill__label">index from 0 to length(numbers) - pass:</span>
+              </div>
+            </div>
+
+            <div class="scratch-mouth-content">
+              <article class="scratch-block-system scratch-block-system--repeat" aria-label="Nested repeat prototype">
+                <div class="scratch-visual-skin" aria-hidden="true">
+                  <div class="skin-header-row"></div>
+                  <div class="skin-mouth-row">
+                    <div class="skin-spine"></div>
+                    <div class="skin-mouth-top"></div>
+                    <div class="skin-mouth-bottom"></div>
+                  </div>
+                  <div class="skin-footer-row"></div>
+                </div>
+
+                <div class="scratch-content-overlay">
+                  <div class="scratch-header-content">
+                    <span class="scratch-label">Repeat</span>
+                    <div class="scratch-condition-pill">
+                      <span class="scratch-condition-pill__kicker">Condition</span>
+                      <span class="scratch-condition-pill__label">pass from 2 to length(numbers):</span>
+                    </div>
+                  </div>
+
+                  <div class="scratch-mouth-content">
+                    <article class="scratch-block-system scratch-block-system--choice" aria-label="Choice block prototype">
+                      <div class="scratch-visual-skin" aria-hidden="true">
+                        <div class="skin-header-row"></div>
+                        <div class="skin-mouth-row">
+                          <div class="skin-spine"></div>
+                          <div class="skin-mouth-top"></div>
+                          <div class="skin-mouth-bottom"></div>
+                        </div>
+                        <div class="skin-footer-row"></div>
+                      </div>
+
+                      <div class="scratch-content-overlay">
+                        <div class="scratch-header-content scratch-header-content--choice">
+                          <span class="scratch-label">Choice</span>
+                          <span class="scratch-inline-label">If</span>
+                          <div class="scratch-condition-pill">
+                            <span class="scratch-condition-pill__kicker">Condition</span>
+                            <span class="scratch-condition-pill__label">numbers[index] &gt; numbers[index + 1]</span>
+                          </div>
+                        </div>
+
+                        <div class="scratch-mouth-content">
+                          <div class="scratch-command-block">
+                            <span class="scratch-command-block__kicker">Step</span>
+                            <span class="scratch-command-block__label">swap(numbers, index, index + 1)</span>
+                          </div>
+                          <div class="scratch-command-block">
+                            <span class="scratch-command-block__kicker">Step</span>
+                            <span class="scratch-command-block__label">set swapped to true</span>
+                          </div>
+                        </div>
+
+                        <div class="scratch-footer-content"></div>
+                      </div>
+                    </article>
+
+                    <div class="scratch-command-block">
+                      <span class="scratch-command-block__kicker">Step</span>
+                      <span class="scratch-command-block__label">move to next pair</span>
+                    </div>
+                  </div>
+
+                  <div class="scratch-footer-content"></div>
+                </div>
+              </article>
+
+              <div class="scratch-command-block">
+                <span class="scratch-command-block__kicker">Step</span>
+                <span class="scratch-command-block__label">finish this pass</span>
+              </div>
+            </div>
+
+            <div class="scratch-footer-content"></div>
+          </div>
+        </article>
+      </section>
+    </main>
+  </body>
+</html>

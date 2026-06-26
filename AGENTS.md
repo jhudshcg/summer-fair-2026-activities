@@ -40,6 +40,8 @@ Use checkpoint.md, checkpoint_refactor.md, checkpoint_assembly.md, checkpoint_ui
 
 Use style_guide.md as the shared CSS and layout guide for future styling work. When changing shared or puzzle CSS, prefer approaches that follow that guide rather than adding one-off layout fixes.
 
+Use blocks_UX_spec.md as the detailed source of truth for shared block-editor UX and UI behaviour. When refactoring the custom assembly system or evaluating Blockly or other editor substrates, preserve or deliberately revise that behaviour from the spec rather than relying on memory of the current implementation.
+
 All shared style and functionality should have a single source of truth, and be implemented in a way that allows for easy reuse across all activities. This includes CSS styles, JavaScript functions, and any other shared resources.
 
 Where options exist for implementing a feature, discuss with the user and agree on the best approach before proceeding. Document the agreed approach in the appropriate checkpoint file. Naturally prefer the simpler and lower code solution, but avoid hacks.

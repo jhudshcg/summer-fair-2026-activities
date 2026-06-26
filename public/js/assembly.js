@@ -27,9 +27,9 @@
     },
     socketLabels: {
       repeatHeader: "",
-      repeatBody: "Inside this loop",
-      choiceHeader: "If",
-      choiceTrue: "Is true",
+      repeatBody: "",
+      choiceHeader: "",
+      choiceTrue: "",
       choiceOtherwise: "Otherwise",
       number: "Number",
     },
