@@ -36,7 +36,7 @@ Where activities should change between re-attempts, the alternative version can 
 
 Plan, draft, implement in small stages, verify with user and iterate. Do not dive straight into coding, without clear agreement from user.
 
-Use checkpoint.md, checkpoint_refactor.md, checkpoint_assembly.md, checkpoint_ui.md and checkpoint_puzzles.md files to track progress, plans, document decisions made during development and indicate next logical slice of work. use the refactor file for refactoring work, the puzzles file for any puzzle or challenge specific work, the ui file for ui tweaks and the assembly file for work on the shared block assembly feature used in different puzzles. Use the general checkpoint file for general progress and decisions that don't fit into a more specialised checkpoint file.
+Use checkpoint.md, checkpoint_refactor.md, checkpoint_assembly.md, checkpoint_ui.md, checkpoint_puzzles.md and blockly_checkpoint.md files to track progress, plans, document decisions made during development and indicate next logical slice of work. use the refactor file for refactoring work, the puzzles file for any puzzle or challenge specific work, the ui file for ui tweaks, the assembly file for work on the shared block assembly feature used in different puzzles, and the blockly checkpoint for Blockly-specific migration planning and spike work. Use the general checkpoint file for general progress and decisions that don't fit into a more specialised checkpoint file.
 
 Use style_guide.md as the shared CSS and layout guide for future styling work. When changing shared or puzzle CSS, prefer approaches that follow that guide rather than adding one-off layout fixes.
 

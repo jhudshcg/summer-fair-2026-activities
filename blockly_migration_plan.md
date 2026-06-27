@@ -7,6 +7,7 @@ Use the current Summer Fair block activities as the migration test ground. Treat
 - Preserve the current constrained puzzle UX from `blocks_UX_spec.md` unless a Blockly-backed mode demonstrably improves it.
 - Plan for a likely hybrid outcome:
     - `blockly` mode for exploratory and open composition lessons
+    - `blockly-to-text` mode for Python-focused syntax teaching
     - `assembly` mode for constrained rearrangement or structure-first lessons
 - The current editor gap is not basic block placement. It is the lack of a broader runtime for variables, booleans, functions, I/O, simulation, and learner experimentation.
 
@@ -62,7 +63,7 @@ Paths to treat cautiously unless verified:
 ## Architecture target
 
 - **Lesson shell**: title, prompt, reading/demo sections, hints, feedback, run/test controls, navigation, optional puzzle visualization
-- **Editor mode adapter**: `blockly` and `assembly`
+- **Editor mode adapter**: `blockly`, `blockly-to-text`, and `assembly`
 - **Runtime / simulator adapter**: execution semantics, trace events, environment state, I/O binding, grading hooks
 - **Persistence layer**: workspace snapshots, lesson state, stage save/restore, partial progress
 
@@ -71,6 +72,7 @@ Paths to treat cautiously unless verified:
 ### Primary recommendation
 
 - **Editor**: Blockly for exploratory / open composition mode
+- **Teaching bridge**: add `blockly-to-text` where learners should see synchronized Python-like output as they build
 - **Constrained editor**: keep `assembly` mode for rearrangement-first or tightly guided tasks unless a Blockly variant clearly proves better
 - **Runtime**: shared IR / AST with a JavaScript-first execution path
 - **JavaScript sandbox**: JS-Interpreter
@@ -84,6 +86,7 @@ Pros:
 
 - preserves the proven mobile lesson shell and constrained puzzle UX
 - gives a realistic path to open-ended coding without rebuilding an editor from scratch
+- supports a syntax-learning path where blocks and readable text can coexist
 - keeps rearrangement mode available if Blockly proves awkward there
 - supports a shared runtime layer instead of many one-off simulators
 
@@ -143,6 +146,21 @@ Tradeoff:
 
 - second backend/runtime increases complexity
 
+#### Option E. Blockly-to-text teaching mode
+
+Best fit for:
+
+- Python-heavy teaching where syntax learning matters as much as executable behaviour
+
+Strengths:
+
+- helps learners connect blocks to readable text output in real time
+- supports gradual transition from blocks to text
+
+Tradeoff:
+
+- still needs either a runtime target or a separate execution mode when code must run faithfully
+
 #### Option D. Stay fully custom
 
 Best fit for:
@@ -176,16 +194,39 @@ Why this order:
 For a Python-heavy course this means:
 
 - use Blockly or assembly-backed lessons now
+- add a dedicated `blockly-to-text` mode where the text view is part of the lesson UX, not just an export
 - keep Python as an eventual code-generation and execution target
 - do not let Python runtime support block the first migration spike
 
 ## Staged plan
+
+### Current agreed scope for Stages 0-2
+
+The currently agreed near-term scope is deliberately narrower than the full migration plan.
+
+Focus now on:
+
+- Blockly as the block editor substrate
+- theme and visual integration
+- mobile drag-and-drop behaviour
+- click / tap-to-place behaviour
+- nearest-match placement behaviour
+- integration with the existing Summer Fair puzzle shell and puzzle logic
+
+Defer for now:
+
+- shared runtime extraction beyond what is needed to host the spike
+- Python execution runtime
+- final decision on Blockly for rearrangement mode
+- broad shell-geometry migration into Blockly blocks
+- replacement of all custom editor modes
 
 ### Stage 0. Freeze the current contract
 
 - Keep `blocks_UX_spec.md` as the detailed editor UX contract.
 - Keep `challenge_spec.md` as the broader lesson/product source.
 - Continue logging shared assembly decisions in `checkpoint_assembly.md`.
+- Start logging Blockly-specific migration work in `blockly_checkpoint.md`.
 - Exit when target-resolution, tap-to-place, and run-view expectations are precise enough to evaluate any Blockly spike against them.
 
 ### Stage 1. Build an isolated Blockly spike
@@ -198,6 +239,7 @@ For a Python-heavy course this means:
     - mobile viewport sizing and `svgResize` lifecycle handling
     - toolbox behavior on phone-sized screens
     - explicit comparison against the current UX contract
+    - ability to approximate or preserve the current drag, tap-to-place, and nearest-match behaviour
 - Exit with a clear pass/fail on whether Blockly can coexist with the lesson-shell model.
 
 ### Stage 2. Define a mobile-first Blockly host pattern
@@ -207,6 +249,7 @@ For a Python-heavy course this means:
 - Decide how tap-to-place should be approximated or layered on top.
 - Decide how the host handles scroll-into-view and stage transitions.
 - Keep the lesson page in charge of visibility, scrolling, and stage layout.
+- Keep Blockly focused on editor concerns; preserve the current puzzle shell and puzzle logic outside the editor.
 
 ### Stage 3. Migrate Bubble Sort first
 
@@ -255,6 +298,7 @@ Exit when new activities no longer need one-off interpreters.
 Potential outcomes:
 
 - Blockly-backed exploratory lessons
+- Blockly-to-text Python lessons
 - custom rearrangement or structure puzzles
 - Learning Hut progression paths
 - shared runtime-backed mini-games or interactive program lessons

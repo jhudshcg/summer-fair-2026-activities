@@ -1,0 +1,226 @@
+/* Stage 1 Blockly spike styling. */
+
+.blockly-spike-page {
+  --blockly-spike-workspace-height: 28rem;
+  max-width: min(100%, 58rem);
+}
+
+.blockly-spike-page .control-row {
+  align-items: stretch;
+}
+
+.blockly-spike-layout {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.blockly-spike-card {
+  gap: var(--space-2);
+}
+
+.blockly-spike-card__header {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.blockly-spike-controls {
+  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+}
+
+.blockly-host {
+  position: relative;
+  height: var(--blockly-spike-workspace-height);
+  min-height: var(--blockly-spike-workspace-height);
+  border: 1px solid rgba(23, 50, 51, 0.12);
+  border-radius: var(--radius-large);
+  background: rgba(255, 255, 255, 0.84);
+  overflow: hidden;
+}
+
+.blockly-workspace {
+  width: 100%;
+  height: 100%;
+  min-height: var(--blockly-spike-workspace-height);
+}
+
+.blockly-code {
+  margin: 0;
+  padding: 1rem;
+  overflow: auto;
+  border-radius: var(--radius-medium);
+  background: rgba(23, 50, 51, 0.92);
+  color: rgba(247, 255, 249, 0.96);
+  font: 0.88rem/1.45 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+.blockly-preview-stack,
+.blockly-preview-row {
+  --number-count: 6;
+  --number-gap: 0.65rem;
+  --number-columns: repeat(var(--number-count), minmax(3.8rem, 3.8rem));
+}
+
+.blockly-preview-stack {
+  display: grid;
+  gap: 0.3rem;
+  justify-self: start;
+  width: max-content;
+  max-width: 100%;
+  overflow-x: auto;
+  padding-bottom: 0.2rem;
+}
+
+.blockly-preview-row {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 3.8rem;
+  gap: var(--number-gap);
+  width: max-content;
+  max-width: 100%;
+  align-items: start;
+}
+
+.number-chip {
+  position: relative;
+  isolation: isolate;
+  --chip-rotate: 0deg;
+  --chip-lift: 0px;
+  --chip-scale: 1;
+  --flip-x: 0px;
+  --flip-y: 0px;
+  display: grid;
+  place-items: center;
+  min-width: 3.8rem;
+  min-height: 4.25rem;
+  padding: 1.12rem 0.98rem 0.8rem;
+  border: 1px solid rgba(224, 185, 165, 0.72);
+  border-radius: 62% 58% 38% 34% / 76% 74% 32% 26%;
+  clip-path: polygon(50% 0%, 63% 3%, 77% 9%, 90% 21%, 97% 36%, 100% 53%, 98% 69%, 92% 81%, 80% 92%, 65% 98%, 50% 100%, 36% 98%, 21% 92%, 9% 81%, 2% 69%, 0% 53%, 3% 36%, 10% 21%, 23% 9%, 37% 3%);
+  background: radial-gradient(circle at 50% 18%, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0) 22%), radial-gradient(circle at 18% 66%, rgba(244, 198, 175, 0.22), transparent 33%), radial-gradient(circle at 82% 72%, rgba(230, 185, 160, 0.18), transparent 34%), linear-gradient(180deg, rgba(255, 242, 229, 0.98), rgba(255, 220, 194, 0.95));
+  box-shadow: var(--shadow-soft);
+  font-size: 1.18rem;
+  font-weight: 700;
+  line-height: 1;
+  text-align: center;
+  white-space: nowrap;
+  transform: translate(var(--flip-x), var(--flip-y)) translateY(var(--chip-lift)) scale(var(--chip-scale)) rotate(var(--chip-rotate));
+  transition: transform 240ms cubic-bezier(0.16, 0.84, 0.32, 1), background-color 180ms ease, color 180ms ease, box-shadow 180ms ease;
+  will-change: transform;
+}
+
+.number-chip__value {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  text-align: center;
+  white-space: nowrap;
+  font-variant-numeric: lining-nums tabular-nums;
+}
+
+.number-chip::before,
+.number-chip::after {
+  content: '';
+  position: absolute;
+  pointer-events: none;
+}
+
+.number-chip::before {
+  inset: 0.42rem 0.44rem 0.72rem;
+  z-index: -1;
+  border-radius: 60% 60% 38% 34% / 76% 76% 30% 28%;
+  clip-path: polygon(50% 0%, 63% 3%, 77% 9%, 90% 21%, 97% 36%, 100% 53%, 98% 69%, 92% 81%, 80% 92%, 65% 98%, 50% 100%, 36% 98%, 21% 92%, 9% 81%, 2% 69%, 0% 53%, 3% 36%, 10% 21%, 23% 9%, 37% 3%);
+  background: radial-gradient(circle at 50% 122%, rgba(224, 185, 165, 0.4), transparent 45%), repeating-linear-gradient(96deg, transparent 0 0.42rem, rgba(224, 185, 165, 0.19) 0.42rem 0.54rem, transparent 0.54rem 0.95rem), linear-gradient(180deg, rgba(255, 255, 255, 0.26), transparent 75%);
+}
+
+.number-chip::after {
+  inset: 0.28rem 0.38rem 0.3rem;
+  opacity: 0.68;
+  clip-path: polygon(50% 1%, 63% 4%, 76% 10%, 88% 22%, 95% 36%, 97% 53%, 95% 68%, 89% 80%, 78% 90%, 64% 96%, 50% 98%, 36% 96%, 22% 90%, 11% 80%, 5% 68%, 3% 53%, 5% 36%, 12% 22%, 24% 10%, 37% 4%);
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 120' fill='none'%3E%3Cpath d='M50 2c10 1 20 5 28 12 9 8 16 18 18 30 2 10 2 22-1 33-4 13-12 23-24 31-7 5-14 8-21 9-8-1-15-4-22-9-12-8-20-18-24-31-3-11-3-23-1-33 2-12 9-22 18-30C30 7 40 3 50 2Z' stroke='rgba(255,255,255,0.52)' stroke-width='2'/%3E%3C/svg%3E") no-repeat 50% 50% / 100% 100%;
+}
+
+.blockly-preview-row .number-chip:nth-child(odd) {
+  --chip-rotate: -2deg;
+}
+
+.blockly-preview-row .number-chip:nth-child(even) {
+  --chip-rotate: 1.6deg;
+}
+
+.number-chip.is-active {
+  --chip-lift: -3px;
+  --chip-rotate: -0.8deg;
+  --chip-scale: 1.03;
+  background: radial-gradient(circle at 50% 18%, rgba(255, 255, 255, 0.98), rgba(255, 255, 255, 0) 24%), linear-gradient(180deg, rgba(255, 223, 153, 0.98), rgba(255, 188, 111, 0.95));
+  box-shadow: 0 12px 28px rgba(255, 179, 71, 0.28);
+}
+
+.number-chip.is-swapped {
+  --chip-lift: -3px;
+  --chip-rotate: 0.5deg;
+  --chip-scale: 1.04;
+  color: var(--color-night);
+  background: radial-gradient(circle at 50% 18%, rgba(255, 255, 255, 0.98), rgba(255, 255, 255, 0) 24%), linear-gradient(180deg, rgba(255, 197, 189, 0.98), rgba(255, 144, 131, 0.96));
+  box-shadow: 0 14px 34px rgba(255, 111, 97, 0.28);
+}
+
+.number-chip.is-swap-trace {
+  animation: shell-swap-pulse 220ms ease-out;
+}
+
+.number-chip.is-complete {
+  color: var(--color-night);
+  background: radial-gradient(circle at 50% 18%, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0) 22%), linear-gradient(180deg, rgba(184, 236, 209, 0.98), rgba(110, 197, 159, 0.94));
+}
+
+@keyframes shell-swap-pulse {
+  0% {
+    transform: translateY(-1px) scale(1.01);
+  }
+
+  55% {
+    transform: translateY(-4px) scale(1.05) rotate(-1deg);
+  }
+
+  100% {
+    transform: translateY(-3px) scale(1.04);
+  }
+}
+
+.blockly-spike-card--workspace .blocklyToolboxDiv {
+  box-shadow: 0 10px 24px rgba(23, 50, 51, 0.12);
+}
+
+.blockly-spike-card--workspace .blocklyMainBackground {
+  stroke: rgba(23, 50, 51, 0.12);
+}
+
+@media (width <= 540px) {
+  .blockly-spike-page {
+    --blockly-spike-workspace-height: 23rem;
+  }
+
+  .blockly-preview-stack,
+  .blockly-preview-row {
+    width: 100%;
+  }
+
+  .blockly-preview-stack {
+    --number-gap: 0.35rem;
+  }
+
+  .blockly-preview-row {
+    grid-auto-columns: minmax(2.9rem, 1fr);
+  }
+
+  .number-chip {
+    min-width: 0;
+    min-height: 0;
+    aspect-ratio: 3.8 / 4.25;
+    padding: 0.66rem 0.46rem 0.42rem;
+    font-size: 1rem;
+  }
+}

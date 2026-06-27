@@ -1,0 +1,144 @@
+<!doctype html>
+<!-- Stage 1 Blockly spike page for mobile-first lesson-shell integration checks. -->
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light">
+    <meta name="theme-color" content="#f7fff9">
+    <title>Blockly Spike | Summer Fair 2026</title>
+    <link rel="stylesheet" href="../css/vendor/pico.min.css">
+    <link rel="stylesheet" href="../css/style.css?v=20260624a">
+    <link rel="stylesheet" href="../css/layout.css?v=20260620d">
+    <link rel="stylesheet" href="../css/blockly-spike.css?v=20260627e">
+    <script src="https://unpkg.com/blockly@13.0.0/blockly_compressed.js" defer></script>
+    <script src="https://unpkg.com/blockly@13.0.0/blocks_compressed.js" defer></script>
+    <script src="https://unpkg.com/blockly@13.0.0/javascript_compressed.js" defer></script>
+    <script src="https://unpkg.com/blockly@13.0.0/python_compressed.js" defer></script>
+    <script src="https://unpkg.com/blockly@13.0.0/msg/en.js" defer></script>
+    <script src="../js/blockly-theme/tokens.js?v=20260627a" defer></script>
+    <script src="../js/blockly-theme/summer-fair-theme.js?v=20260627a" defer></script>
+    <script src="../js/blockly-theme/block-customizations.js?v=20260627a" defer></script>
+    <script src="../js/blockly-spike.js?v=20260627e" defer></script>
+  </head>
+  <body data-page="blockly-spike">
+    <main class="container site-shell blockly-spike-page">
+      <section class="hero page-hero">
+        <div class="page-nav">
+          <span class="eyebrow">SHCG Southampton College</span>
+          <a class="back-link" href="../index.html">← Back to all activities</a>
+        </div>
+        <article class="info-block">
+          <h1 class="page-title">Blockly Spike</h1>
+          <p class="lede">Stage 1 prototype for evaluating Blockly inside the current lesson shell before any full activity migration.</p>
+          <div class="tag-row">
+            <div class="tag">Prototype only</div>
+            <div class="tag">Editor hosting check</div>
+          </div>
+        </article>
+      </section>
+
+      <article class="info-block">
+        <h2>Prompt</h2>
+        <p class="lede">This spike starts with a Bubble Sort-shaped workspace seeded close to the current puzzle solution, using a numbers list, nested loops, a real comparison block, and a real swap block.</p>
+      </article>
+
+      <article class="hint">
+        <strong>Hint:</strong>
+        Focus on whether the workspace feels usable as part of a larger mobile page and whether the toolbox steals too much screen space.
+      </article>
+
+      <section class="blockly-spike-layout">
+        <article class="info-block blockly-spike-card blockly-spike-card--workspace">
+          <div class="blockly-spike-card__header">
+            <h2>Block Editor</h2>
+            <p class="mini-note">The initial workspace mirrors the current Bubble Sort puzzle structure and now uses custom Blockly blocks for list comparison and list swapping.</p>
+            <div class="control-row blockly-spike-controls">
+              <button type="button" data-blockly-run>Run bubble sort</button>
+              <button type="button" class="secondary outline" data-blockly-reset-preview>Reset preview</button>
+              <button type="button" class="secondary" data-blockly-resize>Resize workspace</button>
+              <button type="button" class="secondary outline" data-blockly-clear>Clear workspace</button>
+            </div>
+          </div>
+          <div class="blockly-host" data-blockly-host>
+            <div class="blockly-workspace" id="blockly-workspace"></div>
+          </div>
+        </article>
+
+        <article class="info-block blockly-spike-card">
+          <h2>Bubble Sort Preview</h2>
+          <p class="mini-note">Run the current workspace to animate actual list swaps instead of printing placeholder text.</p>
+          <div class="number-list-stack blockly-preview-stack" data-blockly-preview-stack>
+            <div class="number-row blockly-preview-row" data-blockly-preview-row></div>
+          </div>
+        </article>
+
+        <article class="info-block blockly-spike-card">
+          <h2>Feedback</h2>
+          <div class="feedback-box" data-blockly-feedback aria-live="polite">Blockly loaded. Try dragging blocks into the workspace, then run the preview to watch the list reorder.</div>
+        </article>
+
+        <article class="info-block blockly-spike-card">
+          <h2>Generated JavaScript</h2>
+          <pre class="blockly-code" data-blockly-js>// JS output will appear here.</pre>
+        </article>
+
+        <article class="info-block blockly-spike-card">
+          <h2>Generated Python</h2>
+          <pre class="blockly-code" data-blockly-py># Python output will appear here.</pre>
+        </article>
+      </section>
+
+      <xml id="blockly-toolbox" style="display:none">
+        <category name="Logic" colour="#ffb347">
+          <block type="controls_if"></block>
+          <block type="logic_compare"></block>
+          <block type="logic_operation"></block>
+          <block type="logic_boolean"></block>
+          <block type="sf_list_compare_at"></block>
+        </category>
+        <category name="Loops" colour="#1b7f5a">
+          <block type="controls_repeat_ext">
+            <value name="TIMES">
+              <shadow type="math_number"><field name="NUM">4</field></shadow>
+            </value>
+          </block>
+          <block type="controls_for">
+            <value name="FROM">
+              <shadow type="math_number"><field name="NUM">0</field></shadow>
+            </value>
+            <value name="TO">
+              <shadow type="math_number"><field name="NUM">4</field></shadow>
+            </value>
+            <value name="BY">
+              <shadow type="math_number"><field name="NUM">1</field></shadow>
+            </value>
+          </block>
+        </category>
+        <category name="Math" colour="#3cb9c9">
+          <block type="math_number"></block>
+          <block type="math_arithmetic"></block>
+        </category>
+        <category name="Variables" custom="VARIABLE" colour="#7c4dff"></category>
+        <category name="Lists" colour="#5b80d6">
+          <block type="lists_create_with"></block>
+          <block type="lists_repeat">
+            <value name="NUM">
+              <shadow type="math_number"><field name="NUM">3</field></shadow>
+            </value>
+          </block>
+          <block type="lists_length"></block>
+          <block type="lists_isEmpty"></block>
+          <block type="lists_indexOf"></block>
+          <block type="lists_getIndex"></block>
+          <block type="lists_setIndex"></block>
+          <block type="sf_list_swap"></block>
+        </category>
+        <category name="Text" colour="#ff6f61">
+          <block type="text"></block>
+          <block type="text_print"></block>
+        </category>
+      </xml>
+    </main>
+  </body>
+</html>
