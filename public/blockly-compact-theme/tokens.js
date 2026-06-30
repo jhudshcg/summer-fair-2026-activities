@@ -67,7 +67,11 @@
     compact: {
       startScale: 0.82,
       gridSpacing: 16,
-      cornerRadius: 10,
+      cornerRadius: 15,
+      emptyInlineInputWidth: 30,
+      emptyInlineInputHeight: null,
+      emptyInlineInputRadius: 6,
+      valueFieldVerticalPadding: 1,
       simpleValueWrapperBlockTypes: [
         'sf_number',
         'variables_get',

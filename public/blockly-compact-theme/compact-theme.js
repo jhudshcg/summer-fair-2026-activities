@@ -57,6 +57,10 @@
       return `h ${distance}`;
     }
 
+    function svgVertical(distance) {
+      return `v ${distance}`;
+    }
+
     function svgHorizontalTo(x) {
       return `H ${x}`;
     }
@@ -79,7 +83,37 @@
       return isSimpleWrapperBlock(sourceBlock) || isSimpleWrapperBlock(targetBlock);
     }
 
+    function numberToken(value, fallback) {
+      const number = Number(value);
+      return Number.isFinite(number) ? number : fallback;
+    }
+
+    function getValueFontSize() {
+      return numberToken(compact.valueFontSize, numberToken(tokens.fontStyle?.size, 13));
+    }
+
+    function getValueFieldHeight() {
+      const verticalPadding = numberToken(compact.valueFieldVerticalPadding, 1);
+      return Math.ceil(getValueFontSize() + verticalPadding);
+    }
+
+    function getSimpleValueBlockHeight(constants) {
+      return constants.TOP_ROW_MIN_HEIGHT
+        + constants.DUMMY_INPUT_MIN_HEIGHT
+        + constants.BOTTOM_ROW_MIN_HEIGHT;
+    }
+
+    function getEmptyInlineInputHeight(constants) {
+      const capInset = Math.max(
+        1,
+        Math.round(Math.min(constants.TOP_ROW_MIN_HEIGHT, constants.BOTTOM_ROW_MIN_HEIGHT) / 2),
+      );
+      return Math.max(constants.DUMMY_INPUT_MIN_HEIGHT, getSimpleValueBlockHeight(constants) - capInset);
+    }
+
     function applyCompactMeasurements(constants) {
+      const valueFieldHeight = getValueFieldHeight();
+
       // General spacing: keep row gaps tight without collapsing Thrasos' layout.
       constants.SMALL_PADDING = 1;
       constants.MEDIUM_PADDING = 2;
@@ -104,15 +138,14 @@
       constants.FIELD_BORDER_RECT_RADIUS = 4;
       constants.FIELD_BORDER_RECT_X_PADDING = 1;
       constants.FIELD_BORDER_RECT_Y_PADDING = 0;
-      constants.FIELD_BORDER_RECT_HEIGHT = 14;
-      constants.FIELD_DROPDOWN_BORDER_RECT_HEIGHT = 14;
+      constants.FIELD_BORDER_RECT_HEIGHT = valueFieldHeight;
+      constants.FIELD_DROPDOWN_BORDER_RECT_HEIGHT = valueFieldHeight;
       constants.FIELD_DROPDOWN_SVG_ARROW_SIZE = 0;
       constants.FIELD_DROPDOWN_SVG_ARROW_PADDING = 0;
       constants.ARROW_HORIZONTAL_PADDING = 0;
 
       // Value/input sockets.
-      constants.EMPTY_INLINE_INPUT_PADDING = 0;
-      constants.EMPTY_INLINE_INPUT_HEIGHT = 12;
+      constants.EMPTY_INLINE_INPUT_PADDING = compact.emptyInlineInputWidth || 30;
       constants.EXTERNAL_VALUE_INPUT_PADDING = 0;
       constants.STATEMENT_INPUT_PADDING_LEFT = 6;
       constants.BETWEEN_STATEMENT_PADDING_Y = 1;
@@ -125,10 +158,16 @@
       constants.MIN_BLOCK_WIDTH = 12;
       constants.TOP_ROW_MIN_HEIGHT = 5;
       constants.BOTTOM_ROW_MIN_HEIGHT = 5;
-      constants.DUMMY_INPUT_MIN_HEIGHT = 14;
-      constants.DUMMY_INPUT_SHADOW_MIN_HEIGHT = 14;
+      constants.DUMMY_INPUT_MIN_HEIGHT = valueFieldHeight;
+      constants.DUMMY_INPUT_SHADOW_MIN_HEIGHT = valueFieldHeight;
       constants.BOTTOM_ROW_AFTER_STATEMENT_MIN_HEIGHT = 4;
       constants.TOP_ROW_PRECEDES_STATEMENT_MIN_HEIGHT = 14;
+
+      const emptyInlineInputHeight = numberToken(
+        compact.emptyInlineInputHeight,
+        getEmptyInlineInputHeight(constants),
+      );
+      constants.EMPTY_INLINE_INPUT_HEIGHT = emptyInlineInputHeight;
     }
 
     class CompactBlocklyConstants extends blocklyInstance.blockRendering.ConstantProvider {
@@ -137,7 +176,6 @@
         // Set measurements before Blockly initializes cached renderer shapes.
         applyCompactMeasurements(this);
         this.SIMPLE_VALUE_WRAPPER_SHAPE = null;
-        this.COMPACT_ROUNDED_VALUE_SHAPE = null;
       }
 
       init() {
@@ -149,57 +187,15 @@
           pathDown: '',
           pathUp: '',
         };
-        this.COMPACT_ROUNDED_VALUE_SHAPE = this.makeCompactRoundedValueShape();
-      }
-
-      makeCompactRoundedValueShape() {
-        const maxRadius = this.CORNER_RADIUS || compact.cornerRadius || 6;
-        const outputConnectionOffsetY = this.TAB_OFFSET_FROM_TOP;
-        const getRadius = (height) => Math.min(maxRadius, Math.max(2, height / 2));
-        const getWidth = (height) => getRadius(height);
-        const getHeight = (height) => height;
-        const roundedSide = (height, isUp, isRight) => {
-          const radius = getRadius(height);
-          const straight = Math.max(0, height - radius * 2);
-          const yDirection = isUp ? -1 : 1;
-          const xDirection = isRight ? 1 : -1;
-          return svgArc(radius, isRight === isUp ? 0 : 1, xDirection * radius, yDirection * radius)
-            + (straight ? `v ${yDirection * straight}` : '')
-            + svgArc(radius, isRight === isUp ? 0 : 1, -xDirection * radius, yDirection * radius);
-        };
-
-        return {
-          type: 'COMPACT_ROUNDED_VALUE',
-          isDynamic: true,
-          width: getWidth,
-          height: getHeight,
-          connectionOffsetY() {
-            return outputConnectionOffsetY;
-          },
-          connectionOffsetX(width) {
-            return -width;
-          },
-          pathDown(height) {
-            return roundedSide(height, false, false);
-          },
-          pathUp(height) {
-            return roundedSide(height, true, false);
-          },
-          pathRightDown(height) {
-            return roundedSide(height, false, true);
-          },
-          pathRightUp(height) {
-            return roundedSide(height, true, true);
-          },
-        };
       }
 
       setFontConstants_(theme) {
         super.setFontConstants_(theme);
         // Blockly recalculates these from the active font, so compact values
         // need to be restored after the base font pass.
-        this.FIELD_BORDER_RECT_HEIGHT = 14;
-        this.FIELD_DROPDOWN_BORDER_RECT_HEIGHT = 14;
+        const valueFieldHeight = getValueFieldHeight();
+        this.FIELD_BORDER_RECT_HEIGHT = valueFieldHeight;
+        this.FIELD_DROPDOWN_BORDER_RECT_HEIGHT = valueFieldHeight;
         this.FIELD_BORDER_RECT_Y_PADDING = 0;
       }
 
@@ -209,10 +205,6 @@
         const isValueConnection = isInputValueConnection || isOutputValueConnection;
         if (isValueConnection && isSimpleWrapperConnection(connection)) {
           return this.SIMPLE_VALUE_WRAPPER_SHAPE || super.shapeFor(connection);
-        }
-
-        if (isOutputValueConnection) {
-          return this.COMPACT_ROUNDED_VALUE_SHAPE || super.shapeFor(connection);
         }
 
         return super.shapeFor(connection);
@@ -225,7 +217,7 @@
       }
 
       hasRightSquareCorner(block) {
-        return Boolean(block.outputConnection && !block.statementInputCount && !block.nextConnection);
+        return false;
       }
     }
 
@@ -235,7 +227,7 @@
       }
 
       hasRightSquareCorner(block) {
-        return Boolean(block.outputConnection && !block.statementInputCount && !block.nextConnection);
+        return false;
       }
     }
 
@@ -244,102 +236,39 @@
         super(renderer, block);
         this.topRow = new CompactBlocklyTopRow(this.constants_);
         this.bottomRow = new CompactBlocklyBottomRow(this.constants_);
-        this.hasStatementInput = block.statementInputCount > 0;
-        this.compactHasDynamicOutputRight = false;
-      }
-
-      finalizeCompactDynamicOutput_() {
-        if (!this.outputConnection?.isDynamicShape) {
-          return;
-        }
-
-        const shape = this.outputConnection.shape;
-        if (!shape?.isDynamic) {
-          return;
-        }
-
-        let height = 0;
-        for (const row of this.rows) {
-          row.yPos = height;
-          height += row.height;
-        }
-
-        this.height = height;
-        const outputShapeHeight = this.bottomRow.hasNextConnection
-          ? this.height - this.bottomRow.descenderHeight
-          : this.height;
-        const connectionHeight = shape.height(outputShapeHeight);
-        const connectionWidth = shape.width(outputShapeHeight);
-
-        this.outputConnection.height = connectionHeight;
-        this.outputConnection.width = connectionWidth;
-        this.outputConnection.startX = connectionWidth;
-        this.outputConnection.connectionOffsetY = shape.connectionOffsetY(connectionHeight);
-        this.outputConnection.connectionOffsetX = shape.connectionOffsetX(connectionWidth);
-
-        this.compactHasDynamicOutputRight = !this.hasStatementInput && !this.bottomRow.hasNextConnection;
-        const rightSideWidth = this.compactHasDynamicOutputRight ? connectionWidth : 0;
-        this.startX = connectionWidth;
-        this.width += connectionWidth + rightSideWidth;
-        this.widthWithChildren += connectionWidth + rightSideWidth;
-      }
-
-      finalize_() {
-        this.finalizeCompactDynamicOutput_();
-        super.finalize_();
       }
     }
 
     class CompactBlocklyDrawer extends blocklyInstance.blockRendering.Drawer {
-      drawOutline_() {
-        if (this.info_.outputConnection?.isDynamicShape && this.info_.compactHasDynamicOutputRight) {
-          this.drawCompactDynamicOutputOutline_();
-          return;
-        }
-
-        super.drawOutline_();
-      }
-
-      drawCompactDynamicOutputOutline_() {
-        this.drawCompactFlatTop_();
-        this.drawCompactRightDynamicConnection_();
-        this.drawCompactFlatBottom_();
-        this.drawCompactLeftDynamicConnection_();
-      }
-
-      drawCompactFlatTop_() {
-        const row = this.info_.topRow;
-        this.positionPreviousConnection_();
-        this.outlinePath_ += svgMoveTo(row.xPos, this.info_.startY);
-        this.outlinePath_ += svgHorizontal(row.width);
-      }
-
-      drawCompactRightDynamicConnection_() {
-        const connection = this.info_.outputConnection;
-        this.outlinePath_ += connection.shape.pathRightDown(connection.height);
-      }
-
-      drawCompactFlatBottom_() {
-        const row = this.info_.bottomRow;
-        this.positionNextConnection_();
-        this.outlinePath_ += svgVerticalTo(row.baseline);
-        this.outlinePath_ += svgHorizontal(-row.width);
-      }
-
-      drawCompactLeftDynamicConnection_() {
-        const connection = this.info_.outputConnection;
-        this.positionOutputConnection_();
-        this.outlinePath_ += connection.shape.pathUp(connection.height);
-        this.outlinePath_ += 'z';
-      }
-
       drawInlineInput_(input) {
-        if (isSimpleWrapperBlock(input.connectedBlock)) {
+        if (input.connectedBlock) {
           this.positionInlineInputConnection_(input);
           return;
         }
 
-        super.drawInlineInput_(input);
+        this.drawEmptyInlineInput_(input);
+      }
+
+      drawEmptyInlineInput_(input) {
+        const width = Math.max(0, input.width - input.connectionWidth);
+        const height = input.height;
+        const maxRadius = compact.emptyInlineInputRadius || 6;
+        const radius = Math.min(maxRadius, width / 2, height / 2);
+        const x = input.xPos + input.connectionWidth;
+        const y = input.centerline - height / 2;
+        const straightWidth = Math.max(0, width - radius * 2);
+        const straightHeight = Math.max(0, height - radius * 2);
+
+        this.inlinePath_ += svgMoveTo(x + radius, y)
+          + svgArc(radius, 0, -radius, radius)
+          + svgVertical(straightHeight)
+          + svgArc(radius, 0, radius, radius)
+          + svgHorizontal(straightWidth)
+          + svgArc(radius, 0, radius, -radius)
+          + svgVertical(-straightHeight)
+          + svgArc(radius, 0, -radius, -radius)
+          + 'z';
+        this.positionInlineInputConnection_(input);
       }
 
       drawRightSideRow_(row) {
@@ -349,6 +278,12 @@
 
         this.outlinePath_ += svgHorizontalTo(row.xPos + row.width);
         this.outlinePath_ += svgVerticalTo(row.yPos + row.height);
+      }
+
+      drawBottom_() {
+        const row = this.info_.bottomRow;
+        this.outlinePath_ += svgHorizontalTo(row.xPos + row.width);
+        super.drawBottom_();
       }
     }
 
