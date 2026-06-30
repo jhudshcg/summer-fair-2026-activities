@@ -1,0 +1,55 @@
+/* Shared compact Blockly presentation layer. */
+
+.compact-blockly .blocklyDropDownArrow,
+.compact-blockly .blocklyFieldDropdownArrow,
+.compact-blockly .blocklyFieldArrow {
+  visibility: hidden;
+}
+
+.compact-blockly .blocklyEditableText > rect,
+.compact-blockly .blocklyDropdownText > rect {
+  rx: 3px;
+  ry: 3px;
+}
+
+.compact-blockly .compactBlocklySimpleValueWrapper .blocklyPath {
+  fill: transparent !important;
+  stroke: transparent !important;
+}
+
+.compact-blockly .compactBlocklySimpleValueWrapper .blocklyPathDark,
+.compact-blockly .compactBlocklySimpleValueWrapper .blocklyPathLight {
+  display: none;
+}
+
+.blocklyWidgetDiv,
+.blocklyDropDownDiv {
+  z-index: 10000;
+}
+
+.blocklyWidgetDiv input.blocklyHtmlInput,
+input.blocklyHtmlInput {
+  --pico-icon-valid: none;
+  --pico-icon-invalid: none;
+  --pico-form-element-valid-focus-color: transparent;
+  --pico-form-element-invalid-focus-color: transparent;
+  width: auto;
+  min-width: 1ch;
+  min-height: 1em;
+  margin: 0;
+  padding: 0 2px;
+  border: 1px solid rgba(23, 50, 51, 0.24);
+  background-color: #ffffff !important;
+  background-image: none, none !important;
+  background-repeat: no-repeat !important;
+  background-position: 0 0 !important;
+  background-size: 0 0 !important;
+  box-shadow: none !important;
+  color: #173233 !important;
+  caret-color: #173233;
+  font-family: Avenir Next, Gill Sans, Trebuchet MS, sans-serif;
+  line-height: 1.2;
+  opacity: 1 !important;
+  outline: none;
+  appearance: textfield;
+}

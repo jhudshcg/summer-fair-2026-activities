@@ -15,43 +15,38 @@
         <variable id="passVar">pass</variable>
         <variable id="indexVar">index</variable>
       </variables>
-      <block type="variables_set" x="24" y="24">
+      <block type="sf_set" x="24" y="24">
         <field name="VAR" id="numbersVar">numbers</field>
         <value name="VALUE">
-          <block type="lists_create_with">
+          <block type="sf_list_literal">
             <mutation items="6"></mutation>
-            <value name="ADD0"><block type="math_number"><field name="NUM">7</field></block></value>
-            <value name="ADD1"><block type="math_number"><field name="NUM">3</field></block></value>
-            <value name="ADD2"><block type="math_number"><field name="NUM">6</field></block></value>
-            <value name="ADD3"><block type="math_number"><field name="NUM">2</field></block></value>
-            <value name="ADD4"><block type="math_number"><field name="NUM">5</field></block></value>
-            <value name="ADD5"><block type="math_number"><field name="NUM">1</field></block></value>
+            <value name="ITEM0"><block type="sf_number"><field name="NUM">7</field></block></value>
+            <value name="ITEM1"><block type="sf_number"><field name="NUM">3</field></block></value>
+            <value name="ITEM2"><block type="sf_number"><field name="NUM">6</field></block></value>
+            <value name="ITEM3"><block type="sf_number"><field name="NUM">2</field></block></value>
+            <value name="ITEM4"><block type="sf_number"><field name="NUM">5</field></block></value>
+            <value name="ITEM5"><block type="sf_number"><field name="NUM">1</field></block></value>
           </block>
         </value>
         <next>
-          <block type="controls_for">
+          <block type="sf_for_count">
             <field name="VAR" id="passVar">pass</field>
-            <value name="FROM"><block type="math_number"><field name="NUM">2</field></block></value>
+            <value name="FROM"><block type="sf_number"><field name="NUM">2</field></block></value>
             <value name="TO">
-              <block type="lists_length">
-                <value name="VALUE">
-                  <block type="variables_get"><field name="VAR" id="numbersVar">numbers</field></block>
-                </value>
+              <block type="sf_length_var">
+                <field name="LISTVAR" id="numbersVar">numbers</field>
               </block>
             </value>
-            <value name="BY"><block type="math_number"><field name="NUM">1</field></block></value>
             <statement name="DO">
-              <block type="controls_for">
+              <block type="sf_for_count">
                 <field name="VAR" id="indexVar">index</field>
-                <value name="FROM"><block type="math_number"><field name="NUM">0</field></block></value>
+                <value name="FROM"><block type="sf_number"><field name="NUM">0</field></block></value>
                 <value name="TO">
-                  <block type="math_arithmetic">
+                  <block type="sf_math_operator">
                     <field name="OP">MINUS</field>
                     <value name="A">
-                      <block type="lists_length">
-                        <value name="VALUE">
-                          <block type="variables_get"><field name="VAR" id="numbersVar">numbers</field></block>
-                        </value>
+                      <block type="sf_length_var">
+                        <field name="LISTVAR" id="numbersVar">numbers</field>
                       </block>
                     </value>
                     <value name="B">
@@ -59,33 +54,52 @@
                     </value>
                   </block>
                 </value>
-                <value name="BY"><block type="math_number"><field name="NUM">1</field></block></value>
                 <statement name="DO">
                   <block type="controls_if">
                     <value name="IF0">
-                      <block type="sf_list_compare_at">
-                        <value name="LIST">
-                          <block type="variables_get"><field name="VAR" id="numbersVar">numbers</field></block>
+                      <block type="sf_inequality">
+                        <field name="OP">GT</field>
+                        <value name="A">
+                          <block type="sf_list_get_at">
+                            <field name="LISTVAR" id="numbersVar">numbers</field>
+                            <value name="INDEX">
+                              <block type="variables_get"><field name="VAR" id="indexVar">index</field></block>
+                            </value>
+                          </block>
                         </value>
-                        <value name="INDEX_A"><block type="variables_get"><field name="VAR" id="indexVar">index</field></block></value>
-                        <value name="INDEX_B">
-                          <block type="math_arithmetic">
-                            <field name="OP">ADD</field>
-                            <value name="A"><block type="variables_get"><field name="VAR" id="indexVar">index</field></block></value>
-                            <value name="B"><block type="math_number"><field name="NUM">1</field></block></value>
+                        <value name="B">
+                          <block type="sf_list_get_at">
+                            <field name="LISTVAR" id="numbersVar">numbers</field>
+                            <value name="INDEX">
+                              <block type="sf_math_operator">
+                                <field name="OP">ADD</field>
+                                <value name="A">
+                                  <block type="variables_get"><field name="VAR" id="indexVar">index</field></block>
+                                </value>
+                                <value name="B">
+                                  <block type="sf_number"><field name="NUM">1</field></block>
+                                </value>
+                              </block>
+                            </value>
                           </block>
                         </value>
                       </block>
                     </value>
                     <statement name="DO0">
                       <block type="sf_list_swap">
-                        <value name="LIST"><block type="variables_get"><field name="VAR" id="numbersVar">numbers</field></block></value>
-                        <value name="INDEX_A"><block type="variables_get"><field name="VAR" id="indexVar">index</field></block></value>
+                        <field name="LISTVAR" id="numbersVar">numbers</field>
+                        <value name="INDEX_A">
+                          <block type="variables_get"><field name="VAR" id="indexVar">index</field></block>
+                        </value>
                         <value name="INDEX_B">
-                          <block type="math_arithmetic">
+                          <block type="sf_math_operator">
                             <field name="OP">ADD</field>
-                            <value name="A"><block type="variables_get"><field name="VAR" id="indexVar">index</field></block></value>
-                            <value name="B"><block type="math_number"><field name="NUM">1</field></block></value>
+                            <value name="A">
+                              <block type="variables_get"><field name="VAR" id="indexVar">index</field></block>
+                            </value>
+                            <value name="B">
+                              <block type="sf_number"><field name="NUM">1</field></block>
+                            </value>
                           </block>
                         </value>
                       </block>
@@ -101,7 +115,7 @@
   `;
 
   function createFallbackTheme(blocklyInstance = Blockly) {
-    return blocklyInstance.Theme.defineTheme('summerFairSpikeFallback', {
+    return blocklyInstance.Theme.defineTheme('compactBlocklyFallback', {
       base: blocklyInstance.Themes.Classic,
       blockStyles: {
         logic_blocks: {
@@ -156,7 +170,7 @@
   }
 
   function getThemeApi() {
-    const externalTheme = window.summerFairBlocklyTheme;
+    const externalTheme = window.compactBlocklyTheme;
     const fallbackCategoryColours = {
       Logic: '#ffb347',
       Loops: '#1b7f5a',
@@ -178,6 +192,21 @@
         return typeof externalTheme?.getCategoryColours === 'function'
           ? externalTheme.getCategoryColours()
           : fallbackCategoryColours;
+      },
+      getCompactSettings() {
+        return typeof externalTheme?.getCompactSettings === 'function'
+          ? externalTheme.getCompactSettings()
+          : { startScale: 0.88, gridSpacing: 18 };
+      },
+      getRendererName(blocklyInstance = Blockly) {
+        return typeof externalTheme?.registerCompactRenderer === 'function'
+          ? externalTheme.registerCompactRenderer(blocklyInstance)
+          : 'thrasos';
+      },
+      applyBlockRoleClasses(workspace) {
+        return typeof externalTheme?.applyBlockRoleClasses === 'function'
+          ? externalTheme.applyBlockRoleClasses(workspace)
+          : 0;
       },
     };
   }
@@ -425,23 +454,26 @@
     const javascriptGenerator = window.javascript?.javascriptGenerator || null;
     const pythonGenerator = window.python?.pythonGenerator || null;
     const themeApi = getThemeApi();
-    const blocklyCustomizations = window.summerFairBlocklyCustomizations || null;
+    const bubbleSortBlocks = window.bubbleSortBlocklyBlocks || null;
+    const bubbleSortGenerators = window.bubbleSortBlocklyGenerators || null;
 
     if (!host || !toolbox || !feedback || !jsMount || !pyMount || !previewRow) {
       return;
     }
 
-    blocklyCustomizations?.register?.(Blockly, {
+    bubbleSortBlocks?.register?.(Blockly);
+    bubbleSortGenerators?.register?.(Blockly, {
       javascriptGenerator,
       pythonGenerator,
     });
 
     applyToolboxCategoryColours(toolbox, themeApi.getCategoryColours());
+    const compactSettings = themeApi.getCompactSettings();
 
     const workspace = Blockly.inject(host.querySelector('#blockly-workspace'), {
       toolbox,
       theme: themeApi.createTheme(Blockly),
-      renderer: 'thrasos',
+      renderer: themeApi.getRendererName(Blockly),
       move: {
         scrollbars: true,
         drag: true,
@@ -451,7 +483,7 @@
         controls: false,
         wheel: false,
         pinch: true,
-        startScale: 0.95,
+        startScale: compactSettings.startScale || 0.88,
         maxScale: 1.3,
         minScale: 0.55,
         scaleSpeed: 1.08,
@@ -463,15 +495,20 @@
       disable: false,
       oneBasedIndex: false,
       grid: {
-        spacing: 22,
+        spacing: compactSettings.gridSpacing || 18,
         length: 2,
         colour: 'rgba(23, 50, 51, 0.08)',
         snap: false,
       },
     });
+    window.blocklySpikeWorkspace = workspace;
 
     const starterDom = Blockly.utils.xml.textToDom(STARTER_XML);
     Blockly.Xml.domToWorkspace(starterDom, workspace);
+    themeApi.applyBlockRoleClasses(workspace);
+    if (new URLSearchParams(window.location.search).get('debug') === 'blockly') {
+      window.compactBlocklyDebug?.inspect?.(workspace);
+    }
 
     let previewState = executeBubbleSortPreview(javascriptGenerator?.workspaceToCode(workspace) || '');
     renderNumberRow(previewRow, {
@@ -501,6 +538,7 @@
         return;
       }
 
+      themeApi.applyBlockRoleClasses(workspace);
       updateCode();
       try {
         previewState = executeBubbleSortPreview(javascriptGenerator?.workspaceToCode(workspace) || '');

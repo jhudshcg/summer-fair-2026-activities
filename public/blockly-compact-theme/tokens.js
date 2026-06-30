@@ -1,13 +1,13 @@
 /*
- * Summer Fair Blockly theme tokens.
+ * Compact Blockly theme tokens.
  *
  * Keep this file small and stable.
  * Put named colours, font choices, and other raw theme values here so later
  * theme experiments can change one place without touching integration code.
  */
 
-(function initSummerFairBlocklyThemeTokens() {
-  window.summerFairBlocklyThemeTokens = Object.freeze({
+(function initCompactBlocklyThemeTokens() {
+  window.compactBlocklyThemeTokens = Object.freeze({
     categoryColours: {
       Logic: '#ffb347',
       Loops: '#1b7f5a',
@@ -62,7 +62,16 @@
     fontStyle: {
       family: 'Avenir Next, Gill Sans, Trebuchet MS, sans-serif',
       weight: '700',
-      size: 14,
+      size: 13,
+    },
+    compact: {
+      startScale: 0.82,
+      gridSpacing: 16,
+      cornerRadius: 10,
+      simpleValueWrapperBlockTypes: [
+        'sf_number',
+        'variables_get',
+      ],
     },
   });
 })();

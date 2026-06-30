@@ -1,10 +1,11 @@
 # Blockly Migration Plan
 
-Use the current Summer Fair block activities as the migration test ground. Treat Blockly as an editor-substrate candidate, not as a replacement for the lesson shell, simulation, hinting, feedback, persistence, or progression layers.
+Use the current Summer Fair / open-day block activities as the migration test ground for a broader educational activity system. Treat Blockly as an editor-substrate candidate for block-based programming inside reusable lesson/challenge sets, not as a replacement for the lesson shell, simulation, hinting, feedback, persistence, or progression layers.
 
 ## Summary
 
 - Preserve the current constrained puzzle UX from `blocks_UX_spec.md` unless a Blockly-backed mode demonstrably improves it.
+- The Summer Fair activities are now mostly a practical test group for the Blockly migration rather than the whole product destination.
 - Plan for a likely hybrid outcome:
     - `blockly` mode for exploratory and open composition lessons
     - `blockly-to-text` mode for Python-focused syntax teaching
@@ -208,6 +209,7 @@ Focus now on:
 
 - Blockly as the block editor substrate
 - theme and visual integration
+- compact block vocabulary and horizontal density
 - mobile drag-and-drop behaviour
 - click / tap-to-place behaviour
 - nearest-match placement behaviour
@@ -240,6 +242,7 @@ Defer for now:
     - toolbox behavior on phone-sized screens
     - explicit comparison against the current UX contract
     - ability to approximate or preserve the current drag, tap-to-place, and nearest-match behaviour
+    - ability to make stable teaching blocks much more horizontally compact through concise syntax and custom block definitions
 - Exit with a clear pass/fail on whether Blockly can coexist with the lesson-shell model.
 
 ### Stage 2. Define a mobile-first Blockly host pattern
@@ -263,6 +266,8 @@ Success criteria:
 
 - preserve puzzle shell, hints, demo, and success flow
 - reproduce the structural constraints with Blockly or a Blockly-backed hybrid
+- use compact teaching syntax where needed, for example `swap_items(list, i, j)`, `list[i] > list[j]`, `[a, b, c]`, `set list`, and `length(list)` rather than wide stock Blockly wording
+- hide counted-loop increment inputs when the default step of `1` or `-1` is sufficient
 - confirm users can still solve it comfortably on phones
 - confirm trace / run experience is at least as readable as the current version
 

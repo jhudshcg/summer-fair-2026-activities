@@ -10,16 +10,20 @@
     <link rel="stylesheet" href="../css/vendor/pico.min.css">
     <link rel="stylesheet" href="../css/style.css?v=20260624a">
     <link rel="stylesheet" href="../css/layout.css?v=20260620d">
-    <link rel="stylesheet" href="../css/blockly-spike.css?v=20260627e">
-    <script src="https://unpkg.com/blockly@13.0.0/blockly_compressed.js" defer></script>
-    <script src="https://unpkg.com/blockly@13.0.0/blocks_compressed.js" defer></script>
-    <script src="https://unpkg.com/blockly@13.0.0/javascript_compressed.js" defer></script>
-    <script src="https://unpkg.com/blockly@13.0.0/python_compressed.js" defer></script>
-    <script src="https://unpkg.com/blockly@13.0.0/msg/en.js" defer></script>
-    <script src="../js/blockly-theme/tokens.js?v=20260627a" defer></script>
-    <script src="../js/blockly-theme/summer-fair-theme.js?v=20260627a" defer></script>
-    <script src="../js/blockly-theme/block-customizations.js?v=20260627a" defer></script>
-    <script src="../js/blockly-spike.js?v=20260627e" defer></script>
+    <link rel="stylesheet" href="../blockly-compact-theme/compact.css?v=20260630e">
+    <link rel="stylesheet" href="../css/blockly-spike.css?v=20260627f">
+    <script src="../vendor/blockly/blockly_compressed.js" defer></script>
+    <script src="../vendor/blockly/blocks_compressed.js" defer></script>
+    <script src="../vendor/blockly/javascript_compressed.js" defer></script>
+    <script src="../vendor/blockly/python_compressed.js" defer></script>
+    <script src="../vendor/blockly/msg/en.js" defer></script>
+    <script src="../blockly-compact-theme/tokens.js?v=20260630a" defer></script>
+    <script src="../blockly-compact-theme/compact-theme.js?v=20260630k" defer></script>
+    <script src="../blockly-compact-theme/compact-fields.js?v=20260628a" defer></script>
+    <script src="../js/blockly-activities/bubble-sort/blocks.js?v=20260628b" defer></script>
+    <script src="../js/blockly-activities/bubble-sort/generators.js?v=20260628b" defer></script>
+    <script src="../blockly-compact-theme/debug-probe.js?v=20260630b" defer></script>
+    <script src="../js/blockly-spike.js?v=20260630a" defer></script>
   </head>
   <body data-page="blockly-spike">
     <main class="container site-shell blockly-spike-page">
@@ -60,7 +64,7 @@
               <button type="button" class="secondary outline" data-blockly-clear>Clear workspace</button>
             </div>
           </div>
-          <div class="blockly-host" data-blockly-host>
+          <div class="blockly-host compact-blockly" data-blockly-host>
             <div class="blockly-workspace" id="blockly-workspace"></div>
           </div>
         </article>
@@ -92,46 +96,29 @@
       <xml id="blockly-toolbox" style="display:none">
         <category name="Logic" colour="#ffb347">
           <block type="controls_if"></block>
-          <block type="logic_compare"></block>
-          <block type="logic_operation"></block>
           <block type="logic_boolean"></block>
-          <block type="sf_list_compare_at"></block>
+          <block type="sf_inequality"></block>
         </category>
         <category name="Loops" colour="#1b7f5a">
-          <block type="controls_repeat_ext">
-            <value name="TIMES">
-              <shadow type="math_number"><field name="NUM">4</field></shadow>
-            </value>
-          </block>
-          <block type="controls_for">
+          <block type="sf_for_count">
             <value name="FROM">
-              <shadow type="math_number"><field name="NUM">0</field></shadow>
+              <shadow type="sf_number"><field name="NUM">0</field></shadow>
             </value>
             <value name="TO">
-              <shadow type="math_number"><field name="NUM">4</field></shadow>
-            </value>
-            <value name="BY">
-              <shadow type="math_number"><field name="NUM">1</field></shadow>
+              <shadow type="sf_number"><field name="NUM">4</field></shadow>
             </value>
           </block>
         </category>
         <category name="Math" colour="#3cb9c9">
-          <block type="math_number"></block>
-          <block type="math_arithmetic"></block>
+          <block type="sf_number"></block>
+          <block type="sf_math_operator"></block>
         </category>
         <category name="Variables" custom="VARIABLE" colour="#7c4dff"></category>
         <category name="Lists" colour="#5b80d6">
-          <block type="lists_create_with"></block>
-          <block type="lists_repeat">
-            <value name="NUM">
-              <shadow type="math_number"><field name="NUM">3</field></shadow>
-            </value>
-          </block>
-          <block type="lists_length"></block>
-          <block type="lists_isEmpty"></block>
-          <block type="lists_indexOf"></block>
-          <block type="lists_getIndex"></block>
-          <block type="lists_setIndex"></block>
+          <block type="sf_set"></block>
+          <block type="sf_list_literal"></block>
+          <block type="sf_list_get_at"></block>
+          <block type="sf_length_var"></block>
           <block type="sf_list_swap"></block>
         </category>
         <category name="Text" colour="#ff6f61">
